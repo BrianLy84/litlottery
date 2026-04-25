@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>LitLottery — On-Chain Weekly Draw</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;900&family=DM+Sans:wght@300;400;500&display=swap');
+
+  :root {
+    --gold: #F5C842;
+    --gold-light: #FFE066;
+    --gold-dark: #C9A227;
+    --gold-faint: #1C1600;
+    --teal: #00C9A7;
+    --teal-light: #00F0C8;
+    --teal-dark: #007A65;
+    --teal-faint: #001a15;
+    --bg: #050508;
+    --surface: #0C0C10;
+    --surface2: #111116;
+    --border: #1a1a22;
+    --border-gold: #2a2200;
+    --border-teal: #003328;
+    --text: #F0F0F8;
+    --text-muted: #6B6B88;
+    --text-dim: #2a2a38;
+    --green: #00C9A7;
+    --green-bg: #001a15;
+    --red: #FF6B6B;
+    --red-bg: #1f0d0d;
+    --white: #FFFFFF;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--text);
+    min-height: 100vh;
+    background-image:
+      radial-gradient(ellipse 60% 50% at 20% 0%, rgba(0,201,167,0.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 50% at 80% 100%, rgba(245,200,66,0.07) 0%, transparent 60%),
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.012) 60px, rgba(255,255,255,0.012) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.012) 60px, rgba(255,255,255,0.012) 61px);
+  }
+
+  /* ── LAYOUT ── */
+  .page { max-width: 860px; margin: 0 auto; padding: 24px 16px 60px; }
+
+  /* ── HEADER ── */
+  .site-header {
+    text-align: center;
+    padding: 32px 0 28px;
+    border-bottom: 1px solid var(--border-gold);
+    margin-bottom: 28px;
+    position: relative;
+  }
+
+  .header-crown {
+    font-size: 28px;
+    margin-bottom: 8px;
+    display: block;
+  }
+
+  .site-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 700;
+    color: var(--gold);
+    letter-spacing: 6px;
+    text-shadow: 0 0 60px rgba(245,200,66,0.4), 0 2px 20px rgba(0,201,167,0.2);
+  }
+
+  .site-tagline {
+    font-size: 12px;
+    color: var(--text-muted);
+    letter-spacing: 3px;
+    margin-top: 6px;
+  }
+
+  .network-pill {
+    position: absolute;
+    top: 32px;
+    right: 0;
+    background: var(--teal-faint);
+    border: 1px solid var(--teal-dark);
+    color: var(--teal-light);
+    font-size: 11px;
+    padding: 5px 12px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .network-dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── WALLET BAR ── */
+  .wallet-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--surface);
+    border: 1px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .wallet-info { display: flex; align-items: center; gap: 10px; }
+  .wallet-icon {
+    width: 32px; height: 32px;
+    background: var(--gold-faint);
+    border: 1px solid var(--border-gold);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .wallet-addr { font-size: 13px; color: var(--text-muted); font-family: 'DM Sans', monospace; }
+  .wallet-addr span { color: var(--gold); }
+  .wallet-bal { font-size: 13px; color: var(--gold); }
+
+  .btn-connect {
+    background: var(--gold);
+    color: #0a0800;
+    border: none;
+    padding: 9px 20px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    letter-spacing: 0.3px;
+    transition: all 0.2s;
+  }
+  .btn-connect:hover { background: var(--gold); transform: scale(1.02); box-shadow: 0 4px 20px rgba(245,200,66,0.25); }
+
+  /* ── STATS ROW ── */
+  .stats-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+
+  .stat-box {
+    background: var(--surface);
+    border: 1px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 16px 12px;
+    text-align: center;
+  }
+
+  .stat-box.jackpot {
+    border-color: var(--gold);
+    background: var(--gold-faint);
+    grid-column: span 2;
+  }
+
+  .stat-lbl {
+    font-size: 10px;
+    color: var(--text-muted);
+    letter-spacing: 1.5px;
+    margin-bottom: 6px;
+  }
+
+  .stat-val {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--gold-light);
+    font-weight: 600;
+  }
+
+  .stat-box.jackpot .stat-val { font-size: 30px; }
+  .stat-unit { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+
+  /* ── COUNTDOWN ── */
+  .countdown-box {
+    background: var(--surface);
+    border: 1px solid var(--border-gold);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+  }
+
+  .countdown-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .countdown-label { font-size: 11px; color: var(--text-muted); letter-spacing: 1px; }
+  .countdown-time {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    color: var(--gold);
+    letter-spacing: 2px;
+  }
+
+  .progress-track {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--teal-dark), var(--teal), var(--gold));
+    border-radius: 2px;
+    transition: width 1s linear;
+  }
+
+  /* ── PRIZES ── */
+  .prizes-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .prize-box {
+    border-radius: 12px;
+    padding: 14px 10px;
+    text-align: center;
+    border: 1px solid;
+  }
+
+  .prize-box.p1 { background: linear-gradient(135deg, #1C1600, #0a0a00); border-color: var(--gold); box-shadow: 0 0 20px rgba(245,200,66,0.1); }
+  .prize-box.p2 { background: linear-gradient(135deg, var(--teal-faint), #050508); border-color: var(--teal); box-shadow: 0 0 20px rgba(0,201,167,0.08); }
+  .prize-box.p3 { background: linear-gradient(135deg, #0d0d18, #050508); border-color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.05); }
+
+  .prize-medal { font-size: 22px; margin-bottom: 6px; }
+  .prize-title { font-size: 11px; letter-spacing: 1px; margin-bottom: 3px; }
+  .prize-box.p1 .prize-title { color: var(--gold); }
+  .prize-box.p2 .prize-title { color: var(--teal-light); }
+  .prize-box.p3 .prize-title { color: var(--white); }
+  .prize-match { font-size: 10px; color: var(--text-muted); margin-bottom: 8px; }
+  .prize-pct {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+  }
+  .prize-box.p1 .prize-pct { color: var(--gold-light); }
+  .prize-box.p2 .prize-pct { color: var(--teal-light); }
+  .prize-box.p3 .prize-pct { color: var(--white); }
+
+  /* ── TICKET PANEL ── */
+  .panel {
+    background: var(--surface);
+    border: 1px solid var(--border-gold);
+    border-radius: 14px;
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+
+  .panel-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 14px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .tab-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .tab {
+    flex: 1;
+    padding: 9px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    border: 1px solid var(--border-gold);
+    background: transparent;
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    transition: all 0.2s;
+  }
+
+  .tab.active {
+    background: linear-gradient(135deg, var(--teal-dark), var(--teal));
+    color: #000;
+    border-color: var(--teal);
+    font-weight: 500;
+  }
+
+  /* number balls */
+  .balls-row {
+    display: flex;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  .ball-wrap { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .ball-lbl { font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+
+  .ball {
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--gold);
+    background: var(--gold-faint);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .ball:hover { border-color: var(--gold-light); transform: scale(1.05); }
+
+  .ball input {
+    width: 100%; height: 100%;
+    background: transparent;
+    border: none;
+    text-align: center;
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    font-weight: 600;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .ball-rand {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--gold-light);
+  }
+
+  .reroll-hint {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  /* limit indicator */
+  .limit-row {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 14px;
+  }
+
+  .limit-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    border: 1px solid var(--gold-dark);
+    background: transparent;
+    transition: background 0.3s;
+  }
+
+  .limit-dot.used { background: var(--gold); border-color: var(--gold); }
+
+  .limit-label {
+    text-align: center;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 14px;
+  }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 16px;
+  }
+
+  .price-lbl { font-size: 13px; color: var(--text-muted); }
+  .price-val { font-size: 14px; color: var(--gold); font-weight: 500; }
+
+  .cooldown-msg {
+    text-align: center;
+    font-size: 12px;
+    color: var(--gold-dark);
+    margin-bottom: 10px;
+    min-height: 18px;
+  }
+
+  /* ── BUTTONS ── */
+  .btn-buy {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    color: #0a0800;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .btn-buy:hover:not(:disabled) { background: linear-gradient(135deg, var(--gold), var(--gold-light)); transform: scale(1.01); box-shadow: 0 4px 20px rgba(245,200,66,0.3); }
+  .btn-buy:active:not(:disabled) { transform: scale(0.99); }
+  .btn-buy:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  .btn-draw {
+    width: 100%;
+    padding: 13px;
+    background: transparent;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    border-radius: 10px;
+    font-family: 'Playfair Display', serif;
+    font-size: 13px;
+    letter-spacing: 2px;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 10px;
+  }
+
+  .btn-draw:hover:not(:disabled) { background: var(--gold-faint); }
+  .btn-draw:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* ── WINNING NUMBERS ── */
+  .winning-section { margin-top: 16px; }
+
+  .winning-balls {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin: 12px 0;
+  }
+
+  .winning-ball {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--gold-dark), var(--gold));
+    box-shadow: 0 0 16px rgba(245,200,66,0.4);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: #0a0800;
+  }
+
+  /* ── HISTORY ── */
+  .history-list { display: flex; flex-direction: column; gap: 10px; }
+
+  .history-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .history-left { display: flex; align-items: center; gap: 12px; }
+  .history-round { font-size: 12px; color: var(--text-muted); min-width: 60px; }
+
+  .mini-balls { display: flex; gap: 5px; }
+  .mini-ball {
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: var(--gold-faint);
+    border: 1px solid var(--gold-dark);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    color: var(--gold);
+    font-family: 'Playfair Display', serif;
+  }
+
+  .badge {
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-weight: 500;
+  }
+
+  .badge-win1 { background: #1a1000; color: var(--gold); border: 1px solid var(--gold-dark); }
+  .badge-win2 { background: var(--teal-faint); color: var(--teal-light); border: 1px solid var(--teal-dark); }
+  .badge-win3 { background: #0d0d18; color: #aaaaff; border: 1px solid #333366; }
+  .badge-lose { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+  .btn-claim {
+    font-size: 12px;
+    padding: 5px 12px;
+    background: var(--gold);
+    color: #0a0800;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+
+  .btn-claim:hover { background: var(--gold-light); }
+
+  /* ── TOAST ── */
+  #toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--surface);
+    border: 1px solid var(--gold);
+    color: var(--text);
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 13px;
+    transition: transform 0.3s ease;
+    z-index: 999;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+
+  #toast.show { transform: translateX(-50%) translateY(0); }
+  #toast.error { border-color: var(--red); color: var(--red); }
+  #toast.success { border-color: var(--green); color: var(--green); }
+
+  /* ── STATUS MSG ── */
+  .status-msg {
+    text-align: center;
+    font-size: 12px;
+    color: var(--text-muted);
+    padding: 10px;
+  }
+
+  /* ── DIVIDER ── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 16px 0;
+  }
+
+  /* ── FOOTER ── */
+  .site-footer {
+    text-align: center;
+    padding-top: 28px;
+    border-top: 1px solid var(--border-gold);
+    margin-top: 28px;
+  }
+
+  .footer-text { font-size: 11px; color: var(--text-dim); letter-spacing: 0.5px; }
+  .footer-text a { color: var(--text-muted); text-decoration: none; }
+  .footer-text a:hover { color: var(--gold); }
+
+  @media (max-width: 540px) {
+    .stats-row { grid-template-columns: 1fr 1fr; }
+    .stat-box.jackpot { grid-column: span 2; }
+    .site-title { font-size: 28px; letter-spacing: 3px; }
+    .network-pill { position: static; margin-top: 10px; display: inline-block; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <span class="header-crown">♛</span>
+    <div class="site-title" style="background: linear-gradient(135deg, #F5C842, #FFE066, #00C9A7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">LIT LOTTERY</div>
+    <div class="site-tagline">PROVABLY FAIR &nbsp;·&nbsp; WEEKLY DRAWS &nbsp;·&nbsp; ON-CHAIN REWARDS</div>
+    <div class="network-pill">
+      <span class="network-dot"></span>LiteForge Testnet
+    </div>
+  </header>
+
+  <!-- WALLET -->
+  <div class="wallet-bar">
+    <div class="wallet-info">
+      <div class="wallet-icon">◈</div>
+      <div>
+        <div class="wallet-addr" id="wallet-addr">Not connected</div>
+        <div class="wallet-bal" id="wallet-bal">— zkLTC</div>
+      </div>
+    </div>
+    <button class="btn-connect" id="btn-connect" onclick="connectWallet()">Connect MetaMask</button>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-row">
+    <div class="stat-box jackpot">
+      <div class="stat-lbl">JACKPOT POOL</div>
+      <div class="stat-val" id="stat-jackpot">—</div>
+      <div class="stat-unit">zkLTC</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">ROUND</div>
+      <div class="stat-val" id="stat-round">#—</div>
+      <div class="stat-unit">current</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-lbl">TICKETS SOLD</div>
+      <div class="stat-val" id="stat-tickets">—</div>
+      <div class="stat-unit">this round</div>
+    </div>
+  </div>
+
+  <!-- COUNTDOWN -->
+  <div class="countdown-box">
+    <div class="countdown-top">
+      <span class="countdown-label">DRAW CLOSES IN</span>
+      <span class="countdown-time" id="countdown">— — —</span>
+    </div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+  </div>
+
+  <!-- PRIZES -->
+  <div class="prizes-row">
+    <div class="prize-box p1">
+      <div class="prize-medal">🥇</div>
+      <div class="prize-title">1ST PRIZE</div>
+      <div class="prize-match">Match all 3</div>
+      <div class="prize-pct">70%</div>
+    </div>
+    <div class="prize-box p2">
+      <div class="prize-medal">🥈</div>
+      <div class="prize-title">2ND PRIZE</div>
+      <div class="prize-match">Match 2 of 3</div>
+      <div class="prize-pct">20%</div>
+    </div>
+    <div class="prize-box p3">
+      <div class="prize-medal">🥉</div>
+      <div class="prize-title">3RD PRIZE</div>
+      <div class="prize-match">Match 1 of 3</div>
+      <div class="prize-pct">10%</div>
+    </div>
+  </div>
+
+  <!-- BUY TICKET -->
+  <div class="panel">
+    <div class="panel-title">♠ BUY YOUR TICKET</div>
+
+    <div class="tab-row">
+      <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
+      <button class="tab" id="tab-random" onclick="switchTab('random')">Quick Pick</button>
+    </div>
+
+    <!-- PICK NUMBERS -->
+    <div id="panel-pick">
+      <div class="balls-row">
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 1</div>
+          <div class="ball"><input type="number" id="n1" min="1" max="9" value="7" /></div>
+        </div>
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 2</div>
+          <div class="ball"><input type="number" id="n2" min="1" max="9" value="3" /></div>
+        </div>
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 3</div>
+          <div class="ball"><input type="number" id="n3" min="1" max="9" value="9" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- QUICK PICK -->
+    <div id="panel-random" style="display:none">
+      <div class="balls-row">
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 1</div>
+          <div class="ball" onclick="reroll()"><span class="ball-rand" id="rb1">?</span></div>
+        </div>
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 2</div>
+          <div class="ball" onclick="reroll()"><span class="ball-rand" id="rb2">?</span></div>
+        </div>
+        <div class="ball-wrap">
+          <div class="ball-lbl">NUMBER 3</div>
+          <div class="ball" onclick="reroll()"><span class="ball-rand" id="rb3">?</span></div>
+        </div>
+      </div>
+      <div class="reroll-hint">Tap any ball to re-roll your lucky numbers</div>
+    </div>
+
+    <!-- TICKET LIMIT INDICATOR -->
+    <div class="limit-row" id="limit-dots">
+      <div class="limit-dot" id="dot0"></div>
+      <div class="limit-dot" id="dot1"></div>
+      <div class="limit-dot" id="dot2"></div>
+    </div>
+    <div class="limit-label" id="limit-label">Connect wallet to see ticket allowance</div>
+
+    <div class="price-row">
+      <span class="price-lbl">Ticket price</span>
+      <span class="price-val">0.001 zkLTC per ticket</span>
+    </div>
+
+    <div class="cooldown-msg" id="cooldown-msg"></div>
+
+    <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>
+      BUY TICKET
+    </button>
+
+    <!-- DRAW BUTTON (shows when round ended) -->
+    <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">
+      TRIGGER WEEKLY DRAW
+    </button>
+  </div>
+
+  <!-- CURRENT WINNING NUMBERS -->
+  <div class="panel" id="winning-panel" style="display:none">
+    <div class="panel-title">♦ LAST DRAW RESULT</div>
+    <div class="winning-section">
+      <div style="text-align:center; font-size:12px; color:var(--text-muted); margin-bottom:8px;">
+        Round <span id="winning-round">—</span> winning numbers
+      </div>
+      <div class="winning-balls">
+        <div class="winning-ball" id="wb1">?</div>
+        <div class="winning-ball" id="wb2">?</div>
+        <div class="winning-ball" id="wb3">?</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="panel">
+    <div class="panel-title">♣ MY TICKET HISTORY</div>
+    <div class="history-list" id="history-list">
+      <div class="status-msg">Connect wallet to view your ticket history</div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-text">
+      LitLottery v1.0 &nbsp;·&nbsp; Deployed on LiteForge Testnet &nbsp;·&nbsp;
+      <a href="https://liteforge.explorer.caldera.xyz" target="_blank">Block Explorer ↗</a>
+      &nbsp;·&nbsp;
+      <a href="https://litvm.com" target="_blank">LitVM ↗</a>
+    </div>
+  </footer>
+
+</div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<script>
+// ================================================================
+//  CONFIG — replace CONTRACT_ADDRESS after deploying LitLottery.sol
+// ================================================================
+const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
+
+const LITEFORGE_CHAIN_ID = "0x115D"; // 4445 decimal — update if different
+
+const LITEFORGE_NETWORK = {
+  chainId: LITEFORGE_CHAIN_ID,
+  chainName: "LiteForge Testnet",
+  nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
+  rpcUrls: ["https://liteforge.rpc.caldera.xyz/http"],
+  blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
+};
+
+const ABI = [
+  "function buyTicket(uint8[3] memory numbers) external payable",
+  "function buyRandomTicket() external payable",
+  "function drawWinningNumbers() external",
+  "function claimReward(uint256 roundId) external",
+  "function getCurrentRound() external view returns (tuple(uint256 roundId, uint256 startTime, uint256 endTime, uint8[3] winningNumbers, uint256 jackpot, bool drawn, bool active))",
+  "function getTickets(uint256 roundId) external view returns (tuple(address player, uint8[3] numbers, bool isRandom)[])",
+  "function getTimeLeft() external view returns (uint256)",
+  "function ticketsRemaining(address wallet) external view returns (uint256)",
+  "function cooldownRemaining(address wallet) external view returns (uint256)",
+  "function getWinningNumbers(uint256 roundId) external view returns (uint8[3])",
+  "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
+  "function currentRoundId() external view returns (uint256)",
+  "function ticketPrice() external view returns (uint256)",
+  "event TicketPurchased(address indexed player, uint256 indexed roundId, uint8[3] numbers, bool isRandom)",
+  "event RoundDrawn(uint256 indexed roundId, uint8[3] winningNumbers, uint256 jackpot)"
+];
+
+// ================================================================
+//  STATE
+// ================================================================
+let provider, signer, contract;
+let walletAddress = null;
+let currentTab = "pick";
+let countdownInterval = null;
+let cooldownInterval = null;
+let roundEndTime = 0;
+let roundDuration = 7 * 24 * 3600;
+
+// ================================================================
+//  WALLET CONNECTION
+// ================================================================
+async function connectWallet() {
+  if (!window.ethereum) {
+    showToast("MetaMask not found. Please install it first.", "error");
+    return;
+  }
+
+  try {
+    showToast("Connecting wallet...");
+    await switchToLiteForge();
+
+    provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    walletAddress = await signer.getAddress();
+
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+
+    updateWalletUI();
+    await refreshAll();
+    enableBuyBtn();
+    startCountdown();
+    startCooldownWatch();
+
+    showToast("Wallet connected!", "success");
+  } catch (err) {
+    showToast(err.message || "Connection failed", "error");
+  }
+}
+
+async function switchToLiteForge() {
+  try {
+    await window.ethereum.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId: LITEFORGE_CHAIN_ID }]
+    });
+  } catch (err) {
+    if (err.code === 4902) {
+      await window.ethereum.request({
+        method: "wallet_addEthereumChain",
+        params: [LITEFORGE_NETWORK]
+      });
+    }
+  }
+}
+
+async function updateWalletUI() {
+  const short = walletAddress.slice(0, 6) + "..." + walletAddress.slice(-4);
+  document.getElementById("wallet-addr").innerHTML = `<span>${short}</span>`;
+  document.getElementById("btn-connect").textContent = "Connected";
+  document.getElementById("btn-connect").style.background = "transparent";
+  document.getElementById("btn-connect").style.border = "1px solid var(--green)";
+  document.getElementById("btn-connect").style.color = "var(--green)";
+
+  const bal = await provider.getBalance(walletAddress);
+  const balFmt = parseFloat(ethers.formatEther(bal)).toFixed(4);
+  document.getElementById("wallet-bal").textContent = balFmt + " zkLTC";
+}
+
+// ================================================================
+//  REFRESH DATA
+// ================================================================
+async function refreshAll() {
+  if (!contract) return;
+
+  try {
+    const round = await contract.getCurrentRound();
+    const roundId = Number(round.roundId);
+    const jackpot = parseFloat(ethers.formatEther(round.jackpot)).toFixed(4);
+    const tickets = await contract.getTickets(roundId);
+
+    document.getElementById("stat-jackpot").textContent = jackpot;
+    document.getElementById("stat-round").textContent = "#" + roundId;
+    document.getElementById("stat-tickets").textContent = tickets.length.toLocaleString();
+
+    roundEndTime = Number(round.endTime);
+    roundDuration = Number(round.endTime) - Number(round.startTime);
+
+    // show draw button if round ended
+    const now = Math.floor(Date.now() / 1000);
+    if (now >= roundEndTime && !round.drawn) {
+      document.getElementById("btn-draw").style.display = "block";
+    }
+
+    // show last winning numbers
+    if (roundId > 1) {
+      try {
+        const prevWin = await contract.getWinningNumbers(roundId - 1);
+        document.getElementById("wb1").textContent = prevWin[0];
+        document.getElementById("wb2").textContent = prevWin[1];
+        document.getElementById("wb3").textContent = prevWin[2];
+        document.getElementById("winning-round").textContent = "#" + (roundId - 1);
+        document.getElementById("winning-panel").style.display = "block";
+      } catch (_) {}
+    }
+
+    await refreshTicketLimit();
+    await refreshHistory();
+
+  } catch (err) {
+    console.error("refreshAll:", err);
+  }
+}
+
+async function refreshTicketLimit() {
+  if (!contract || !walletAddress) return;
+  const remaining = Number(await contract.ticketsRemaining(walletAddress));
+  const used = 3 - remaining;
+
+  for (let i = 0; i < 3; i++) {
+    document.getElementById("dot" + i).className = "limit-dot" + (i < used ? " used" : "");
+  }
+
+  if (remaining === 0) {
+    document.getElementById("limit-label").textContent = "No tickets remaining this round";
+    document.getElementById("btn-buy").disabled = true;
+  } else {
+    document.getElementById("limit-label").textContent = remaining + " ticket" + (remaining > 1 ? "s" : "") + " remaining this round";
+    document.getElementById("btn-buy").disabled = false;
+  }
+}
+
+async function refreshHistory() {
+  if (!contract || !walletAddress) return;
+
+  const roundId = Number(await contract.currentRoundId());
+  const list = document.getElementById("history-list");
+  const items = [];
+
+  for (let r = Math.max(1, roundId - 4); r <= roundId; r++) {
+    try {
+      const tickets = await contract.getTickets(r);
+      const myTickets = tickets.filter(t => t.player.toLowerCase() === walletAddress.toLowerCase());
+      if (myTickets.length === 0) continue;
+
+      const round = await contract.getCurrentRound();
+      let drawn = false;
+      let winNums = [0, 0, 0];
+      if (r < roundId) {
+        try { winNums = await contract.getWinningNumbers(r); drawn = true; } catch (_) {}
+      }
+
+      for (const t of myTickets) {
+        const nums = [Number(t.numbers[0]), Number(t.numbers[1]), Number(t.numbers[2])];
+        let matchCount = 0;
+        let badgeHtml = '<span class="badge badge-lose">Pending</span>';
+        let claimBtn = "";
+
+        if (drawn) {
+          for (let i = 0; i < 3; i++) {
+            if (nums[i] === Number(winNums[i])) matchCount++;
+          }
+          if (matchCount === 3) badgeHtml = '<span class="badge badge-win1">1st Prize</span>';
+          else if (matchCount === 2) badgeHtml = '<span class="badge badge-win2">2nd Prize</span>';
+          else if (matchCount === 1) badgeHtml = '<span class="badge badge-win3">3rd Prize</span>';
+          else badgeHtml = '<span class="badge badge-lose">No match</span>';
+
+          if (matchCount > 0) {
+            const claimed = await contract.hasClaimedReward(r, walletAddress);
+            if (!claimed) {
+              claimBtn = `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
+            } else {
+              claimBtn = '<span style="font-size:11px;color:var(--text-muted)">Claimed</span>';
+            }
+          }
+        }
+
+        items.push(`
+          <div class="history-item">
+            <div class="history-left">
+              <div class="history-round">Round #${r}</div>
+              <div class="mini-balls">
+                <div class="mini-ball">${nums[0]}</div>
+                <div class="mini-ball">${nums[1]}</div>
+                <div class="mini-ball">${nums[2]}</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              ${badgeHtml}
+              ${claimBtn}
+            </div>
+          </div>
+        `);
+      }
+    } catch (_) {}
+  }
+
+  list.innerHTML = items.length > 0
+    ? items.join("")
+    : '<div class="status-msg">No tickets found for this wallet</div>';
+}
+
+// ================================================================
+//  BUY TICKET
+// ================================================================
+async function buyTicket() {
+  if (!contract) { showToast("Please connect wallet first", "error"); return; }
+
+  let numbers;
+  if (currentTab === "pick") {
+    const n1 = parseInt(document.getElementById("n1").value);
+    const n2 = parseInt(document.getElementById("n2").value);
+    const n3 = parseInt(document.getElementById("n3").value);
+    if ([n1, n2, n3].some(n => isNaN(n) || n < 1 || n > 9)) {
+      showToast("Each number must be between 1 and 9", "error");
+      return;
+    }
+    numbers = [n1, n2, n3];
+  } else {
+    const r1 = parseInt(document.getElementById("rb1").textContent);
+    const r2 = parseInt(document.getElementById("rb2").textContent);
+    const r3 = parseInt(document.getElementById("rb3").textContent);
+    if (isNaN(r1) || isNaN(r2) || isNaN(r3)) {
+      showToast("Please roll your numbers first", "error");
+      return;
+    }
+    numbers = [r1, r2, r3];
+  }
+
+  try {
+    document.getElementById("btn-buy").disabled = true;
+    document.getElementById("btn-buy").textContent = "CONFIRMING...";
+    showToast("Waiting for MetaMask confirmation...");
+
+    const price = ethers.parseEther("0.001");
+    let tx;
+
+    if (currentTab === "pick") {
+      tx = await contract.buyTicket(numbers, { value: price });
+    } else {
+      tx = await contract.buyRandomTicket({ value: price });
+    }
+
+    showToast("Transaction submitted, waiting...");
+    await tx.wait();
+
+    showToast("Ticket purchased! Numbers: " + numbers.join(" · "), "success");
+    await refreshAll();
+
+  } catch (err) {
+    const msg = err?.reason || err?.message || "Transaction failed";
+    showToast(msg.length > 80 ? msg.slice(0, 80) + "..." : msg, "error");
+  } finally {
+    document.getElementById("btn-buy").textContent = "BUY TICKET";
+    await refreshTicketLimit();
+  }
+}
+
+// ================================================================
+//  DRAW
+// ================================================================
+async function drawNumbers() {
+  if (!contract) return;
+  try {
+    showToast("Triggering weekly draw...");
+    const tx = await contract.drawWinningNumbers();
+    await tx.wait();
+    showToast("Draw complete! Check winning numbers.", "success");
+    document.getElementById("btn-draw").style.display = "none";
+    await refreshAll();
+  } catch (err) {
+    showToast(err?.reason || "Draw failed", "error");
+  }
+}
+
+// ================================================================
+//  CLAIM
+// ================================================================
+async function claimReward(roundId) {
+  if (!contract) return;
+  try {
+    showToast("Claiming reward...");
+    const tx = await contract.claimReward(roundId);
+    await tx.wait();
+    showToast("Reward claimed successfully!", "success");
+    await refreshAll();
+    await updateWalletUI();
+  } catch (err) {
+    showToast(err?.reason || "Claim failed", "error");
+  }
+}
+
+// ================================================================
+//  UI HELPERS
+// ================================================================
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById("tab-pick").className = "tab" + (tab === "pick" ? " active" : "");
+  document.getElementById("tab-random").className = "tab" + (tab === "random" ? " active" : "");
+  document.getElementById("panel-pick").style.display = tab === "pick" ? "" : "none";
+  document.getElementById("panel-random").style.display = tab === "random" ? "none" : "";
+  if (tab === "random") reroll();
+}
+
+function reroll() {
+  document.getElementById("rb1").textContent = Math.floor(Math.random() * 9) + 1;
+  document.getElementById("rb2").textContent = Math.floor(Math.random() * 9) + 1;
+  document.getElementById("rb3").textContent = Math.floor(Math.random() * 9) + 1;
+}
+
+function enableBuyBtn() {
+  document.getElementById("btn-buy").disabled = false;
+}
+
+function startCountdown() {
+  if (countdownInterval) clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const left = Math.max(0, roundEndTime - now);
+
+    const d = Math.floor(left / 86400);
+    const h = Math.floor((left % 86400) / 3600);
+    const m = Math.floor((left % 3600) / 60);
+    const s = left % 60;
+
+    document.getElementById("countdown").textContent =
+      d + "d " + String(h).padStart(2, "0") + "h " +
+      String(m).padStart(2, "0") + "m " + String(s).padStart(2, "0") + "s";
+
+    const pct = roundDuration > 0 ? Math.round((left / roundDuration) * 100) : 0;
+    document.getElementById("progress-fill").style.width = pct + "%";
+
+    if (left === 0) {
+      document.getElementById("btn-draw").style.display = "block";
+    }
+  }, 1000);
+}
+
+function startCooldownWatch() {
+  if (cooldownInterval) clearInterval(cooldownInterval);
+  cooldownInterval = setInterval(async () => {
+    if (!contract || !walletAddress) return;
+    try {
+      const cd = Number(await contract.cooldownRemaining(walletAddress));
+      const msg = document.getElementById("cooldown-msg");
+      if (cd > 0) {
+        msg.textContent = "Next purchase available in " + cd + "s";
+        document.getElementById("btn-buy").disabled = true;
+      } else {
+        msg.textContent = "";
+        await refreshTicketLimit();
+      }
+    } catch (_) {}
+  }, 3000);
+}
+
+function showToast(msg, type = "") {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "show " + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.className = ""; }, 3500);
+}
+</script>
+</body>
+</html>
