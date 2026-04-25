@@ -1,0 +1,371 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
+
+/**
+ * ---------------------------------------------------------
+ * LitLottery Pro v3
+ * Professional Weekly Lottery Contract
+ * Secure / Clean / Gas Optimized / Multi Winner Split
+ * ---------------------------------------------------------
+ *
+ * Features:
+ * - Buy Random / Custom Tickets
+ * - Weekly Draw
+ * - Multi-tier Rewards
+ * - Multiple Winners Share Prize
+ * - Owner Fee Wallet
+ * - Reentrancy Protection
+ * - Frontend Ready
+ *
+ * Compatible:
+ * - MetaMask
+ * - Trust Wallet
+ * - Rabby
+ * - WalletConnect
+ * ---------------------------------------------------------
+ */
+
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+
+contract LitLotteryPro is Ownable, ReentrancyGuard {
+
+    // =====================================================
+    // CONFIG
+    // =====================================================
+
+    uint256 public constant TICKET_PRICE = 0.001 ether;
+    uint8 public constant MAX_NUMBER = 45;
+    uint8 public constant NUMBERS_COUNT = 6;
+    uint8 public constant MAX_TICKETS_PER_USER = 5;
+
+    uint256 public constant DEV_FEE = 5; // 5%
+
+    uint256 public constant PRIZE_MATCH6 = 60;
+    uint256 public constant PRIZE_MATCH5 = 20;
+    uint256 public constant PRIZE_MATCH4 = 10;
+    uint256 public constant PRIZE_MATCH3 = 5;
+
+    // =====================================================
+    // STRUCTS
+    // =====================================================
+
+    struct Ticket {
+        address player;
+        uint8[6] numbers;
+    }
+
+    struct Round {
+        uint256 id;
+        uint256 startTime;
+        uint256 endTime;
+        uint256 prizePool;
+        uint8[6] winningNumbers;
+        bool drawn;
+    }
+
+    // =====================================================
+    // STORAGE
+    // =====================================================
+
+    uint256 public currentRoundId;
+    uint256 public devBalance;
+
+    mapping(uint256 => Round) public rounds;
+    mapping(uint256 => Ticket[]) private roundTickets;
+    mapping(uint256 => mapping(address => uint256)) public userTickets;
+    mapping(uint256 => mapping(address => bool)) public claimed;
+
+    // =====================================================
+    // EVENTS
+    // =====================================================
+
+    event RoundStarted(uint256 indexed roundId, uint256 endTime);
+    event TicketPurchased(address indexed user, uint256 indexed roundId);
+    event DrawExecuted(uint256 indexed roundId, uint8[6] winningNumbers);
+    event RewardClaimed(address indexed user, uint256 indexed roundId, uint256 amount);
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    constructor() Ownable(msg.sender) {
+        _startNewRound();
+    }
+
+    // =====================================================
+    // BUY RANDOM TICKET
+    // =====================================================
+
+    function buyRandom(uint256 quantity) external payable {
+        require(quantity > 0, "Invalid quantity");
+        require(
+            userTickets[currentRoundId][msg.sender] + quantity <= MAX_TICKETS_PER_USER,
+            "Ticket limit reached"
+        );
+        require(msg.value == quantity * TICKET_PRICE, "Incorrect payment");
+
+        for (uint256 i = 0; i < quantity; i++) {
+            uint8[6] memory nums = _generateRandomNumbers(msg.sender, i);
+            roundTickets[currentRoundId].push(Ticket(msg.sender, nums));
+        }
+
+        userTickets[currentRoundId][msg.sender] += quantity;
+        _splitFunds(msg.value);
+
+        emit TicketPurchased(msg.sender, currentRoundId);
+    }
+
+    // =====================================================
+    // BUY CUSTOM TICKET
+    // =====================================================
+
+    function buyCustom(uint8[6] calldata numbers, uint256 quantity) external payable {
+        require(quantity > 0, "Invalid quantity");
+        require(
+            userTickets[currentRoundId][msg.sender] + quantity <= MAX_TICKETS_PER_USER,
+            "Ticket limit reached"
+        );
+        require(msg.value == quantity * TICKET_PRICE, "Incorrect payment");
+
+        uint8[6] memory nums = _validateAndSort(numbers);
+
+        for (uint256 i = 0; i < quantity; i++) {
+            roundTickets[currentRoundId].push(Ticket(msg.sender, nums));
+        }
+
+        userTickets[currentRoundId][msg.sender] += quantity;
+        _splitFunds(msg.value);
+
+        emit TicketPurchased(msg.sender, currentRoundId);
+    }
+
+    // =====================================================
+    // DRAW WINNER
+    // =====================================================
+
+    function executeDraw() external onlyOwner {
+        Round storage round = rounds[currentRoundId];
+
+        require(block.timestamp >= round.endTime, "Round still active");
+        require(!round.drawn, "Already drawn");
+
+        round.winningNumbers = _generateRandomNumbers(address(this), currentRoundId);
+        round.drawn = true;
+
+        emit DrawExecuted(currentRoundId, round.winningNumbers);
+
+        _startNewRound();
+    }
+
+    // =====================================================
+    // CLAIM REWARD
+    // =====================================================
+
+    function claimReward(uint256 roundId) external nonReentrant {
+        require(!claimed[roundId][msg.sender], "Already claimed");
+
+        Round storage round = rounds[roundId];
+        require(round.drawn, "Not drawn");
+
+        uint8 bestMatch = 0;
+
+        Ticket[] storage list = roundTickets[roundId];
+
+        for (uint256 i = 0; i < list.length; i++) {
+            if (list[i].player == msg.sender) {
+                uint8 matches_ = _countMatches(
+                    list[i].numbers,
+                    round.winningNumbers
+                );
+
+                if (matches_ > bestMatch) {
+                    bestMatch = matches_;
+                }
+            }
+        }
+
+        require(bestMatch >= 3, "No reward");
+
+        uint256 winners = _countTierWinners(roundId, bestMatch);
+        require(winners > 0, "No winners");
+
+        uint256 reward = (_tierPool(round.prizePool, bestMatch)) / winners;
+
+        claimed[roundId][msg.sender] = true;
+
+        payable(msg.sender).transfer(reward);
+
+        emit RewardClaimed(msg.sender, roundId, reward);
+    }
+
+    // =====================================================
+    // OWNER
+    // =====================================================
+
+    function withdrawDevFee() external onlyOwner {
+        uint256 amount = devBalance;
+        require(amount > 0, "No balance");
+
+        devBalance = 0;
+
+        payable(owner()).transfer(amount);
+    }
+
+    // =====================================================
+    // VIEW FUNCTIONS
+    // =====================================================
+
+    function getTickets(uint256 roundId) external view returns (Ticket[] memory) {
+        return roundTickets[roundId];
+    }
+
+    function timeRemaining() external view returns (uint256) {
+        if (block.timestamp >= rounds[currentRoundId].endTime) return 0;
+        return rounds[currentRoundId].endTime - block.timestamp;
+    }
+
+    // =====================================================
+    // INTERNAL FUNCTIONS
+    // =====================================================
+
+    function _startNewRound() internal {
+        currentRoundId++;
+
+        rounds[currentRoundId] = Round({
+            id: currentRoundId,
+            startTime: block.timestamp,
+            endTime: block.timestamp + 7 days,
+            prizePool: 0,
+            winningNumbers: [0,0,0,0,0,0],
+            drawn: false
+        });
+
+        emit RoundStarted(currentRoundId, block.timestamp + 7 days);
+    }
+
+    function _splitFunds(uint256 amount) internal {
+        uint256 fee = (amount * DEV_FEE) / 100;
+        uint256 pool = amount - fee;
+
+        devBalance += fee;
+        rounds[currentRoundId].prizePool += pool;
+    }
+
+    function _generateRandomNumbers(address user, uint256 nonce)
+        internal
+        view
+        returns (uint8[6] memory nums)
+    {
+        uint256 seed = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    block.prevrandao,
+                    block.number,
+                    user,
+                    nonce
+                )
+            )
+        );
+
+        uint8 count = 0;
+
+        while (count < 6) {
+            uint8 n = uint8((seed % MAX_NUMBER) + 1);
+            seed = uint256(keccak256(abi.encodePacked(seed)));
+
+            bool exists = false;
+
+            for (uint256 i = 0; i < count; i++) {
+                if (nums[i] == n) exists = true;
+            }
+
+            if (!exists) {
+                nums[count] = n;
+                count++;
+            }
+        }
+
+        return _sort(nums);
+    }
+
+    function _validateAndSort(uint8[6] calldata arr)
+        internal
+        pure
+        returns (uint8[6] memory nums)
+    {
+        nums = arr;
+
+        for (uint256 i = 0; i < 6; i++) {
+            require(nums[i] >= 1 && nums[i] <= 45, "Invalid number");
+        }
+
+        nums = _sort(nums);
+
+        for (uint256 i = 1; i < 6; i++) {
+            require(nums[i] > nums[i - 1], "Duplicate numbers");
+        }
+
+        return nums;
+    }
+
+    function _sort(uint8[6] memory nums)
+        internal
+        pure
+        returns (uint8[6] memory)
+    {
+        for (uint256 i = 0; i < 5; i++) {
+            for (uint256 j = i + 1; j < 6; j++) {
+                if (nums[i] > nums[j]) {
+                    (nums[i], nums[j]) = (nums[j], nums[i]);
+                }
+            }
+        }
+
+        return nums;
+    }
+
+    function _countMatches(uint8[6] memory a, uint8[6] memory b)
+        internal
+        pure
+        returns (uint8 count)
+    {
+        for (uint256 i = 0; i < 6; i++) {
+            for (uint256 j = 0; j < 6; j++) {
+                if (a[i] == b[j]) count++;
+            }
+        }
+    }
+
+    function _countTierWinners(uint256 roundId, uint8 matchCount)
+        internal
+        view
+        returns (uint256 winners)
+    {
+        Ticket[] storage list = roundTickets[roundId];
+
+        for (uint256 i = 0; i < list.length; i++) {
+            uint8 m = _countMatches(
+                list[i].numbers,
+                rounds[roundId].winningNumbers
+            );
+
+            if (m == matchCount) winners++;
+        }
+    }
+
+    function _tierPool(uint256 pool, uint8 matchCount)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (matchCount == 6) return (pool * PRIZE_MATCH6) / 100;
+        if (matchCount == 5) return (pool * PRIZE_MATCH5) / 100;
+        if (matchCount == 4) return (pool * PRIZE_MATCH4) / 100;
+        if (matchCount == 3) return (pool * PRIZE_MATCH3) / 100;
+        return 0;
+    }
+
+    receive() external payable {}
+}
