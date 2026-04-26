@@ -1,662 +1,371 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>LitLottery — Weekly On-Chain Draw</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --gold:#D4920A;
-  --gold-bg:#FFF8E8;
-  --gold-border:#F5C842;
-  --teal:#0A8A72;
-  --teal-bg:#E8FBF7;
-  --teal-border:#00C9A7;
-  --blue:#1A6FD4;
-  --blue-bg:#EBF4FF;
-  --purple:#6B3FA0;
-  --purple-bg:#F2ECFB;
-  --bg:#F8F9FC;
-  --white:#FFFFFF;
-  --surface:#FFFFFF;
-  --border:#E4E6ED;
-  --border2:#CDD0DA;
-  --text:#12141A;
-  --text2:#4A4E5C;
-  --text3:#8A8F9E;
-  --red:#C0392B;
-  --red-bg:#FEF0EF;
-  --green:#0A8A72;
-  --green-bg:#E8FBF7;
-  --shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);
-  --shadow2:0 2px 8px rgba(0,0,0,.08),0 8px 32px rgba(0,0,0,.06);
-}
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.24;
 
-body{
-  background:var(--bg);
-  font-family:'Inter',sans-serif;
-  color:var(--text);
-  min-height:100vh;
-}
+/**
+ * ---------------------------------------------------------
+ * LitLottery Pro v3
+ * Professional Weekly Lottery Contract
+ * Secure / Clean / Gas Optimized / Multi Winner Split
+ * ---------------------------------------------------------
+ *
+ * Features:
+ * - Buy Random / Custom Tickets
+ * - Weekly Draw
+ * - Multi-tier Rewards
+ * - Multiple Winners Share Prize
+ * - Owner Fee Wallet
+ * - Reentrancy Protection
+ * - Frontend Ready
+ *
+ * Compatible:
+ * - MetaMask
+ * - Trust Wallet
+ * - Rabby
+ * - WalletConnect
+ * ---------------------------------------------------------
+ */
 
-.page{max-width:880px;margin:0 auto;padding:32px 20px 80px}
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
-/* HEADER */
-header{
-  display:flex;align-items:center;justify-content:space-between;
-  margin-bottom:28px;flex-wrap:wrap;gap:14px;
-}
-.logo{display:flex;align-items:center;gap:14px}
-.logo-mark{
-  width:48px;height:48px;border-radius:14px;
-  background:linear-gradient(135deg,#0A8A72,#D4920A);
-  display:flex;align-items:center;justify-content:center;
-  font-size:22px;box-shadow:var(--shadow);
-}
-.logo-name{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);letter-spacing:-.3px}
-.logo-tag{font-size:11px;color:var(--text3);letter-spacing:1.5px;margin-top:2px}
-.net-chip{
-  display:flex;align-items:center;gap:6px;
-  background:var(--teal-bg);border:1px solid var(--teal-border);
-  color:var(--teal);font-size:11px;font-weight:600;
-  padding:6px 14px;border-radius:20px;letter-spacing:.5px;
-}
-.live-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+contract LitLotteryPro is Ownable, ReentrancyGuard {
 
-/* WALLET */
-.wallet-card{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:16px;padding:16px 20px;margin-bottom:20px;
-  display:flex;align-items:center;justify-content:space-between;
-  flex-wrap:wrap;gap:12px;box-shadow:var(--shadow);
-}
-.w-left{display:flex;align-items:center;gap:12px}
-.w-avatar{
-  width:40px;height:40px;border-radius:12px;
-  background:linear-gradient(135deg,var(--teal-bg),var(--gold-bg));
-  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;
-}
-.w-addr{font-size:13px;color:var(--text2);font-weight:500}
-.w-addr span{color:var(--text);font-weight:600}
-.w-bal{font-size:13px;color:var(--gold);font-weight:600}
-.btn-connect{
-  background:var(--text);color:var(--white);
-  border:none;padding:10px 22px;border-radius:10px;
-  font-family:'Inter',sans-serif;font-size:13px;font-weight:600;
-  cursor:pointer;transition:all .2s;letter-spacing:.2px;
-}
-.btn-connect:hover{background:#2a2d38;transform:translateY(-1px);box-shadow:var(--shadow)}
-.btn-connect.connected{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
+    // =====================================================
+    // CONFIG
+    // =====================================================
 
-/* STATS */
-.stats{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:14px;margin-bottom:20px}
-.stat-card{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:16px;padding:20px 22px;box-shadow:var(--shadow);
-}
-.stat-card.jackpot{
-  background:linear-gradient(135deg,#FFFBEE,#FFF8E0);
-  border-color:var(--gold-border);
-}
-.s-lbl{font-size:11px;color:var(--text3);letter-spacing:1.5px;font-weight:600;margin-bottom:10px}
-.s-val{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--text)}
-.stat-card.jackpot .s-val{font-size:38px;color:var(--gold)}
-.s-unit{font-size:12px;color:var(--text3);margin-top:4px;font-weight:500}
+    uint256 public constant TICKET_PRICE = 0.001 ether;
+    uint8 public constant MAX_NUMBER = 45;
+    uint8 public constant NUMBERS_COUNT = 6;
+    uint8 public constant MAX_TICKETS_PER_USER = 5;
 
-/* COUNTDOWN */
-.countdown-card{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:16px;padding:18px 22px;margin-bottom:20px;box-shadow:var(--shadow);
-}
-.cd-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px}
-.cd-lbl{font-size:11px;color:var(--text3);letter-spacing:1.2px;font-weight:600}
-.cd-time{
-  font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--text);
-  background:linear-gradient(90deg,var(--teal),var(--gold));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-}
-.progress-track{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
-.progress-fill{height:100%;background:linear-gradient(90deg,var(--teal-border),var(--gold-border));border-radius:4px;transition:width 1s linear}
+    uint256 public constant DEV_FEE = 5; // 5%
 
-/* PRIZES */
-.prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
-.prize-card{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:14px;padding:18px 12px;text-align:center;
-  box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;
-}
-.prize-card:hover{transform:translateY(-3px);box-shadow:var(--shadow2)}
-.prize-card.p1{background:var(--gold-bg);border-color:var(--gold-border)}
-.prize-card.p2{background:var(--teal-bg);border-color:var(--teal-border)}
-.prize-card.p3{background:#F5F7FF;border-color:#C0C8E8}
-.prize-card.p4{background:var(--purple-bg);border-color:#C4A8E8}
-.p-icon{font-size:22px;margin-bottom:8px}
-.p-name{font-size:10px;font-weight:700;letter-spacing:1.5px;margin-bottom:4px}
-.prize-card.p1 .p-name{color:var(--gold)}
-.prize-card.p2 .p-name{color:var(--teal)}
-.prize-card.p3 .p-name{color:var(--blue)}
-.prize-card.p4 .p-name{color:var(--purple)}
-.p-match{font-size:10px;color:var(--text3);margin-bottom:10px;font-weight:500}
-.p-pct{font-family:'Syne',sans-serif;font-size:28px;font-weight:800}
-.prize-card.p1 .p-pct{color:var(--gold)}
-.prize-card.p2 .p-pct{color:var(--teal)}
-.prize-card.p3 .p-pct{color:var(--blue)}
-.prize-card.p4 .p-pct{color:var(--purple)}
+    uint256 public constant PRIZE_MATCH6 = 60;
+    uint256 public constant PRIZE_MATCH5 = 20;
+    uint256 public constant PRIZE_MATCH4 = 10;
+    uint256 public constant PRIZE_MATCH3 = 5;
 
-/* TICKET PANEL */
-.panel{
-  background:var(--white);border:1px solid var(--border);
-  border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow);
-}
-.panel-header{
-  display:flex;align-items:center;gap:10px;margin-bottom:22px;
-}
-.panel-icon{
-  width:32px;height:32px;border-radius:8px;
-  background:linear-gradient(135deg,var(--teal-bg),var(--gold-bg));
-  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:15px;
-}
-.panel-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--text);letter-spacing:.3px}
+    // =====================================================
+    // STRUCTS
+    // =====================================================
 
-/* TABS */
-.tabs{
-  display:flex;gap:4px;background:var(--bg);border:1px solid var(--border);
-  border-radius:12px;padding:4px;margin-bottom:24px;
-}
-.tab{
-  flex:1;padding:9px 12px;border-radius:9px;font-size:13px;
-  font-weight:600;cursor:pointer;border:none;background:transparent;
-  color:var(--text3);font-family:'Inter',sans-serif;transition:all .2s;
-}
-.tab.active{background:var(--white);color:var(--text);box-shadow:var(--shadow)}
-
-/* BALLS */
-.balls-wrap{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:22px}
-.ball-item{display:flex;flex-direction:column;align-items:center;gap:6px}
-.ball-label{font-size:9px;color:var(--text3);letter-spacing:1.2px;font-weight:700}
-.ball{
-  width:54px;height:54px;border-radius:50%;
-  background:var(--bg);border:1.5px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  transition:all .2s;cursor:pointer;
-}
-.ball:hover{border-color:var(--teal-border);background:var(--teal-bg);box-shadow:0 0 0 4px rgba(0,201,167,.1)}
-.ball:focus-within{border-color:var(--teal-border);background:var(--teal-bg);box-shadow:0 0 0 4px rgba(0,201,167,.1)}
-.ball input{
-  width:100%;height:100%;background:transparent;border:none;
-  text-align:center;color:var(--text);font-family:'Syne',sans-serif;
-  font-size:18px;font-weight:700;outline:none;cursor:pointer;
-}
-.ball-rand{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--text3)}
-.ball-rand.set{color:var(--text)}
-.reroll-tip{text-align:center;font-size:12px;color:var(--text3);margin-bottom:18px;font-weight:500}
-
-/* TICKET META */
-.ticket-footer{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:14px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);
-  margin-bottom:16px;flex-wrap:wrap;gap:10px;
-}
-.limit-row{display:flex;align-items:center;gap:8px}
-.l-dots{display:flex;gap:5px}
-.ldot{width:9px;height:9px;border-radius:50%;background:var(--border);border:1.5px solid var(--border2);transition:all .3s}
-.ldot.used{background:var(--teal);border-color:var(--teal)}
-.l-txt{font-size:12px;color:var(--text3);font-weight:500}
-.ticket-price-lbl{font-size:12px;color:var(--text2);font-weight:600}
-.ticket-price-lbl span{color:var(--gold)}
-
-.cd-msg{text-align:center;font-size:12px;color:var(--gold);min-height:20px;margin-bottom:10px;font-weight:500}
-
-/* BUY BTN */
-.btn-buy{
-  width:100%;padding:16px;
-  background:var(--text);color:var(--white);
-  border:none;border-radius:12px;
-  font-family:'Syne',sans-serif;font-size:15px;font-weight:800;
-  letter-spacing:1.5px;cursor:pointer;transition:all .2s;
-}
-.btn-buy:hover:not(:disabled){background:#2a2d38;transform:translateY(-1px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
-.btn-buy:active:not(:disabled){transform:translateY(0)}
-.btn-buy:disabled{background:var(--border);color:var(--text3);cursor:not-allowed;box-shadow:none}
-
-.btn-draw{
-  width:100%;padding:13px;margin-top:10px;
-  background:var(--teal-bg);color:var(--teal);
-  border:1px solid var(--teal-border);border-radius:12px;
-  font-family:'Syne',sans-serif;font-size:13px;font-weight:700;
-  letter-spacing:1px;cursor:pointer;transition:all .2s;
-}
-.btn-draw:hover:not(:disabled){background:#D0F5EE}
-.btn-draw:disabled{opacity:.4;cursor:not-allowed}
-
-/* WINNING */
-.wballs{display:flex;gap:8px;justify-content:center;margin:14px 0}
-.wball{
-  width:46px;height:46px;border-radius:50%;
-  background:linear-gradient(135deg,var(--teal),var(--gold));
-  display:flex;align-items:center;justify-content:center;
-  font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#fff;
-  box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
-
-/* HISTORY */
-.history-list{display:flex;flex-direction:column;gap:8px}
-.history-item{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--bg);border:1px solid var(--border);
-  border-radius:12px;padding:12px 16px;
-  flex-wrap:wrap;gap:8px;transition:border-color .2s;
-}
-.history-item:hover{border-color:var(--border2)}
-.h-left{display:flex;align-items:center;gap:12px}
-.h-round{font-size:11px;color:var(--text3);min-width:58px;font-weight:600}
-.mballs{display:flex;gap:4px}
-.mball{
-  width:26px;height:26px;border-radius:50%;
-  background:var(--white);border:1px solid var(--border2);
-  display:flex;align-items:center;justify-content:center;
-  font-size:10px;color:var(--text2);font-family:'Syne',sans-serif;font-weight:700;
-}
-.badge{font-size:11px;padding:4px 10px;border-radius:6px;font-weight:600}
-.b1{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}
-.b2{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
-.b3{background:var(--blue-bg);color:var(--blue);border:1px solid #90B8E8}
-.b4{background:var(--purple-bg);color:var(--purple);border:1px solid #C4A8E8}
-.blose{background:var(--bg);color:var(--text3);border:1px solid var(--border)}
-.bpend{background:#FFFDF0;color:#B8860B;border:1px solid #F0D878}
-.btn-claim{
-  font-size:11px;padding:5px 12px;
-  background:var(--gold);color:#fff;
-  border:none;border-radius:6px;font-weight:600;cursor:pointer;
-  font-family:'Inter',sans-serif;transition:all .2s;
-}
-.btn-claim:hover{background:#B87D08}
-.empty-state{text-align:center;padding:24px;color:var(--text3);font-size:13px}
-
-/* TOAST */
-#toast{
-  position:fixed;bottom:28px;left:50%;
-  transform:translateX(-50%) translateY(100px);
-  background:var(--text);color:var(--white);
-  padding:12px 24px;border-radius:10px;font-size:13px;font-weight:500;
-  transition:transform .3s;z-index:999;
-  white-space:nowrap;max-width:90vw;box-shadow:var(--shadow2);
-}
-#toast.show{transform:translateX(-50%) translateY(0)}
-#toast.success{background:var(--teal);color:#fff}
-#toast.error{background:var(--red);color:#fff}
-
-/* FOOTER */
-footer{text-align:center;padding-top:24px;margin-top:8px;border-top:1px solid var(--border)}
-footer p{font-size:11px;color:var(--text3)}
-footer a{color:var(--text2);text-decoration:none;font-weight:500}
-footer a:hover{color:var(--teal)}
-
-@media(max-width:600px){
-  .stats{grid-template-columns:1fr 1fr}
-  .stat-card.jackpot{grid-column:span 2}
-  .prizes{grid-template-columns:repeat(2,1fr)}
-  .ball{width:46px;height:46px}
-}
-</style>
-</head>
-<body>
-<div class="page">
-
-<header>
-  <div class="logo">
-    <div class="logo-mark">🎰</div>
-    <div>
-      <div class="logo-name">LitLottery</div>
-      <div class="logo-tag">POWERED BY LITVM</div>
-    </div>
-  </div>
-  <div class="net-chip"><span class="live-dot"></span>LiteForge Testnet</div>
-</header>
-
-<div class="wallet-card">
-  <div class="w-left">
-    <div class="w-avatar">◈</div>
-    <div>
-      <div class="w-addr" id="wallet-addr">Not connected</div>
-      <div class="w-bal" id="wallet-bal">— zkLTC</div>
-    </div>
-  </div>
-  <button class="btn-connect" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
-</div>
-
-<div class="stats">
-  <div class="stat-card jackpot">
-    <div class="s-lbl">JACKPOT POOL</div>
-    <div class="s-val" id="stat-jackpot">—</div>
-    <div class="s-unit">zkLTC</div>
-  </div>
-  <div class="stat-card">
-    <div class="s-lbl">ROUND</div>
-    <div class="s-val" id="stat-round">#—</div>
-    <div class="s-unit">current</div>
-  </div>
-  <div class="stat-card">
-    <div class="s-lbl">TICKETS</div>
-    <div class="s-val" id="stat-tickets">—</div>
-    <div class="s-unit">this round</div>
-  </div>
-</div>
-
-<div class="countdown-card">
-  <div class="cd-row">
-    <span class="cd-lbl">NEXT DRAW — FRIDAY 20:00 GMT+7</span>
-    <span class="cd-time" id="countdown">— — —</span>
-  </div>
-  <div class="progress-track"><div class="progress-fill" id="progress-bar" style="width:0%"></div></div>
-</div>
-
-<div class="prizes">
-  <div class="prize-card p1">
-    <div class="p-icon">🥇</div>
-    <div class="p-name">JACKPOT</div>
-    <div class="p-match">Match all 6</div>
-    <div class="p-pct">60%</div>
-  </div>
-  <div class="prize-card p2">
-    <div class="p-icon">🥈</div>
-    <div class="p-name">2ND PRIZE</div>
-    <div class="p-match">Match 5 of 6</div>
-    <div class="p-pct">20%</div>
-  </div>
-  <div class="prize-card p3">
-    <div class="p-icon">🥉</div>
-    <div class="p-name">3RD PRIZE</div>
-    <div class="p-match">Match 4 of 6</div>
-    <div class="p-pct">10%</div>
-  </div>
-  <div class="prize-card p4">
-    <div class="p-icon">🎖️</div>
-    <div class="p-name">4TH PRIZE</div>
-    <div class="p-match">Match 3 of 6</div>
-    <div class="p-pct">5%</div>
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-icon">🎟️</div>
-    <div class="panel-title">Buy Your Ticket</div>
-  </div>
-
-  <div class="tabs">
-    <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
-    <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
-  </div>
-
-  <div id="panel-pick">
-    <div class="balls-wrap">
-      <div class="ball-item"><div class="ball-label">NO.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3"/></div></div>
-      <div class="ball-item"><div class="ball-label">NO.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11"/></div></div>
-      <div class="ball-item"><div class="ball-label">NO.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18"/></div></div>
-      <div class="ball-item"><div class="ball-label">NO.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27"/></div></div>
-      <div class="ball-item"><div class="ball-label">NO.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34"/></div></div>
-      <div class="ball-item"><div class="ball-label">NO.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42"/></div></div>
-    </div>
-  </div>
-
-  <div id="panel-rand" style="display:none">
-    <div class="balls-wrap">
-      <div class="ball-item"><div class="ball-label">NO.1</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb1">?</span></div></div>
-      <div class="ball-item"><div class="ball-label">NO.2</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb2">?</span></div></div>
-      <div class="ball-item"><div class="ball-label">NO.3</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb3">?</span></div></div>
-      <div class="ball-item"><div class="ball-label">NO.4</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb4">?</span></div></div>
-      <div class="ball-item"><div class="ball-label">NO.5</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb5">?</span></div></div>
-      <div class="ball-item"><div class="ball-label">NO.6</div><div class="ball" onclick="reroll()"><span class="ball-rand" id="rb6">?</span></div></div>
-    </div>
-    <div class="reroll-tip">Tap any ball to re-roll your lucky numbers</div>
-  </div>
-
-  <div class="ticket-footer">
-    <div class="limit-row">
-      <div class="l-dots">
-        <div class="ldot" id="d0"></div>
-        <div class="ldot" id="d1"></div>
-        <div class="ldot" id="d2"></div>
-      </div>
-      <span class="l-txt" id="limit-txt">Connect wallet to see allowance</span>
-    </div>
-    <span class="ticket-price-lbl">Price: <span>0.001 zkLTC</span> / ticket</span>
-  </div>
-
-  <div class="cd-msg" id="cooldown-txt"></div>
-  <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>BUY TICKET</button>
-  <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">TRIGGER WEEKLY DRAW</button>
-</div>
-
-<div class="panel" id="winning-panel" style="display:none">
-  <div class="panel-header">
-    <div class="panel-icon">🏆</div>
-    <div class="panel-title">Last Draw Result</div>
-  </div>
-  <div style="text-align:center;font-size:12px;color:var(--text3);font-weight:500;margin-bottom:4px">
-    Round <span id="winning-round">—</span> winning numbers
-  </div>
-  <div class="wballs">
-    <div class="wball" id="wb1">?</div>
-    <div class="wball" id="wb2">?</div>
-    <div class="wball" id="wb3">?</div>
-    <div class="wball" id="wb4">?</div>
-    <div class="wball" id="wb5">?</div>
-    <div class="wball" id="wb6">?</div>
-  </div>
-</div>
-
-<div class="panel">
-  <div class="panel-header">
-    <div class="panel-icon">📋</div>
-    <div class="panel-title">My Ticket History</div>
-  </div>
-  <div class="history-list" id="history-list">
-    <div class="empty-state">Connect wallet to view your ticket history</div>
-  </div>
-</div>
-
-<footer>
-  <p>
-    LitLottery v2.0 &nbsp;·&nbsp; LiteForge Testnet &nbsp;·&nbsp;
-    <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract ↗</a>
-    &nbsp;·&nbsp;
-    <a href="https://litvm.com" target="_blank">LitVM ↗</a>
-  </p>
-</footer>
-</div>
-
-<div id="toast"></div>
-
-<script>
-const CONTRACT_ADDRESS="0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
-const CHAIN_ID="0x1159";
-const NETWORK={chainId:CHAIN_ID,chainName:"LiteForge Testnet",nativeCurrency:{name:"zkLTC",symbol:"zkLTC",decimals:18},rpcUrls:["https://rpc.liteforge.litvm.com"],blockExplorerUrls:["https://liteforge.explorer.caldera.xyz"]};
-const ABI=["function buyRandomTicket(uint256 quantity) external payable","function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable","function performUpkeep(bytes calldata) external","function claimReward(uint256 roundId) external","function getCurrentRound() external view returns (tuple(uint256 roundId,uint256 startTime,uint256 endTime,uint256 jackpot,uint256[6] winningNumbers,bool drawn,bool active,uint256 totalTickets))","function getTickets(uint256 roundId) external view returns (tuple(address player,uint256[6] numbers,bool isCustom)[])","function getTimeLeft() external view returns (uint256)","function ticketsRemaining(address wallet) external view returns (uint256)","function cooldownRemaining(address wallet) external view returns (uint256)","function getWinningNumbers(uint256 roundId) external view returns (uint256[6])","function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)","function currentRoundId() external view returns (uint256)","function getNextDrawTime() external view returns (uint256)"];
-let provider,signer,contract,wallet=null;
-let roundEndTime=0,roundDuration=604800;
-let cdTimer=null,coolTimer=null,currentTab="pick";
-async function connectWallet(){
-  if(!window.ethereum){toast("MetaMask not found","error");return;}
-  try{
-    toast("Connecting...");
-    await ensureNetwork();
-    provider=new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts",[]);
-    signer=await provider.getSigner();
-    wallet=await signer.getAddress();
-    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);
-    await updateWalletUI();
-    await refresh();
-    startCountdown();
-    startCooldownWatch();
-    document.getElementById("btn-buy").disabled=false;
-    toast("Wallet connected!","success");
-  }catch(e){toast(e.message?.slice(0,80)||"Connection failed","error");}
-}
-async function ensureNetwork(){
-  try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN_ID}]});}
-  catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[NETWORK]});}
-}
-async function updateWalletUI(){
-  const s=wallet.slice(0,6)+"..."+wallet.slice(-4);
-  document.getElementById("wallet-addr").innerHTML=`<span>${s}</span>`;
-  const bal=await provider.getBalance(wallet);
-  document.getElementById("wallet-bal").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
-  const btn=document.getElementById("btn-connect");
-  btn.textContent="Connected";btn.className="btn-connect connected";
-}
-async function refresh(){
-  if(!contract)return;
-  try{
-    const round=await contract.getCurrentRound();
-    const rid=Number(round.roundId);
-    document.getElementById("stat-jackpot").textContent=parseFloat(ethers.formatEther(round.jackpot)).toFixed(4);
-    document.getElementById("stat-round").textContent="#"+rid;
-    document.getElementById("stat-tickets").textContent=Number(round.totalTickets).toLocaleString();
-    roundEndTime=Number(round.endTime);
-    const now=Math.floor(Date.now()/1000);
-    if(now>=roundEndTime&&!round.drawn)document.getElementById("btn-draw").style.display="block";
-    if(rid>1){
-      try{
-        const w=await contract.getWinningNumbers(rid-1);
-        for(let i=0;i<6;i++)document.getElementById("wb"+(i+1)).textContent=Number(w[i]);
-        document.getElementById("winning-round").textContent="#"+(rid-1);
-        document.getElementById("winning-panel").style.display="block";
-      }catch(_){}
+    struct Ticket {
+        address player;
+        uint8[6] numbers;
     }
-    await refreshLimit();await refreshHistory();
-  }catch(e){console.error(e);}
-}
-async function refreshLimit(){
-  if(!contract||!wallet)return;
-  const rem=Number(await contract.ticketsRemaining(wallet));
-  const used=3-rem;
-  for(let i=0;i<3;i++)document.getElementById("d"+i).className="ldot"+(i<used?" used":"");
-  const lt=document.getElementById("limit-txt");
-  if(rem===0){lt.textContent="No tickets remaining this round";document.getElementById("btn-buy").disabled=true;}
-  else{lt.textContent=rem+" ticket"+(rem>1?"s":"")+" remaining";document.getElementById("btn-buy").disabled=false;}
-}
-async function refreshHistory(){
-  if(!contract||!wallet)return;
-  const rid=Number(await contract.currentRoundId());
-  const list=document.getElementById("history-list");
-  const items=[];
-  for(let r=Math.max(1,rid-5);r<=rid;r++){
-    try{
-      const tickets=await contract.getTickets(r);
-      const mine=tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
-      if(!mine.length)continue;
-      let drawn=false,winNums=null;
-      if(r<rid){try{winNums=await contract.getWinningNumbers(r);drawn=true;}catch(_){}}
-      for(const t of mine){
-        const nums=t.numbers.map(n=>Number(n));
-        let badge='<span class="badge bpend">Pending</span>',claimBtn="";
-        if(drawn&&winNums){
-          const wn=winNums.map(n=>Number(n));
-          const m=nums.filter(n=>wn.includes(n)).length;
-          if(m>=6)badge='<span class="badge b1">Jackpot!</span>';
-          else if(m===5)badge='<span class="badge b2">2nd Prize</span>';
-          else if(m===4)badge='<span class="badge b3">3rd Prize</span>';
-          else if(m===3)badge='<span class="badge b4">4th Prize</span>';
-          else badge='<span class="badge blose">No match</span>';
-          if(m>=3){
-            const claimed=await contract.hasClaimedReward(r,wallet);
-            claimBtn=claimed?'<span style="font-size:11px;color:var(--text3)">Claimed</span>':`<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
-          }
+
+    struct Round {
+        uint256 id;
+        uint256 startTime;
+        uint256 endTime;
+        uint256 prizePool;
+        uint8[6] winningNumbers;
+        bool drawn;
+    }
+
+    // =====================================================
+    // STORAGE
+    // =====================================================
+
+    uint256 public currentRoundId;
+    uint256 public devBalance;
+
+    mapping(uint256 => Round) public rounds;
+    mapping(uint256 => Ticket[]) private roundTickets;
+    mapping(uint256 => mapping(address => uint256)) public userTickets;
+    mapping(uint256 => mapping(address => bool)) public claimed;
+
+    // =====================================================
+    // EVENTS
+    // =====================================================
+
+    event RoundStarted(uint256 indexed roundId, uint256 endTime);
+    event TicketPurchased(address indexed user, uint256 indexed roundId);
+    event DrawExecuted(uint256 indexed roundId, uint8[6] winningNumbers);
+    event RewardClaimed(address indexed user, uint256 indexed roundId, uint256 amount);
+
+    // =====================================================
+    // CONSTRUCTOR
+    // =====================================================
+
+    constructor() Ownable(msg.sender) {
+        _startNewRound();
+    }
+
+    // =====================================================
+    // BUY RANDOM TICKET
+    // =====================================================
+
+    function buyRandom(uint256 quantity) external payable {
+        require(quantity > 0, "Invalid quantity");
+        require(
+            userTickets[currentRoundId][msg.sender] + quantity <= MAX_TICKETS_PER_USER,
+            "Ticket limit reached"
+        );
+        require(msg.value == quantity * TICKET_PRICE, "Incorrect payment");
+
+        for (uint256 i = 0; i < quantity; i++) {
+            uint8[6] memory nums = _generateRandomNumbers(msg.sender, i);
+            roundTickets[currentRoundId].push(Ticket(msg.sender, nums));
         }
-        const mb=nums.map(n=>`<div class="mball">${n}</div>`).join("");
-        items.push(`<div class="history-item"><div class="h-left"><span class="h-round">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:8px">${badge}${claimBtn}</div></div>`);
-      }
-    }catch(_){}
-  }
-  list.innerHTML=items.length?items.join(""):'<div class="empty-state">No tickets found</div>';
+
+        userTickets[currentRoundId][msg.sender] += quantity;
+        _splitFunds(msg.value);
+
+        emit TicketPurchased(msg.sender, currentRoundId);
+    }
+
+    // =====================================================
+    // BUY CUSTOM TICKET
+    // =====================================================
+
+    function buyCustom(uint8[6] calldata numbers, uint256 quantity) external payable {
+        require(quantity > 0, "Invalid quantity");
+        require(
+            userTickets[currentRoundId][msg.sender] + quantity <= MAX_TICKETS_PER_USER,
+            "Ticket limit reached"
+        );
+        require(msg.value == quantity * TICKET_PRICE, "Incorrect payment");
+
+        uint8[6] memory nums = _validateAndSort(numbers);
+
+        for (uint256 i = 0; i < quantity; i++) {
+            roundTickets[currentRoundId].push(Ticket(msg.sender, nums));
+        }
+
+        userTickets[currentRoundId][msg.sender] += quantity;
+        _splitFunds(msg.value);
+
+        emit TicketPurchased(msg.sender, currentRoundId);
+    }
+
+    // =====================================================
+    // DRAW WINNER
+    // =====================================================
+
+    function executeDraw() external onlyOwner {
+        Round storage round = rounds[currentRoundId];
+
+        require(block.timestamp >= round.endTime, "Round still active");
+        require(!round.drawn, "Already drawn");
+
+        round.winningNumbers = _generateRandomNumbers(address(this), currentRoundId);
+        round.drawn = true;
+
+        emit DrawExecuted(currentRoundId, round.winningNumbers);
+
+        _startNewRound();
+    }
+
+    // =====================================================
+    // CLAIM REWARD
+    // =====================================================
+
+    function claimReward(uint256 roundId) external nonReentrant {
+        require(!claimed[roundId][msg.sender], "Already claimed");
+
+        Round storage round = rounds[roundId];
+        require(round.drawn, "Not drawn");
+
+        uint8 bestMatch = 0;
+
+        Ticket[] storage list = roundTickets[roundId];
+
+        for (uint256 i = 0; i < list.length; i++) {
+            if (list[i].player == msg.sender) {
+                uint8 matches_ = _countMatches(
+                    list[i].numbers,
+                    round.winningNumbers
+                );
+
+                if (matches_ > bestMatch) {
+                    bestMatch = matches_;
+                }
+            }
+        }
+
+        require(bestMatch >= 3, "No reward");
+
+        uint256 winners = _countTierWinners(roundId, bestMatch);
+        require(winners > 0, "No winners");
+
+        uint256 reward = (_tierPool(round.prizePool, bestMatch)) / winners;
+
+        claimed[roundId][msg.sender] = true;
+
+        payable(msg.sender).transfer(reward);
+
+        emit RewardClaimed(msg.sender, roundId, reward);
+    }
+
+    // =====================================================
+    // OWNER
+    // =====================================================
+
+    function withdrawDevFee() external onlyOwner {
+        uint256 amount = devBalance;
+        require(amount > 0, "No balance");
+
+        devBalance = 0;
+
+        payable(owner()).transfer(amount);
+    }
+
+    // =====================================================
+    // VIEW FUNCTIONS
+    // =====================================================
+
+    function getTickets(uint256 roundId) external view returns (Ticket[] memory) {
+        return roundTickets[roundId];
+    }
+
+    function timeRemaining() external view returns (uint256) {
+        if (block.timestamp >= rounds[currentRoundId].endTime) return 0;
+        return rounds[currentRoundId].endTime - block.timestamp;
+    }
+
+    // =====================================================
+    // INTERNAL FUNCTIONS
+    // =====================================================
+
+    function _startNewRound() internal {
+        currentRoundId++;
+
+        rounds[currentRoundId] = Round({
+            id: currentRoundId,
+            startTime: block.timestamp,
+            endTime: block.timestamp + 7 days,
+            prizePool: 0,
+            winningNumbers: [0,0,0,0,0,0],
+            drawn: false
+        });
+
+        emit RoundStarted(currentRoundId, block.timestamp + 7 days);
+    }
+
+    function _splitFunds(uint256 amount) internal {
+        uint256 fee = (amount * DEV_FEE) / 100;
+        uint256 pool = amount - fee;
+
+        devBalance += fee;
+        rounds[currentRoundId].prizePool += pool;
+    }
+
+    function _generateRandomNumbers(address user, uint256 nonce)
+        internal
+        view
+        returns (uint8[6] memory nums)
+    {
+        uint256 seed = uint256(
+            keccak256(
+                abi.encodePacked(
+                    block.timestamp,
+                    block.prevrandao,
+                    block.number,
+                    user,
+                    nonce
+                )
+            )
+        );
+
+        uint8 count = 0;
+
+        while (count < 6) {
+            uint8 n = uint8((seed % MAX_NUMBER) + 1);
+            seed = uint256(keccak256(abi.encodePacked(seed)));
+
+            bool exists = false;
+
+            for (uint256 i = 0; i < count; i++) {
+                if (nums[i] == n) exists = true;
+            }
+
+            if (!exists) {
+                nums[count] = n;
+                count++;
+            }
+        }
+
+        return _sort(nums);
+    }
+
+    function _validateAndSort(uint8[6] calldata arr)
+        internal
+        pure
+        returns (uint8[6] memory nums)
+    {
+        nums = arr;
+
+        for (uint256 i = 0; i < 6; i++) {
+            require(nums[i] >= 1 && nums[i] <= 45, "Invalid number");
+        }
+
+        nums = _sort(nums);
+
+        for (uint256 i = 1; i < 6; i++) {
+            require(nums[i] > nums[i - 1], "Duplicate numbers");
+        }
+
+        return nums;
+    }
+
+    function _sort(uint8[6] memory nums)
+        internal
+        pure
+        returns (uint8[6] memory)
+    {
+        for (uint256 i = 0; i < 5; i++) {
+            for (uint256 j = i + 1; j < 6; j++) {
+                if (nums[i] > nums[j]) {
+                    (nums[i], nums[j]) = (nums[j], nums[i]);
+                }
+            }
+        }
+
+        return nums;
+    }
+
+    function _countMatches(uint8[6] memory a, uint8[6] memory b)
+        internal
+        pure
+        returns (uint8 count)
+    {
+        for (uint256 i = 0; i < 6; i++) {
+            for (uint256 j = 0; j < 6; j++) {
+                if (a[i] == b[j]) count++;
+            }
+        }
+    }
+
+    function _countTierWinners(uint256 roundId, uint8 matchCount)
+        internal
+        view
+        returns (uint256 winners)
+    {
+        Ticket[] storage list = roundTickets[roundId];
+
+        for (uint256 i = 0; i < list.length; i++) {
+            uint8 m = _countMatches(
+                list[i].numbers,
+                rounds[roundId].winningNumbers
+            );
+
+            if (m == matchCount) winners++;
+        }
+    }
+
+    function _tierPool(uint256 pool, uint8 matchCount)
+        internal
+        pure
+        returns (uint256)
+    {
+        if (matchCount == 6) return (pool * PRIZE_MATCH6) / 100;
+        if (matchCount == 5) return (pool * PRIZE_MATCH5) / 100;
+        if (matchCount == 4) return (pool * PRIZE_MATCH4) / 100;
+        if (matchCount == 3) return (pool * PRIZE_MATCH3) / 100;
+        return 0;
+    }
+
+    receive() external payable {}
 }
-async function buyTicket(){
-  if(!contract){toast("Connect wallet first","error");return;}
-  let numbers;
-  if(currentTab==="pick"){
-    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
-    if(v.some(n=>isNaN(n)||n<1||n>45)){toast("Numbers must be 1-45","error");return;}
-    if(new Set(v).size<6){toast("Numbers must be unique!","error");return;}
-    numbers=v;
-  }else{
-    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
-    if(v.some(isNaN)){toast("Please roll numbers first","error");return;}
-    numbers=v;
-  }
-  try{
-    document.getElementById("btn-buy").disabled=true;
-    document.getElementById("btn-buy").textContent="CONFIRMING...";
-    toast("Waiting for MetaMask...");
-    const price=ethers.parseEther("0.001");
-    let tx;
-    if(currentTab==="pick")tx=await contract.buyCustomTicket(numbers,1,{value:price});
-    else tx=await contract.buyRandomTicket(1,{value:price});
-    toast("Transaction submitted...");
-    await tx.wait();
-    toast("Ticket purchased! "+numbers.join(" · "),"success");
-    await refresh();
-  }catch(e){toast((e?.reason||e?.message||"Failed").slice(0,80),"error");}
-  finally{document.getElementById("btn-buy").textContent="BUY TICKET";await refreshLimit();}
-}
-async function drawNumbers(){
-  if(!contract)return;
-  try{toast("Triggering draw...");const tx=await contract.performUpkeep("0x");await tx.wait();toast("Draw complete!","success");document.getElementById("btn-draw").style.display="none";await refresh();}
-  catch(e){toast(e?.reason||"Draw failed","error");}
-}
-async function claimReward(rid){
-  if(!contract)return;
-  try{toast("Claiming reward...");const tx=await contract.claimReward(rid);await tx.wait();toast("Reward claimed!","success");await refresh();await updateWalletUI();}
-  catch(e){toast(e?.reason||"Claim failed","error");}
-}
-function switchTab(tab){
-  currentTab=tab;
-  document.getElementById("tab-pick").className="tab"+(tab==="pick"?" active":"");
-  document.getElementById("tab-rand").className="tab"+(tab==="rand"?" active":"");
-  document.getElementById("panel-pick").style.display=tab==="pick"?"":"none";
-  document.getElementById("panel-rand").style.display=tab==="rand"?"":"none";
-  if(tab==="rand")reroll();
-}
-function reroll(){
-  const p=[];
-  while(p.length<6){const n=Math.floor(Math.random()*45)+1;if(!p.includes(n))p.push(n);}
-  p.sort((a,b)=>a-b);
-  for(let i=0;i<6;i++){const el=document.getElementById("rb"+(i+1));el.textContent=p[i];el.className="ball-rand set";}
-}
-function startCountdown(){
-  if(cdTimer)clearInterval(cdTimer);
-  cdTimer=setInterval(()=>{
-    const left=Math.max(0,roundEndTime-Math.floor(Date.now()/1000));
-    const d=Math.floor(left/86400),h=Math.floor((left%86400)/3600),m=Math.floor((left%3600)/60),s=left%60;
-    document.getElementById("countdown").textContent=d+"d "+pad(h)+"h "+pad(m)+"m "+pad(s)+"s";
-    document.getElementById("progress-bar").style.width=(roundDuration>0?Math.round(left/roundDuration*100):0)+"%";
-    if(left===0)document.getElementById("btn-draw").style.display="block";
-  },1000);
-}
-function startCooldownWatch(){
-  if(coolTimer)clearInterval(coolTimer);
-  coolTimer=setInterval(async()=>{
-    if(!contract||!wallet)return;
-    try{
-      const cd=Number(await contract.cooldownRemaining(wallet));
-      const el=document.getElementById("cooldown-txt");
-      if(cd>0){el.textContent="Next purchase in "+cd+"s";document.getElementById("btn-buy").disabled=true;}
-      else{el.textContent="";await refreshLimit();}
-    }catch(_){}
-  },3000);
-}
-function pad(n){return String(n).padStart(2,"0");}
-function toast(msg,type=""){
-  const el=document.getElementById("toast");
-  el.textContent=msg;el.className="show "+type;
-  clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
-}
-</script>
-</body>
-</html>
