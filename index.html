@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LitBillionaire — Weekly On-Chain Lottery</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0D0B08;--ink2:#3A3222;--ink3:#7A6A4A;--ink4:#B0A080;
+  --gold:#BF8C0A;--gold2:#D4A820;--gold3:#F0CC60;
+  --gold-bg:#FDFAF2;--gold-border:#E8D080;
+  --teal:#0A7A60;--teal2:#0D9A78;
+  --teal-bg:#F0FAF6;--teal-border:#80D4B8;
+  --blue:#1A4A8A;--blue-bg:#EEF4FF;--blue-border:#90B8E8;
+  --purple:#6A3A9A;--purple-bg:#F5F0FF;--purple-border:#C0A0E0;
+  --cream:#F8F5EE;--paper:#FFFFFF;
+  --border:#EAE0C8;--border2:#D8C898;
+  --shadow:0 1px 3px rgba(100,80,20,.05),0 4px 16px rgba(100,80,20,.04);
+  --shadow-md:0 2px 8px rgba(100,80,20,.08),0 8px 32px rgba(100,80,20,.05);
+}
+html{scroll-behavior:smooth}
+body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
+.page{max-width:880px;margin:0 auto;padding:0 20px 80px}
+
+/* ── HERO BANNER ── */
+.hero{
+  background:#FAF6ED;
+  border:1px solid #C8B870;
+  border-radius:20px;
+  overflow:hidden;
+  margin-bottom:24px;
+}
+.hero-inner{display:flex;align-items:stretch;min-height:190px}
+.hero-left{
+  flex:1;padding:32px 36px;
+  border-right:1px solid #D8C878;
+  display:flex;flex-direction:column;justify-content:center;
+}
+.hero-eyebrow{font-size:10px;letter-spacing:3.5px;color:#7A6020;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px}
+.eline{width:24px;height:1px;background:#C8A840}
+.etxt{font-size:10px;letter-spacing:3.5px;color:#7A6020;font-weight:600}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:52px;font-weight:700;letter-spacing:1px;line-height:1;color:#0F0C00;margin-bottom:6px}
+.hero-title span{color:#9A6800}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:#6A5218;letter-spacing:1.5px;margin-bottom:22px;font-weight:600}
+.hero-pills{display:flex;gap:8px;flex-wrap:wrap}
+.pill{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;font-size:10px;letter-spacing:1.5px;font-weight:600;font-family:'DM Sans',sans-serif}
+.pill-live{background:#E0F4EC;border:1px solid #60B898;color:#085A40}
+.pill-chain{background:#F0E8CC;border:1px solid #B89830;color:#6A4A08}
+.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+.hero-right{
+  width:280px;padding:24px 28px;
+  display:flex;flex-direction:column;justify-content:center;
+  background:#F5EFE0;
+}
+.stat-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #D0B860}
+.stat-row:last-child{border-bottom:none}
+.stat-lbl{font-size:10px;letter-spacing:1.5px;color:#6A5218;font-weight:600;text-transform:uppercase}
+.stat-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#0F0C00;line-height:1}
+.stat-val.gold{color:#8A6000}
+.stat-unit{font-size:11px;color:#7A6020;margin-left:3px;font-weight:500}
+.hero-bottom{
+  background:#EFE8D0;border-top:1px solid #C8B060;
+  padding:12px 36px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
+}
+.bstat{display:flex;align-items:center;gap:6px}
+.bstat-ico{font-size:13px}
+.bstat-txt{font-size:11px;color:#5A4010;font-weight:500;letter-spacing:.2px}
+.bstat-txt b{color:#2A1E00;font-weight:700}
+.bsdiv{width:1px;height:14px;background:#C8B060}
+
+/* ── WALLET BAR ── */
+.wbar{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow)}
+.w-left{display:flex;align-items:center;gap:12px}
+.wav{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--teal-bg),var(--gold-bg));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px}
+.waddr{font-size:13px;color:var(--ink3);font-weight:400}
+.waddr b{color:var(--ink);font-weight:500}
+.wbal{font-size:13px;color:var(--gold);font-weight:600}
+.btn-wc{background:var(--ink);color:#FFF8E8;border:none;padding:9px 20px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.3px;transition:all .2s}
+.btn-wc:hover{background:var(--ink2);transform:translateY(-1px)}
+.btn-wc.on{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
+
+/* ── STATS ── */
+.stats{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:14px;margin-bottom:20px}
+.sc{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
+.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF7E8);border-color:var(--gold-border)}
+.slbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;margin-bottom:8px;text-transform:uppercase}
+.sval{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--ink);line-height:1}
+.sc.jp .sval{font-size:40px;color:var(--gold)}
+.sunit{font-size:11px;color:var(--ink4);margin-top:4px}
+
+/* ── COUNTDOWN ── */
+.cdcard{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow)}
+.cdrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
+.cdlbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;text-transform:uppercase}
+.cdtime{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)}
+.prog{height:3px;background:var(--border);border-radius:3px;overflow:hidden}
+.progf{height:100%;background:linear-gradient(90deg,var(--teal2),var(--gold2));border-radius:3px;transition:width 1s linear}
+
+/* ── PRIZES ── */
+.prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.pc{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:18px 12px;text-align:center;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
+.pc:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.pc.p1{background:var(--gold-bg);border-color:var(--gold-border)}
+.pc.p2{background:var(--teal-bg);border-color:var(--teal-border)}
+.pc.p3{background:var(--blue-bg);border-color:var(--blue-border)}
+.pc.p4{background:var(--purple-bg);border-color:var(--purple-border)}
+.pico{font-size:20px;margin-bottom:8px}
+.pname{font-size:9px;letter-spacing:1.8px;font-weight:600;margin-bottom:4px;text-transform:uppercase}
+.pc.p1 .pname{color:var(--gold)}.pc.p2 .pname{color:var(--teal2)}.pc.p3 .pname{color:var(--blue)}.pc.p4 .pname{color:var(--purple)}
+.pmatch{font-size:10px;color:var(--ink4);margin-bottom:10px;font-weight:400}
+.ppct{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1}
+.pc.p1 .ppct{color:var(--gold)}.pc.p2 .ppct{color:var(--teal2)}.pc.p3 .ppct{color:var(--blue)}.pc.p4 .ppct{color:var(--purple)}
+
+/* ── PANEL ── */
+.panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
+.ph{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
+.phico{width:32px;height:32px;border-radius:8px;background:var(--gold-bg);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:14px}
+.phtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--ink)}
+
+/* ── TABS ── */
+.tabs{display:flex;gap:4px;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px}
+.tab{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--ink4);font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.3px}
+.tab.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
+
+/* ── NUMBER BALLS ── */
+.balls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:22px}
+.bitem{display:flex;flex-direction:column;align-items:center;gap:5px}
+.blbl{font-size:9px;color:var(--ink4);letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
+.ball{width:52px;height:52px;border-radius:50%;background:var(--cream);border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
+.ball:hover,.ball:focus-within{border-color:var(--teal-border);background:var(--teal-bg);box-shadow:0 0 0 4px rgba(10,122,96,.08)}
+.ball input{width:100%;height:100%;background:transparent;border:none;text-align:center;color:var(--ink);font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:600;outline:none;cursor:pointer}
+.brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink4)}
+.brand.set{color:var(--ink)}
+.rtip{text-align:center;font-size:11px;color:var(--ink4);margin-bottom:18px;font-style:italic}
+
+/* ── TICKET META ── */
+.tmeta{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
+.ldots{display:flex;gap:5px}
+.ldot{width:8px;height:8px;border-radius:50%;background:var(--border);border:1.5px solid var(--border2);transition:all .3s}
+.ldot.used{background:var(--teal2);border-color:var(--teal2)}
+.ltxt{font-size:11px;color:var(--ink4);margin-left:7px}
+.tplbl{font-size:11px;color:var(--ink3)}
+.tplbl span{color:var(--gold);font-weight:600}
+.cdmsg{text-align:center;font-size:11px;color:var(--gold);min-height:18px;margin-bottom:10px;font-style:italic}
+
+/* ── BUTTONS ── */
+.btn-buy{width:100%;padding:16px;background:var(--ink);color:#FDF8EC;border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btn-buy:hover:not(:disabled){background:var(--ink2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(50,35,5,.15)}
+.btn-buy:disabled{background:var(--border);color:var(--ink4);cursor:not-allowed;letter-spacing:1px}
+.btn-draw{width:100%;padding:12px;margin-top:10px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
+.btn-draw:hover:not(:disabled){background:#D5F5EB}
+
+/* ── WINNING BALLS ── */
+.wballs{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap}
+.wball{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,var(--teal2),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.1)}
+
+/* ── HISTORY ── */
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hitem{display:flex;align-items:center;justify-content:space-between;background:var(--cream);border:1px solid var(--border);border-radius:11px;padding:12px 16px;flex-wrap:wrap;gap:8px;transition:border-color .2s}
+.hitem:hover{border-color:var(--border2)}
+.hleft{display:flex;align-items:center;gap:12px}
+.hround{font-size:10px;color:var(--ink4);min-width:56px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.mballs{display:flex;gap:3px}
+.mball{width:25px;height:25px;border-radius:50%;background:var(--paper);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--ink2);font-weight:600}
+.badge{font-size:10px;padding:4px 10px;border-radius:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase}
+.b1{background:var(--gold-bg);color:var(--gold);border:1px solid var(--gold-border)}
+.b2{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
+.b3{background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border)}
+.b4{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
+.blose{background:var(--cream);color:var(--ink4);border:1px solid var(--border)}
+.bpend{background:#FFFBEE;color:#9A7A0A;border:1px solid #E8D868}
+.btn-claim{font-size:10px;padding:5px 12px;background:var(--gold2);color:#FFF8E0;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.5px;text-transform:uppercase}
+.btn-claim:hover{background:var(--gold)}
+.empty{text-align:center;padding:24px;color:var(--ink4);font-size:13px;font-style:italic}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#FDF8EC;padding:12px 24px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .3s;z-index:999;white-space:nowrap;max-width:90vw;box-shadow:var(--shadow-md)}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:var(--teal2);color:#fff}
+#toast.error{background:#8A3020;color:#fff}
+
+/* ── FOOTER ── */
+footer{text-align:center;padding-top:24px;margin-top:8px;border-top:1px solid var(--border)}
+footer p{font-size:11px;color:var(--ink4);letter-spacing:.3px}
+footer a{color:var(--ink3);text-decoration:none;font-weight:500}
+footer a:hover{color:var(--teal2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:600px){
+  .stats{grid-template-columns:1fr 1fr}
+  .sc.jp{grid-column:span 2}
+  .prizes{grid-template-columns:repeat(2,1fr)}
+  .hero-title{font-size:34px}
+  .hero-inner{flex-direction:column}
+  .hero-right{width:100%;border-left:none;border-top:1px solid #D8C878}
+  .ball{width:46px;height:46px}
+  .ball input{font-size:18px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-left">
+      <div class="hero-eyebrow">
+        <div class="eline"></div>
+        <span class="etxt">EST. 2026 · ON-CHAIN LOTTERY</span>
+        <div class="eline"></div>
+      </div>
+      <div class="hero-title">Lit<span>Billionaire</span></div>
+      <div class="hero-sub">Where fortunes are made on-chain</div>
+      <div class="hero-pills">
+        <div class="pill pill-live"><span class="pdot"></span>Live on LiteForge</div>
+        <div class="pill pill-chain">⛓ LitVM Powered</div>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="stat-row">
+        <div class="stat-lbl">Jackpot pool</div>
+        <div><span class="stat-val gold" id="banner-jackpot">—</span><span class="stat-unit">zkLTC</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-lbl">Next draw</div>
+        <div><span class="stat-val" style="font-size:18px">Fri 20:00</span><span class="stat-unit">GMT+7</span></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-lbl">Ticket price</div>
+        <div><span class="stat-val" style="font-size:20px">0.001</span><span class="stat-unit">zkLTC</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-bottom">
+    <div class="bstat"><span class="bstat-ico">🥇</span><span class="bstat-txt">Match 6 &rarr; <b>60%</b></span></div>
+    <div class="bsdiv"></div>
+    <div class="bstat"><span class="bstat-ico">🥈</span><span class="bstat-txt">Match 5 &rarr; <b>20%</b></span></div>
+    <div class="bsdiv"></div>
+    <div class="bstat"><span class="bstat-ico">🥉</span><span class="bstat-txt">Match 4 &rarr; <b>10%</b></span></div>
+    <div class="bsdiv"></div>
+    <div class="bstat"><span class="bstat-ico">🎖️</span><span class="bstat-txt">Match 3 &rarr; <b>5%</b></span></div>
+  </div>
+</div>
+
+<!-- WALLET -->
+<div class="wbar">
+  <div class="w-left">
+    <div class="wav">◈</div>
+    <div>
+      <div class="waddr" id="wallet-addr">Not connected</div>
+      <div class="wbal" id="wallet-bal">— zkLTC</div>
+    </div>
+  </div>
+  <button class="btn-wc" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="sc jp">
+    <div class="slbl">Jackpot Pool</div>
+    <div class="sval" id="stat-jackpot">—</div>
+    <div class="sunit">zkLTC</div>
+  </div>
+  <div class="sc">
+    <div class="slbl">Round</div>
+    <div class="sval" id="stat-round">#—</div>
+    <div class="sunit">current</div>
+  </div>
+  <div class="sc">
+    <div class="slbl">Tickets Sold</div>
+    <div class="sval" id="stat-tickets">—</div>
+    <div class="sunit">this round</div>
+  </div>
+</div>
+
+<!-- COUNTDOWN -->
+<div class="cdcard">
+  <div class="cdrow">
+    <span class="cdlbl">Next Draw — Friday 20:00 GMT+7</span>
+    <span class="cdtime" id="countdown">— — —</span>
+  </div>
+  <div class="prog"><div class="progf" id="progress-bar" style="width:0%"></div></div>
+</div>
+
+<!-- PRIZES -->
+<div class="prizes">
+  <div class="pc p1"><div class="pico">🥇</div><div class="pname">Jackpot</div><div class="pmatch">Match all 6</div><div class="ppct">60%</div></div>
+  <div class="pc p2"><div class="pico">🥈</div><div class="pname">2nd Prize</div><div class="pmatch">Match 5 of 6</div><div class="ppct">20%</div></div>
+  <div class="pc p3"><div class="pico">🥉</div><div class="pname">3rd Prize</div><div class="pmatch">Match 4 of 6</div><div class="ppct">10%</div></div>
+  <div class="pc p4"><div class="pico">🎖️</div><div class="pname">4th Prize</div><div class="pmatch">Match 3 of 6</div><div class="ppct">5%</div></div>
+</div>
+
+<!-- BUY TICKET -->
+<div class="panel">
+  <div class="ph"><div class="phico">🎟️</div><div class="phtitle">Buy Your Ticket</div></div>
+  <div class="tabs">
+    <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
+    <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
+  </div>
+  <div id="panel-pick">
+    <div class="balls">
+      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3"/></div></div>
+      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11"/></div></div>
+      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18"/></div></div>
+      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27"/></div></div>
+      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34"/></div></div>
+      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42"/></div></div>
+    </div>
+  </div>
+  <div id="panel-rand" style="display:none">
+    <div class="balls">
+      <div class="bitem"><div class="blbl">No.1</div><div class="ball" onclick="reroll()"><span class="brand" id="rb1">?</span></div></div>
+      <div class="bitem"><div class="blbl">No.2</div><div class="ball" onclick="reroll()"><span class="brand" id="rb2">?</span></div></div>
+      <div class="bitem"><div class="blbl">No.3</div><div class="ball" onclick="reroll()"><span class="brand" id="rb3">?</span></div></div>
+      <div class="bitem"><div class="blbl">No.4</div><div class="ball" onclick="reroll()"><span class="brand" id="rb4">?</span></div></div>
+      <div class="bitem"><div class="blbl">No.5</div><div class="ball" onclick="reroll()"><span class="brand" id="rb5">?</span></div></div>
+      <div class="bitem"><div class="blbl">No.6</div><div class="ball" onclick="reroll()"><span class="brand" id="rb6">?</span></div></div>
+    </div>
+    <div class="rtip">Tap any ball to re-roll your lucky numbers</div>
+  </div>
+  <div class="tmeta">
+    <div style="display:flex;align-items:center">
+      <div class="ldots"><div class="ldot" id="d0"></div><div class="ldot" id="d1"></div><div class="ldot" id="d2"></div></div>
+      <span class="ltxt" id="limit-txt">Connect wallet to see allowance</span>
+    </div>
+    <span class="tplbl">Ticket: <span>0.001 zkLTC</span> each</span>
+  </div>
+  <div class="cdmsg" id="cooldown-txt"></div>
+  <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>Buy Ticket</button>
+  <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">Trigger Weekly Draw</button>
+</div>
+
+<!-- LAST DRAW -->
+<div class="panel" id="winning-panel" style="display:none">
+  <div class="ph"><div class="phico">🏆</div><div class="phtitle">Last Draw Result</div></div>
+  <div style="text-align:center;font-size:11px;color:var(--ink4);letter-spacing:.5px;margin-bottom:2px">Round <span id="winning-round">—</span> winning numbers</div>
+  <div class="wballs">
+    <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
+    <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
+  </div>
+</div>
+
+<!-- HISTORY -->
+<div class="panel">
+  <div class="ph"><div class="phico">📋</div><div class="phtitle">My Ticket History</div></div>
+  <div class="hlist" id="history-list"><div class="empty">Connect wallet to view your ticket history</div></div>
+</div>
+
+<footer>
+  <p>LitBillionaire Lottery · LiteForge Testnet ·
+    <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract ↗</a> ·
+    <a href="https://litvm.com" target="_blank">LitVM ↗</a>
+  </p>
+</footer>
+</div>
+
+<div id="toast"></div>
+
+<script>
+const CONTRACT_ADDRESS="0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
+const CHAIN_ID="0x1159";
+const NETWORK={chainId:CHAIN_ID,chainName:"LiteForge Testnet",nativeCurrency:{name:"zkLTC",symbol:"zkLTC",decimals:18},rpcUrls:["https://rpc.liteforge.litvm.com"],blockExplorerUrls:["https://liteforge.explorer.caldera.xyz"]};
+const ABI=[
+  "function buyRandomTicket(uint256 quantity) external payable",
+  "function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable",
+  "function performUpkeep(bytes calldata) external",
+  "function claimReward(uint256 roundId) external",
+  "function getCurrentRound() external view returns (tuple(uint256 roundId,uint256 startTime,uint256 endTime,uint256 jackpot,uint256[6] winningNumbers,bool drawn,bool active,uint256 totalTickets))",
+  "function getTickets(uint256 roundId) external view returns (tuple(address player,uint256[6] numbers,bool isCustom)[])",
+  "function ticketsRemaining(address wallet) external view returns (uint256)",
+  "function cooldownRemaining(address wallet) external view returns (uint256)",
+  "function getWinningNumbers(uint256 roundId) external view returns (uint256[6])",
+  "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
+  "function currentRoundId() external view returns (uint256)"
+];
+let provider,signer,contract,wallet=null,roundEndTime=0,roundDuration=604800,cdTimer=null,coolTimer=null,currentTab="pick";
+
+async function connectWallet(){
+  if(!window.ethereum){toast("MetaMask not found","error");return;}
+  try{
+    toast("Connecting...");
+    try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN_ID}]});}
+    catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[NETWORK]});}
+    provider=new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts",[]);
+    signer=await provider.getSigner();
+    wallet=await signer.getAddress();
+    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);
+    const s=wallet.slice(0,6)+"..."+wallet.slice(-4);
+    document.getElementById("wallet-addr").innerHTML=`<b>${s}</b>`;
+    const bal=await provider.getBalance(wallet);
+    document.getElementById("wallet-bal").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
+    const btn=document.getElementById("btn-connect");btn.textContent="Connected";btn.className="btn-wc on";
+    document.getElementById("btn-buy").disabled=false;
+    await refresh();startCountdown();startCooldownWatch();
+    toast("Wallet connected!","success");
+  }catch(e){toast(e.message?.slice(0,80)||"Failed","error");}
+}
+
+async function refresh(){
+  if(!contract)return;
+  try{
+    const r=await contract.getCurrentRound();
+    const rid=Number(r.roundId);
+    const jpVal=parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
+    document.getElementById("stat-jackpot").textContent=jpVal;
+    try{document.getElementById("banner-jackpot").textContent=jpVal;}catch(_){}
+    document.getElementById("stat-round").textContent="#"+rid;
+    document.getElementById("stat-tickets").textContent=Number(r.totalTickets).toLocaleString();
+    roundEndTime=Number(r.endTime);
+    if(Math.floor(Date.now()/1000)>=roundEndTime&&!r.drawn)document.getElementById("btn-draw").style.display="block";
+    if(rid>1){try{const w=await contract.getWinningNumbers(rid-1);for(let i=0;i<6;i++)document.getElementById("wb"+(i+1)).textContent=Number(w[i]);document.getElementById("winning-round").textContent="#"+(rid-1);document.getElementById("winning-panel").style.display="block";}catch(_){}}
+    await refreshLimit();await refreshHistory();
+  }catch(e){console.error(e);}
+}
+
+async function refreshLimit(){
+  if(!contract||!wallet)return;
+  const rem=Number(await contract.ticketsRemaining(wallet));
+  const used=3-rem;
+  for(let i=0;i<3;i++)document.getElementById("d"+i).className="ldot"+(i<used?" used":"");
+  const lt=document.getElementById("limit-txt");
+  if(rem===0){lt.textContent="No tickets remaining this round";document.getElementById("btn-buy").disabled=true;}
+  else{lt.textContent=rem+" ticket"+(rem>1?"s":"")+" remaining";document.getElementById("btn-buy").disabled=false;}
+}
+
+async function refreshHistory(){
+  if(!contract||!wallet)return;
+  const rid=Number(await contract.currentRoundId());
+  const list=document.getElementById("history-list");const items=[];
+  for(let r=Math.max(1,rid-5);r<=rid;r++){
+    try{
+      const tickets=await contract.getTickets(r);
+      const mine=tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
+      if(!mine.length)continue;
+      let drawn=false,winNums=null;
+      if(r<rid){try{winNums=await contract.getWinningNumbers(r);drawn=true;}catch(_){}}
+      for(const t of mine){
+        const nums=t.numbers.map(n=>Number(n));
+        let badge='<span class="badge bpend">Pending</span>',claimBtn="";
+        if(drawn&&winNums){
+          const wn=winNums.map(n=>Number(n));const m=nums.filter(n=>wn.includes(n)).length;
+          if(m>=6)badge='<span class="badge b1">Jackpot!</span>';
+          else if(m===5)badge='<span class="badge b2">2nd Prize</span>';
+          else if(m===4)badge='<span class="badge b3">3rd Prize</span>';
+          else if(m===3)badge='<span class="badge b4">4th Prize</span>';
+          else badge='<span class="badge blose">No match</span>';
+          if(m>=3){const claimed=await contract.hasClaimedReward(r,wallet);claimBtn=claimed?'<span style="font-size:10px;color:var(--ink4)">Claimed</span>':`<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;}
+        }
+        const mb=nums.map(n=>`<div class="mball">${n}</div>`).join("");
+        items.push(`<div class="hitem"><div class="hleft"><span class="hround">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:8px">${badge}${claimBtn}</div></div>`);
+      }
+    }catch(_){}
+  }
+  list.innerHTML=items.length?items.join(""):'<div class="empty">No tickets found for this wallet</div>';
+}
+
+async function buyTicket(){
+  if(!contract){toast("Connect wallet first","error");return;}
+  let numbers;
+  if(currentTab==="pick"){
+    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
+    if(v.some(n=>isNaN(n)||n<1||n>45)){toast("Numbers must be between 1 and 45","error");return;}
+    if(new Set(v).size<6){toast("All numbers must be unique!","error");return;}
+    numbers=v;
+  }else{
+    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
+    if(v.some(isNaN)){toast("Please roll your numbers first","error");return;}
+    numbers=v;
+  }
+  try{
+    document.getElementById("btn-buy").disabled=true;
+    document.getElementById("btn-buy").textContent="Confirming...";
+    toast("Waiting for MetaMask...");
+    const price=ethers.parseEther("0.001");
+    let tx;
+    if(currentTab==="pick")tx=await contract.buyCustomTicket(numbers,1,{value:price});
+    else tx=await contract.buyRandomTicket(1,{value:price});
+    toast("Transaction submitted...");await tx.wait();
+    toast("Ticket purchased! "+numbers.join(" · "),"success");await refresh();
+  }catch(e){toast((e?.reason||e?.message||"Transaction failed").slice(0,80),"error");}
+  finally{document.getElementById("btn-buy").textContent="Buy Ticket";await refreshLimit();}
+}
+
+async function drawNumbers(){
+  if(!contract)return;
+  try{toast("Triggering weekly draw...");const tx=await contract.performUpkeep("0x");await tx.wait();toast("Draw complete!","success");document.getElementById("btn-draw").style.display="none";await refresh();}
+  catch(e){toast(e?.reason||"Draw failed","error");}
+}
+
+async function claimReward(rid){
+  if(!contract)return;
+  try{toast("Claiming reward...");const tx=await contract.claimReward(rid);await tx.wait();toast("Reward claimed!","success");await refresh();}
+  catch(e){toast(e?.reason||"Claim failed","error");}
+}
+
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById("tab-pick").className="tab"+(tab==="pick"?" active":"");
+  document.getElementById("tab-rand").className="tab"+(tab==="rand"?" active":"");
+  document.getElementById("panel-pick").style.display=tab==="pick"?"":"none";
+  document.getElementById("panel-rand").style.display=tab==="rand"?"":"none";
+  if(tab==="rand")reroll();
+}
+
+function reroll(){
+  const p=[];
+  while(p.length<6){const n=Math.floor(Math.random()*45)+1;if(!p.includes(n))p.push(n);}
+  p.sort((a,b)=>a-b);
+  for(let i=0;i<6;i++){const el=document.getElementById("rb"+(i+1));el.textContent=p[i];el.className="brand set";}
+}
+
+function startCountdown(){
+  if(cdTimer)clearInterval(cdTimer);
+  cdTimer=setInterval(()=>{
+    const left=Math.max(0,roundEndTime-Math.floor(Date.now()/1000));
+    const d=Math.floor(left/86400),h=Math.floor((left%86400)/3600),m=Math.floor((left%3600)/60),s=left%60;
+    document.getElementById("countdown").textContent=d+"d "+pad(h)+"h "+pad(m)+"m "+pad(s)+"s";
+    document.getElementById("progress-bar").style.width=(roundDuration>0?Math.round(left/roundDuration*100):0)+"%";
+    if(left===0)document.getElementById("btn-draw").style.display="block";
+  },1000);
+}
+
+function startCooldownWatch(){
+  if(coolTimer)clearInterval(coolTimer);
+  coolTimer=setInterval(async()=>{
+    if(!contract||!wallet)return;
+    try{
+      const cd=Number(await contract.cooldownRemaining(wallet));
+      const el=document.getElementById("cooldown-txt");
+      if(cd>0){el.textContent="Next purchase available in "+cd+"s";document.getElementById("btn-buy").disabled=true;}
+      else{el.textContent="";await refreshLimit();}
+    }catch(_){}
+  },3000);
+}
+
+function pad(n){return String(n).padStart(2,"0");}
+function toast(msg,type=""){
+  const el=document.getElementById("toast");
+  el.textContent=msg;el.className="show "+type;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
+}
+</script>
+</body>
+</html>
