@@ -23,6 +23,7 @@ function disconnectWallet(){
   document.getElementById("stat-jackpot").textContent="—";
   document.getElementById("stat-round").textContent="#—";
   document.getElementById("stat-tickets").textContent="—";
+  try{document.getElementById("stat-players").textContent="—";}catch(_){}
   document.getElementById("banner-jackpot").textContent="—";
   document.getElementById("cd-d").textContent="—";
   document.getElementById("cd-h").textContent="—";
@@ -90,6 +91,7 @@ function updateSocialProof(tickets,roundId){
   const unique=new Set(tickets.map(t=>t.player)).size;
   document.getElementById("sp-players").textContent=unique||"0";
   document.getElementById("sp-round").textContent="#"+roundId;
+  try{document.getElementById("stat-players").textContent=unique||"0";}catch(_){}
   if(tickets.length>0){
     document.getElementById("sp-last").textContent="just now";
   } else {
@@ -116,7 +118,10 @@ function updateSocialProof(tickets,roundId){
 }
 html{scroll-behavior:smooth}
 body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
-.page{max-width:880px;margin:0 auto;padding:0 20px 80px}
+.page{max-width:1100px;margin:0 auto;padding:0 32px 80px}
+.main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
+.main-left{display:flex;flex-direction:column;gap:0}
+.main-right{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
 
 /* ── HERO BANNER ── */
 .hero{
@@ -181,7 +186,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .btn-disconnect:hover{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5}
 
 /* ── STATS ── */
-.stats{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:14px;margin-bottom:20px}
+.stats{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;margin-bottom:20px}
 .sc{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
 .sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF7E8);border-color:var(--gold-border)}
 .slbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;margin-bottom:8px;text-transform:uppercase}
@@ -287,6 +292,12 @@ footer a{color:var(--ink3);text-decoration:none;font-weight:500}
 footer a:hover{color:var(--teal2)}
 
 /* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .main-grid{grid-template-columns:1fr}
+  .main-right{position:static}
+  .stats{grid-template-columns:1fr 1fr 1fr}
+  .sc.jp{grid-column:span 3}
+}
 @media(max-width:600px){
   .stats{grid-template-columns:1fr 1fr}
   .sc.jp{grid-column:span 2}
@@ -294,8 +305,9 @@ footer a:hover{color:var(--teal2)}
   .hero-title{font-size:34px}
   .hero-inner{flex-direction:column}
   .hero-right{width:100%;border-left:none;border-top:1px solid #D8C878}
-  .ball{width:46px;height:46px}
-  .ball input{font-size:18px}
+  .ball{width:44px;height:44px}
+  .ball input{font-size:17px}
+  .page{padding:0 16px 60px}
 }
 
 /* ── SOCIAL PROOF BAR ── */
@@ -485,6 +497,11 @@ footer a:hover{color:var(--teal2)}
     <div class="sval" id="stat-tickets" style="font-size:32px;color:var(--ink)">—</div>
     <div class="sunit">this round</div>
   </div>
+  <div class="sc">
+    <div class="slbl">Players</div>
+    <div class="sval" id="stat-players" style="font-size:32px;color:var(--ink)">—</div>
+    <div class="sunit">unique wallets</div>
+  </div>
 </div>
 
 <!-- COUNTDOWN -->
@@ -501,6 +518,9 @@ footer a:hover{color:var(--teal2)}
   <div class="prog" style="margin-top:12px"><div class="progf" id="progress-bar" style="width:0%"></div></div>
 </div>
 
+</div><!-- end main-left top -->
+<div class="main-grid">
+<div class="main-left">
 <!-- PRIZES -->
 <div class="prizes">
   <div class="pc p1"><div class="pico">🥇</div><div class="pname">Jackpot</div><div class="pmatch">Match all 6</div><div class="ppct">60%</div></div>
@@ -550,6 +570,8 @@ footer a:hover{color:var(--teal2)}
   <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">Trigger Weekly Draw</button>
 </div>
 
+</div><!-- end main-left -->
+<div class="main-right">
 <!-- LAST DRAW -->
 <div class="panel" id="winning-panel" style="display:none">
   <div class="ph"><div class="phico">🏆</div><div class="phtitle">Last Draw Result</div></div>
@@ -575,6 +597,8 @@ footer a:hover{color:var(--teal2)}
   <div class="hlist" id="history-list"><div class="empty">Connect wallet to view your ticket history</div></div>
 </div>
 
+</div><!-- end main-right -->
+</div><!-- end main-grid -->
 <footer>
   <p>LitBillionaire Lottery · LiteForge Testnet ·
     <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract ↗</a> ·
@@ -815,6 +839,7 @@ function disconnectWallet(){
   document.getElementById("stat-jackpot").textContent="—";
   document.getElementById("stat-round").textContent="#—";
   document.getElementById("stat-tickets").textContent="—";
+  try{document.getElementById("stat-players").textContent="—";}catch(_){}
   document.getElementById("banner-jackpot").textContent="—";
   document.getElementById("cd-d").textContent="—";
   document.getElementById("cd-h").textContent="—";
@@ -882,6 +907,7 @@ function updateSocialProof(tickets,roundId){
   const unique=new Set(tickets.map(t=>t.player)).size;
   document.getElementById("sp-players").textContent=unique||"0";
   document.getElementById("sp-round").textContent="#"+roundId;
+  try{document.getElementById("stat-players").textContent=unique||"0";}catch(_){}
   if(tickets.length>0){
     document.getElementById("sp-last").textContent="just now";
   } else {
