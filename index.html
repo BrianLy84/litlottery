@@ -118,7 +118,7 @@ function updateSocialProof(tickets,roundId){
 }
 html{scroll-behavior:smooth}
 body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
-.page{max-width:1100px;margin:0 auto;padding:0 32px 80px}
+.page{max-width:1000px;margin:0 auto;padding:0 32px 80px}
 .main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
 .main-left{display:flex;flex-direction:column;gap:0}
 .main-right{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
@@ -399,6 +399,25 @@ footer a:hover{color:var(--teal2)}
 .cd-unit{text-align:center}
 .cd-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--ink);line-height:1;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:4px 10px;min-width:48px;display:inline-block}
 .cd-lbl2{font-size:9px;color:var(--ink4);letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:600}
+
+/* ── LIMIT RULE NOTICE ── */
+.limit-rule{
+  display:flex;align-items:center;gap:10px;
+  background:var(--gold-bg);border:1px solid var(--gold-border);
+  border-radius:10px;padding:10px 14px;margin-bottom:14px;
+  font-size:12px;color:var(--ink2);font-weight:500;
+  line-height:1.4;
+}
+.limit-rule-icon{font-size:16px;flex-shrink:0}
+.limit-rule b{color:var(--gold);font-weight:700}
+.limit-rule span{color:var(--ink4);font-size:11px}
+
+/* ── WALLET LIMIT HINT ── */
+.wallet-limit-hint{
+  font-size:11px;color:var(--ink4);
+  display:flex;align-items:center;gap:5px;margin-top:2px;
+}
+.wlh-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -453,6 +472,7 @@ footer a:hover{color:var(--teal2)}
     <div>
       <div class="waddr" id="wallet-addr">Not connected</div>
       <div class="wbal" id="wallet-bal">— zkLTC</div>
+      <div class="wallet-limit-hint"><div class="wlh-dot"></div>Max 3 tickets · resets each round</div>
     </div>
   </div>
   <div class="wallet-actions">
@@ -532,6 +552,13 @@ footer a:hover{color:var(--teal2)}
 <!-- BUY TICKET -->
 <div class="panel">
   <div class="ph"><div class="phico">🎟️</div><div class="phtitle">Buy Your Ticket</div></div>
+  <div class="limit-rule">
+    <div class="limit-rule-icon">🔒</div>
+    <div>
+      <b>3 tickets per wallet per round</b> · 60s cooldown between purchases<br>
+      <span>Limits reset automatically when a new round begins</span>
+    </div>
+  </div>
   <div class="tabs">
     <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
     <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
