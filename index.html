@@ -4,102 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>LitBillionaire — Weekly On-Chain Lottery</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js">
-function disconnectWallet(){
-  // Reset state
-  provider=null;signer=null;contract=null;wallet=null;
-  roundEndTime=0;
-  if(cdTimer)clearInterval(cdTimer);
-  if(coolTimer)clearInterval(coolTimer);
-
-  // Reset wallet UI
-  document.getElementById("wallet-addr").innerHTML="Not connected";
-  document.getElementById("wallet-bal").textContent="— zkLTC";
-  const btn=document.getElementById("btn-connect");
-  btn.textContent="Connect Wallet";btn.className="btn-wc";
-  document.getElementById("btn-disconnect").style.display="none";
-
-  // Reset stats
-  document.getElementById("stat-jackpot").textContent="—";
-  document.getElementById("stat-round").textContent="#—";
-  document.getElementById("stat-tickets").textContent="—";
-  try{document.getElementById("stat-players").textContent="—";}catch(_){}
-  document.getElementById("banner-jackpot").textContent="—";
-  document.getElementById("cd-d").textContent="—";
-  document.getElementById("cd-h").textContent="—";
-  document.getElementById("cd-m").textContent="—";
-  document.getElementById("cd-s").textContent="—";
-  document.getElementById("progress-bar").style.width="0%";
-
-  // Reset ticket badge
-  const badge=document.getElementById("ticket-badge");
-  badge.textContent="Connect wallet";badge.className="ticket-badge";
-  document.getElementById("btn-buy").disabled=true;
-  document.getElementById("cooldown-txt").textContent="";
-  hideTxStatus();
-
-  // Reset social proof
-  document.getElementById("sp-players").textContent="—";
-  document.getElementById("sp-last").textContent="—";
-  document.getElementById("sp-round").textContent="—";
-
-  // Reset lists
-  document.getElementById("activity-list").innerHTML='<div class="act-empty">Waiting for activity...</div>';
-  document.getElementById("history-list").innerHTML='<div class="empty">Connect wallet to view your ticket history</div>';
-  document.getElementById("winning-panel").style.display="none";
-  document.getElementById("btn-draw").style.display="none";
-
-  toast("Wallet disconnected");
-}
-
-function showTxStatus(type,msg){
-  const el=document.getElementById("tx-status");
-  const sp=document.getElementById("tx-spinner");
-  const tm=document.getElementById("tx-msg");
-  el.className="tx-status show "+type;
-  tm.textContent=msg;
-  sp.style.display=type==="processing"?"block":"none";
-}
-function hideTxStatus(){
-  document.getElementById("tx-status").className="tx-status";
-}
-
-function updateActivityFeed(tickets,roundId){
-  const list=document.getElementById("activity-list");
-  if(!tickets||tickets.length===0){
-    list.innerHTML='<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
-    return;
-  }
-  const recent=[...tickets].reverse().slice(0,5);
-  list.innerHTML=recent.map(t=>{
-    const nums=t.numbers.map(n=>Number(n));
-    const addr=t.player.slice(0,6)+"..."+t.player.slice(-4);
-    return `<div class="activity-item">
-      <div class="act-left">
-        <div class="act-icon">🎟️</div>
-        <div>
-          <div class="act-addr">${addr}</div>
-          <div class="act-nums">${nums.join(" · ")}</div>
-        </div>
-      </div>
-      <div class="act-time">Round #${roundId}</div>
-    </div>`;
-  }).join("");
-}
-
-function updateSocialProof(tickets,roundId){
-  const unique=new Set(tickets.map(t=>t.player)).size;
-  document.getElementById("sp-players").textContent=unique||"0";
-  document.getElementById("sp-round").textContent="#"+roundId;
-  try{document.getElementById("stat-players").textContent=unique||"0";}catch(_){}
-  if(tickets.length>0){
-    document.getElementById("sp-last").textContent="just now";
-  } else {
-    document.getElementById("sp-last").textContent="—";
-  }
-}
-
-</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -118,25 +23,15 @@ function updateSocialProof(tickets,roundId){
 }
 html{scroll-behavior:smooth}
 body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
-.page{max-width:1000px;margin:0 auto;padding:0 32px 80px}
+.page{max-width:1100px;margin:0 auto;padding:0 32px 80px}
 .main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
 .main-left{display:flex;flex-direction:column;gap:0}
 .main-right{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
 
 /* ── HERO BANNER ── */
-.hero{
-  background:#FAF6ED;
-  border:1px solid #C8B870;
-  border-radius:20px;
-  overflow:hidden;
-  margin-bottom:24px;
-}
+.hero{background:#FAF6ED;border:1px solid #C8B870;border-radius:20px;overflow:hidden;margin-bottom:24px;}
 .hero-inner{display:flex;align-items:stretch;min-height:190px}
-.hero-left{
-  flex:1;padding:32px 36px;
-  border-right:1px solid #D8C878;
-  display:flex;flex-direction:column;justify-content:center;
-}
+.hero-left{flex:1;padding:32px 36px;border-right:1px solid #D8C878;display:flex;flex-direction:column;justify-content:center;}
 .hero-eyebrow{font-size:10px;letter-spacing:3.5px;color:#7A6020;font-weight:600;margin-bottom:14px;display:flex;align-items:center;gap:10px}
 .eline{width:24px;height:1px;background:#C8A840}
 .etxt{font-size:10px;letter-spacing:3.5px;color:#7A6020;font-weight:600}
@@ -149,22 +44,14 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .pill-chain{background:#F0E8CC;border:1px solid #B89830;color:#6A4A08}
 .pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
-.hero-right{
-  width:280px;padding:24px 28px;
-  display:flex;flex-direction:column;justify-content:center;
-  background:#F5EFE0;
-}
+.hero-right{width:280px;padding:24px 28px;display:flex;flex-direction:column;justify-content:center;background:#F5EFE0;}
 .stat-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #D0B860}
 .stat-row:last-child{border-bottom:none}
 .stat-lbl{font-size:10px;letter-spacing:1.5px;color:#6A5218;font-weight:600;text-transform:uppercase}
 .stat-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#0F0C00;line-height:1}
 .stat-val.gold{color:#8A6000}
 .stat-unit{font-size:11px;color:#7A6020;margin-left:3px;font-weight:500}
-.hero-bottom{
-  background:#EFE8D0;border-top:1px solid #C8B060;
-  padding:12px 36px;
-  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;
-}
+.hero-bottom{background:#EFE8D0;border-top:1px solid #C8B060;padding:12px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .bstat{display:flex;align-items:center;gap:6px}
 .bstat-ico{font-size:13px}
 .bstat-txt{font-size:11px;color:#5A4010;font-weight:500;letter-spacing:.2px}
@@ -185,6 +72,46 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .btn-disconnect{background:transparent;color:var(--ink4);border:1px solid var(--border);padding:7px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.3px}
 .btn-disconnect:hover{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5}
 
+/* ── WALLET MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(13,11,8,.55);backdrop-filter:blur(4px);
+  z-index:1000;display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .25s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{
+  background:var(--paper);border:1px solid var(--border2);border-radius:20px;
+  padding:28px 28px 24px;width:380px;max-width:92vw;
+  box-shadow:0 20px 60px rgba(0,0,0,.18);
+  transform:translateY(12px) scale(.97);transition:transform .25s,opacity .25s;
+}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--ink)}
+.modal-close{background:none;border:none;font-size:18px;color:var(--ink4);cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
+.modal-close:hover{background:var(--cream);color:var(--ink)}
+.modal-sub{font-size:11px;color:var(--ink4);margin-bottom:18px;line-height:1.5}
+.wallet-options{display:flex;flex-direction:column;gap:10px}
+.wallet-opt{
+  display:flex;align-items:center;gap:14px;
+  padding:14px 16px;border-radius:12px;cursor:pointer;
+  border:1.5px solid var(--border);background:var(--cream);
+  transition:all .2s;font-family:'DM Sans',sans-serif;
+}
+.wallet-opt:hover{border-color:var(--border2);background:var(--paper);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.wallet-opt:active{transform:translateY(0)}
+.wallet-opt.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.wo-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--border)}
+.wo-info{flex:1;text-align:left}
+.wo-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
+.wo-desc{font-size:10px;color:var(--ink4);letter-spacing:.2px}
+.wo-badge{font-size:9px;padding:3px 8px;border-radius:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.wo-badge.detected{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
+.wo-badge.notfound{background:var(--cream);color:var(--ink4);border:1px solid var(--border)}
+.modal-divider{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
+.modal-divider span{font-size:10px;color:var(--ink4);letter-spacing:1px;white-space:nowrap;text-transform:uppercase}
+.modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
 /* ── STATS ── */
 .stats{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;margin-bottom:20px}
 .sc{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
@@ -198,7 +125,6 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .cdcard{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow)}
 .cdrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .cdlbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;text-transform:uppercase}
-.cdtime{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink)}
 .prog{height:3px;background:var(--border);border-radius:3px;overflow:hidden}
 .progf{height:100%;background:linear-gradient(90deg,var(--teal2),var(--gold2));border-radius:3px;transition:width 1s linear}
 
@@ -241,10 +167,6 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 
 /* ── TICKET META ── */
 .tmeta{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
-.ldots{display:flex;gap:5px}
-.ldot{width:8px;height:8px;border-radius:50%;background:var(--border);border:1.5px solid var(--border2);transition:all .3s}
-.ldot.used{background:var(--teal2);border-color:var(--teal2)}
-.ltxt{font-size:11px;color:var(--ink4);margin-left:7px}
 .tplbl{font-size:11px;color:var(--ink3)}
 .tplbl span{color:var(--gold);font-weight:600}
 .cdmsg{text-align:center;font-size:11px;color:var(--gold);min-height:18px;margin-bottom:10px;font-style:italic}
@@ -280,7 +202,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .empty{text-align:center;padding:24px;color:var(--ink4);font-size:13px;font-style:italic}
 
 /* ── TOAST ── */
-#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#FDF8EC;padding:12px 24px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .3s;z-index:999;white-space:nowrap;max-width:90vw;box-shadow:var(--shadow-md)}
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#FDF8EC;padding:12px 24px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .3s;z-index:9999;white-space:nowrap;max-width:90vw;box-shadow:var(--shadow-md)}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #toast.success{background:var(--teal2);color:#fff}
 #toast.error{background:#8A3020;color:#fff}
@@ -311,12 +233,7 @@ footer a:hover{color:var(--teal2)}
 }
 
 /* ── SOCIAL PROOF BAR ── */
-.social-bar{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--paper);border:1px solid var(--border);
-  border-radius:12px;padding:11px 18px;margin-bottom:16px;
-  flex-wrap:wrap;gap:10px;box-shadow:var(--shadow);
-}
+.social-bar{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:11px 18px;margin-bottom:16px;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow);}
 .sp-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500}
 .sp-dot{width:7px;height:7px;border-radius:50%;background:var(--teal2);animation:pulse-dot 2s infinite}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
@@ -326,11 +243,7 @@ footer a:hover{color:var(--teal2)}
 /* ── ACTIVITY FEED ── */
 .activity-panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
 .activity-list{display:flex;flex-direction:column;gap:0}
-.activity-item{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:9px 0;border-bottom:1px solid var(--border);
-  animation:fadein .4s ease;
-}
+.activity-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);animation:fadein .4s ease;}
 .activity-item:last-child{border-bottom:none}
 @keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .act-left{display:flex;align-items:center;gap:10px}
@@ -341,52 +254,22 @@ footer a:hover{color:var(--teal2)}
 .act-empty{text-align:center;padding:16px;color:var(--ink4);font-size:12px;font-style:italic}
 
 /* ── JACKPOT HIGHLIGHT ── */
-.sc.jp .sval{
-  font-size:44px;
-  color:var(--gold);
-  text-shadow:0 0 20px rgba(191,140,10,.15);
-}
-.sc.jp{
-  background:linear-gradient(160deg,#FDFAF2,#FDF5E0);
-  border-color:#D4A820;
-  box-shadow:0 2px 12px rgba(191,140,10,.08),0 4px 20px rgba(191,140,10,.04);
-}
-.jackpot-growing{
-  display:flex;align-items:center;gap:6px;margin-top:6px;
-}
-.jg-arrow{font-size:11px;color:var(--teal2)}
-.jg-txt{font-size:11px;color:var(--teal2);font-weight:600}
+.sc.jp .sval{font-size:44px;color:var(--gold);text-shadow:0 0 20px rgba(191,140,10,.15);}
+.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF5E0);border-color:#D4A820;box-shadow:0 2px 12px rgba(191,140,10,.08),0 4px 20px rgba(191,140,10,.04);}
 
 /* ── TICKET LIMIT BADGE ── */
-.ticket-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:var(--cream);border:1px solid var(--border2);
-  border-radius:8px;padding:6px 12px;font-size:12px;
-  color:var(--ink2);font-weight:500;
-}
+.ticket-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--ink2);font-weight:500;}
 .ticket-badge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
 .ticket-badge.partial{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold)}
 .ticket-badge.open{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal2)}
 
 /* ── CTA BUTTON PULSE ── */
-.btn-buy:not(:disabled){
-  background:var(--ink);
-  box-shadow:0 4px 14px rgba(13,11,8,.2);
-  position:relative;overflow:hidden;
-}
-.btn-buy:not(:disabled)::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);
-  animation:shimmer 3s infinite;
-}
+.btn-buy:not(:disabled){background:var(--ink);box-shadow:0 4px 14px rgba(13,11,8,.2);position:relative;overflow:hidden;}
+.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);animation:shimmer 3s infinite;}
 @keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 
 /* ── TX FEEDBACK ── */
-.tx-status{
-  display:none;align-items:center;gap:8px;
-  padding:10px 14px;border-radius:10px;margin-bottom:10px;
-  font-size:12px;font-weight:500;
-}
+.tx-status{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:12px;font-weight:500;}
 .tx-status.show{display:flex}
 .tx-status.processing{background:#FFF8E8;border:1px solid var(--gold-border);color:var(--gold)}
 .tx-status.success{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal2)}
@@ -400,24 +283,8 @@ footer a:hover{color:var(--teal2)}
 .cd-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--ink);line-height:1;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:4px 10px;min-width:48px;display:inline-block}
 .cd-lbl2{font-size:9px;color:var(--ink4);letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:600}
 
-/* ── LIMIT RULE NOTICE ── */
-.limit-rule{
-  display:flex;align-items:center;gap:10px;
-  background:var(--gold-bg);border:1px solid var(--gold-border);
-  border-radius:10px;padding:10px 14px;margin-bottom:14px;
-  font-size:12px;color:var(--ink2);font-weight:500;
-  line-height:1.4;
-}
-.limit-rule-icon{font-size:16px;flex-shrink:0}
-.limit-rule b{color:var(--gold);font-weight:700}
-.limit-rule span{color:var(--ink4);font-size:11px}
-
-/* ── WALLET LIMIT HINT ── */
-.wallet-limit-hint{
-  font-size:11px;color:var(--ink4);
-  display:flex;align-items:center;gap:5px;margin-top:2px;
-}
-.wlh-dot{width:4px;height:4px;border-radius:50%;background:var(--gold);flex-shrink:0}
+/* ── CONNECTED WALLET ICON ── */
+.wav-img{width:22px;height:22px;border-radius:5px;object-fit:contain}
 </style>
 </head>
 <body>
@@ -468,19 +335,44 @@ footer a:hover{color:var(--teal2)}
 <!-- WALLET -->
 <div class="wbar">
   <div class="w-left">
-    <div class="wav">◈</div>
+    <div class="wav" id="wav-icon">◈</div>
     <div>
       <div class="waddr" id="wallet-addr">Not connected</div>
       <div class="wbal" id="wallet-bal">— zkLTC</div>
-      <div class="wallet-limit-hint"><div class="wlh-dot"></div>Max 3 tickets · resets each round</div>
     </div>
   </div>
   <div class="wallet-actions">
-    <button class="btn-wc" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+    <button class="btn-wc" id="btn-connect" onclick="openWalletModal()">Connect Wallet</button>
     <button class="btn-disconnect" id="btn-disconnect" onclick="disconnectWallet()" style="display:none">Disconnect</button>
   </div>
 </div>
 
+<!-- WALLET MODAL -->
+<div class="modal-overlay" id="wallet-modal" onclick="handleModalClick(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title">Connect Wallet</div>
+      <button class="modal-close" onclick="closeWalletModal()">✕</button>
+    </div>
+    <div class="modal-sub">Choose your wallet to connect to LitBillionaire. Make sure you're on the LiteForge Testnet.</div>
+    <div class="wallet-options" id="wallet-options">
+      <!-- Populated by JS -->
+    </div>
+    <div class="modal-divider"><span>or</span></div>
+    <div class="wallet-options">
+      <div class="wallet-opt" onclick="connectWithProvider('walletconnect')">
+        <div class="wo-icon" style="background:#E8F0FF">
+          <img src="https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/Logo/Gradient/Logo.png" width="26" height="26" style="border-radius:6px" onerror="this.parentElement.textContent='🔗'"/>
+        </div>
+        <div class="wo-info">
+          <div class="wo-name">WalletConnect</div>
+          <div class="wo-desc">Connect via QR code · Works with 300+ wallets</div>
+        </div>
+        <span class="wo-badge notfound">SCAN QR</span>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- SOCIAL PROOF -->
 <div class="social-bar">
@@ -538,7 +430,9 @@ footer a:hover{color:var(--teal2)}
   <div class="prog" style="margin-top:12px"><div class="progf" id="progress-bar" style="width:0%"></div></div>
 </div>
 
-</div><!-- end main-left top -->
+</div><!-- end page top section -->
+
+<div class="page" style="padding-top:0">
 <div class="main-grid">
 <div class="main-left">
 <!-- PRIZES -->
@@ -552,13 +446,6 @@ footer a:hover{color:var(--teal2)}
 <!-- BUY TICKET -->
 <div class="panel">
   <div class="ph"><div class="phico">🎟️</div><div class="phtitle">Buy Your Ticket</div></div>
-  <div class="limit-rule">
-    <div class="limit-rule-icon">🔒</div>
-    <div>
-      <b>3 tickets per wallet per round</b> · 60s cooldown between purchases<br>
-      <span>Limits reset automatically when a new round begins</span>
-    </div>
-  </div>
   <div class="tabs">
     <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
     <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
@@ -609,7 +496,6 @@ footer a:hover{color:var(--teal2)}
   </div>
 </div>
 
-
 <!-- ACTIVITY FEED -->
 <div class="activity-panel">
   <div class="ph"><div class="phico">⚡</div><div class="phtitle">Recent Activity</div></div>
@@ -637,10 +523,21 @@ footer a:hover{color:var(--teal2)}
 <div id="toast"></div>
 
 <script>
-const CONTRACT_ADDRESS="0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
-const CHAIN_ID="0x1159";
-const NETWORK={chainId:CHAIN_ID,chainName:"LiteForge Testnet",nativeCurrency:{name:"zkLTC",symbol:"zkLTC",decimals:18},rpcUrls:["https://rpc.liteforge.litvm.com"],blockExplorerUrls:["https://liteforge.explorer.caldera.xyz"]};
-const ABI=[
+// ─────────────────────────────────────────────
+//  CONFIG
+// ─────────────────────────────────────────────
+const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
+const CHAIN_ID         = "0x1159";
+const CHAIN_ID_DEC     = 4441;
+const NETWORK = {
+  chainId: CHAIN_ID,
+  chainName: "LiteForge Testnet",
+  nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
+  rpcUrls: ["https://rpc.liteforge.litvm.com"],
+  blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
+};
+
+const ABI = [
   "function buyRandomTicket(uint256 quantity) external payable",
   "function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable",
   "function performUpkeep(bytes calldata) external",
@@ -653,270 +550,520 @@ const ABI=[
   "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
   "function currentRoundId() external view returns (uint256)"
 ];
-let provider,signer,contract,wallet=null,roundEndTime=0,roundDuration=604800,cdTimer=null,coolTimer=null,currentTab="pick";
 
-async function connectWallet(){
-  if(!window.ethereum){toast("MetaMask not found","error");return;}
-  try{
-    toast("Connecting...");
-    try{await window.ethereum.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN_ID}]});}
-    catch(e){if(e.code===4902)await window.ethereum.request({method:"wallet_addEthereumChain",params:[NETWORK]});}
-    provider=new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts",[]);
-    signer=await provider.getSigner();
-    wallet=await signer.getAddress();
-    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);
-    const s=wallet.slice(0,6)+"..."+wallet.slice(-4);
-    document.getElementById("wallet-addr").innerHTML=`<b>${s}</b>`;
-    const bal=await provider.getBalance(wallet);
-    document.getElementById("wallet-bal").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
-    const btn=document.getElementById("btn-connect");btn.textContent="Connected";btn.className="btn-wc on";
-    document.getElementById("btn-disconnect").style.display="block";
-    document.getElementById("btn-buy").disabled=false;
-    await refresh();startCountdown();startCooldownWatch();
-    toast("Wallet connected!","success");
-  }catch(e){toast(e.message?.slice(0,80)||"Failed","error");}
-}
+// ─────────────────────────────────────────────
+//  STATE
+// ─────────────────────────────────────────────
+let provider, signer, contract, wallet = null;
+let roundEndTime = 0, roundDuration = 604800;
+let cdTimer = null, coolTimer = null, currentTab = "pick";
+let activeWalletType = null;
 
-async function refresh(){
-  if(!contract)return;
-  try{
-    const r=await contract.getCurrentRound();
-    const rid=Number(r.roundId);
-    const jpVal=parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
-    document.getElementById("stat-jackpot").textContent=jpVal;
-    try{document.getElementById("banner-jackpot").textContent=jpVal;}catch(_){}
-    document.getElementById("stat-round").textContent="#"+rid;
-    document.getElementById("stat-tickets").textContent=Number(r.totalTickets).toLocaleString();
-    roundEndTime=Number(r.endTime);
-    if(Math.floor(Date.now()/1000)>=roundEndTime&&!r.drawn)document.getElementById("btn-draw").style.display="block";
-    if(rid>1){try{const w=await contract.getWinningNumbers(rid-1);for(let i=0;i<6;i++)document.getElementById("wb"+(i+1)).textContent=Number(w[i]);document.getElementById("winning-round").textContent="#"+(rid-1);document.getElementById("winning-panel").style.display="block";}catch(_){}}
-    // Update activity + social proof
-    try{
-      const tickets=await contract.getTickets(rid);
-      updateActivityFeed(tickets,rid);
-      updateSocialProof(tickets,rid);
-    }catch(_){}
-    await refreshLimit();await refreshHistory();
-  }catch(e){console.error(e);}
-}
-
-async function refreshLimit(){
-  if(!contract||!wallet)return;
-  const rem=Number(await contract.ticketsRemaining(wallet));
-  const used=3-rem;
-  const badge=document.getElementById("ticket-badge");
-  const btn=document.getElementById("btn-buy");
-  if(rem===0){
-    badge.textContent="3/3 tickets used this round";
-    badge.className="ticket-badge full";
-    btn.disabled=true;
-  } else if(used>0){
-    badge.textContent=used+"/3 used · "+rem+" remaining";
-    badge.className="ticket-badge partial";
-    btn.disabled=false;
-  } else {
-    badge.textContent="3 tickets available";
-    badge.className="ticket-badge open";
-    btn.disabled=false;
-  }
-}
-
-async function refreshHistory(){
-  if(!contract||!wallet)return;
-  const rid=Number(await contract.currentRoundId());
-  const list=document.getElementById("history-list");const items=[];
-  for(let r=Math.max(1,rid-5);r<=rid;r++){
-    try{
-      const tickets=await contract.getTickets(r);
-      const mine=tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
-      if(!mine.length)continue;
-      let drawn=false,winNums=null;
-      if(r<rid){try{winNums=await contract.getWinningNumbers(r);drawn=true;}catch(_){}}
-      for(const t of mine){
-        const nums=t.numbers.map(n=>Number(n));
-        let badge='<span class="badge bpend">Pending</span>',claimBtn="";
-        if(drawn&&winNums){
-          const wn=winNums.map(n=>Number(n));const m=nums.filter(n=>wn.includes(n)).length;
-          if(m>=6)badge='<span class="badge b1">Jackpot!</span>';
-          else if(m===5)badge='<span class="badge b2">2nd Prize</span>';
-          else if(m===4)badge='<span class="badge b3">3rd Prize</span>';
-          else if(m===3)badge='<span class="badge b4">4th Prize</span>';
-          else badge='<span class="badge blose">No match</span>';
-          if(m>=3){const claimed=await contract.hasClaimedReward(r,wallet);claimBtn=claimed?'<span style="font-size:10px;color:var(--ink4)">Claimed</span>':`<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;}
-        }
-        const mb=nums.map(n=>`<div class="mball">${n}</div>`).join("");
-        items.push(`<div class="hitem"><div class="hleft"><span class="hround">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:8px">${badge}${claimBtn}</div></div>`);
+// ─────────────────────────────────────────────
+//  WALLET DEFINITIONS
+// ─────────────────────────────────────────────
+const WALLETS = [
+  {
+    id: "metamask",
+    name: "MetaMask",
+    desc: "Browser extension · Most popular",
+    icon: "🦊",
+    iconBg: "#FFF3E0",
+    detect: () => window.ethereum?.isMetaMask && !window.ethereum?.isBraveWallet,
+    getProvider: () => {
+      // If multiple wallets, find MetaMask specifically
+      if (window.ethereum?.providers) {
+        return window.ethereum.providers.find(p => p.isMetaMask && !p.isBraveWallet);
       }
-    }catch(_){}
+      return window.ethereum;
+    }
+  },
+  {
+    id: "coinbase",
+    name: "Coinbase Wallet",
+    desc: "Browser extension · Coinbase",
+    icon: "🔵",
+    iconBg: "#EEF4FF",
+    detect: () => window.ethereum?.isCoinbaseWallet || !!window.coinbaseWalletExtension,
+    getProvider: () => {
+      if (window.ethereum?.providers) {
+        return window.ethereum.providers.find(p => p.isCoinbaseWallet);
+      }
+      if (window.coinbaseWalletExtension) return window.coinbaseWalletExtension;
+      return window.ethereum;
+    }
+  },
+  {
+    id: "brave",
+    name: "Brave Wallet",
+    desc: "Built-in Brave browser wallet",
+    icon: "🦁",
+    iconBg: "#FFF5E0",
+    detect: () => window.ethereum?.isBraveWallet,
+    getProvider: () => {
+      if (window.ethereum?.providers) {
+        return window.ethereum.providers.find(p => p.isBraveWallet);
+      }
+      return window.ethereum;
+    }
+  },
+  {
+    id: "rabby",
+    name: "Rabby Wallet",
+    desc: "Browser extension · DeBank",
+    icon: "🐰",
+    iconBg: "#F0F0FF",
+    detect: () => window.ethereum?.isRabby,
+    getProvider: () => window.ethereum
+  },
+  {
+    id: "trust",
+    name: "Trust Wallet",
+    desc: "Mobile · In-app browser",
+    icon: "🛡️",
+    iconBg: "#E8F4FF",
+    detect: () => window.ethereum?.isTrust || window.trustwallet,
+    getProvider: () => window.trustwallet || window.ethereum
+  },
+  {
+    id: "okx",
+    name: "OKX Wallet",
+    desc: "Browser extension · OKX",
+    icon: "⬛",
+    iconBg: "#F5F5F5",
+    detect: () => !!window.okxwallet,
+    getProvider: () => window.okxwallet
+  },
+  {
+    id: "injected",
+    name: "Injected Wallet",
+    desc: "Other browser wallet",
+    icon: "💎",
+    iconBg: "#F0FAF6",
+    detect: () => !!window.ethereum && !window.ethereum?.isMetaMask && !window.ethereum?.isCoinbaseWallet && !window.ethereum?.isBraveWallet && !window.ethereum?.isRabby,
+    getProvider: () => window.ethereum
   }
-  list.innerHTML=items.length?items.join(""):'<div class="empty">No tickets found for this wallet</div>';
+];
+
+// ─────────────────────────────────────────────
+//  MODAL
+// ─────────────────────────────────────────────
+function openWalletModal() {
+  buildWalletOptions();
+  document.getElementById("wallet-modal").classList.add("open");
+}
+function closeWalletModal() {
+  document.getElementById("wallet-modal").classList.remove("open");
+}
+function handleModalClick(e) {
+  if (e.target === document.getElementById("wallet-modal")) closeWalletModal();
+}
+document.addEventListener("keydown", e => { if (e.key === "Escape") closeWalletModal(); });
+
+function buildWalletOptions() {
+  const container = document.getElementById("wallet-options");
+  const detected = WALLETS.filter(w => w.detect());
+  const notDetected = WALLETS.filter(w => !w.detect());
+
+  let html = "";
+
+  if (detected.length > 0) {
+    detected.forEach(w => {
+      html += `
+        <div class="wallet-opt" onclick="connectWithWallet('${w.id}')">
+          <div class="wo-icon" style="background:${w.iconBg}">${w.icon}</div>
+          <div class="wo-info">
+            <div class="wo-name">${w.name}</div>
+            <div class="wo-desc">${w.desc}</div>
+          </div>
+          <span class="wo-badge detected">DETECTED</span>
+        </div>`;
+    });
+  }
+
+  if (notDetected.length > 0) {
+    if (detected.length > 0) {
+      html += `<div class="modal-divider"><span>not installed</span></div>`;
+    }
+    notDetected.forEach(w => {
+      html += `
+        <div class="wallet-opt disabled" title="Install ${w.name} first">
+          <div class="wo-icon" style="background:${w.iconBg};opacity:.5">${w.icon}</div>
+          <div class="wo-info">
+            <div class="wo-name" style="color:var(--ink4)">${w.name}</div>
+            <div class="wo-desc">${w.desc}</div>
+          </div>
+          <span class="wo-badge notfound">NOT FOUND</span>
+        </div>`;
+    });
+  }
+
+  if (detected.length === 0 && notDetected.length === 0) {
+    html = `<div class="empty" style="padding:16px">No wallets detected. Please install MetaMask or another Web3 wallet.</div>`;
+  }
+
+  container.innerHTML = html;
 }
 
-async function buyTicket(){
-  if(!contract){toast("Connect wallet first","error");return;}
-  let numbers;
-  if(currentTab==="pick"){
-    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
-    if(v.some(n=>isNaN(n)||n<1||n>45)){toast("Numbers must be between 1 and 45","error");return;}
-    if(new Set(v).size<6){toast("All numbers must be unique!","error");return;}
-    numbers=v;
-  }else{
-    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
-    if(v.some(isNaN)){toast("Please roll your numbers first","error");return;}
-    numbers=v;
-  }
-  try{
-    document.getElementById("btn-buy").disabled=true;
-    document.getElementById("btn-buy").textContent="Processing...";
-    showTxStatus("processing","Waiting for MetaMask confirmation...");
-    const price=ethers.parseEther("0.001");
-    let tx;
-    if(currentTab==="pick")tx=await contract.buyCustomTicket(numbers,1,{value:price});
-    else tx=await contract.buyRandomTicket(1,{value:price});
-    showTxStatus("processing","Transaction submitted, confirming on-chain...");
-    await tx.wait();
-    showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
-    setTimeout(()=>hideTxStatus(),4000);
+// ─────────────────────────────────────────────
+//  CONNECT
+// ─────────────────────────────────────────────
+async function connectWithWallet(walletId) {
+  const wDef = WALLETS.find(w => w.id === walletId);
+  if (!wDef) { toast("Wallet not found", "error"); return; }
+
+  const rawProvider = wDef.getProvider();
+  if (!rawProvider) { toast(`${wDef.name} not found. Please install it.`, "error"); return; }
+
+  closeWalletModal();
+  toast(`Connecting ${wDef.name}...`);
+
+  try {
+    // Switch or add network
+    try {
+      await rawProvider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
+    } catch (e) {
+      if (e.code === 4902) {
+        await rawProvider.request({ method: "wallet_addEthereumChain", params: [NETWORK] });
+      } else {
+        throw e;
+      }
+    }
+
+    provider = new ethers.BrowserProvider(rawProvider);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    wallet = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    activeWalletType = walletId;
+
+    // Update UI
+    const short = wallet.slice(0, 6) + "..." + wallet.slice(-4);
+    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef.name}</span>`;
+    document.getElementById("wav-icon").textContent = wDef.icon;
+
+    const bal = await provider.getBalance(wallet);
+    document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4) + " zkLTC";
+
+    const btn = document.getElementById("btn-connect");
+    btn.textContent = "Connected"; btn.className = "btn-wc on";
+    document.getElementById("btn-disconnect").style.display = "block";
+    document.getElementById("btn-buy").disabled = false;
+
+    // Listen for account/chain changes
+    rawProvider.on?.("accountsChanged", handleAccountsChanged);
+    rawProvider.on?.("chainChanged", handleChainChanged);
+
     await refresh();
-  }catch(e){
-    showTxStatus("error",(e?.reason||e?.message||"Transaction failed").slice(0,80));
-    setTimeout(()=>hideTxStatus(),5000);
+    startCountdown();
+    startCooldownWatch();
+    toast(`${wDef.name} connected!`, "success");
+
+  } catch (e) {
+    toast(e.message?.slice(0, 80) || "Connection failed", "error");
   }
-  finally{document.getElementById("btn-buy").textContent="Buy Ticket";await refreshLimit();}
 }
 
-async function drawNumbers(){
-  if(!contract)return;
-  try{toast("Triggering weekly draw...");const tx=await contract.performUpkeep("0x");await tx.wait();toast("Draw complete!","success");document.getElementById("btn-draw").style.display="none";await refresh();}
-  catch(e){toast(e?.reason||"Draw failed","error");}
+async function connectWithProvider(type) {
+  if (type === "walletconnect") {
+    toast("WalletConnect: Please integrate @walletconnect/web3-provider SDK for QR support", "error");
+    // Placeholder – integrate WalletConnect v2 SDK here if needed
+  }
 }
 
-async function claimReward(rid){
-  if(!contract)return;
-  try{toast("Claiming reward...");const tx=await contract.claimReward(rid);await tx.wait();toast("Reward claimed!","success");await refresh();}
-  catch(e){toast(e?.reason||"Claim failed","error");}
+function handleAccountsChanged(accounts) {
+  if (!accounts || accounts.length === 0) {
+    disconnectWallet();
+  } else {
+    wallet = accounts[0];
+    const short = wallet.slice(0, 6) + "..." + wallet.slice(-4);
+    const wDef = WALLETS.find(w => w.id === activeWalletType);
+    document.getElementById("wallet-addr").innerHTML =
+      `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef?.name || ""}</span>`;
+    refresh();
+    toast("Account switched", "success");
+  }
 }
 
-function switchTab(tab){
-  currentTab=tab;
-  document.getElementById("tab-pick").className="tab"+(tab==="pick"?" active":"");
-  document.getElementById("tab-rand").className="tab"+(tab==="rand"?" active":"");
-  document.getElementById("panel-pick").style.display=tab==="pick"?"":"none";
-  document.getElementById("panel-rand").style.display=tab==="rand"?"":"none";
-  if(tab==="rand")reroll();
+function handleChainChanged(chainId) {
+  if (chainId !== CHAIN_ID) {
+    toast("Wrong network! Please switch to LiteForge Testnet", "error");
+  } else {
+    toast("Network switched to LiteForge ✓", "success");
+    refresh();
+  }
 }
 
-function reroll(){
-  const p=[];
-  while(p.length<6){const n=Math.floor(Math.random()*45)+1;if(!p.includes(n))p.push(n);}
-  p.sort((a,b)=>a-b);
-  for(let i=0;i<6;i++){const el=document.getElementById("rb"+(i+1));el.textContent=p[i];el.className="brand set";}
-}
+function disconnectWallet() {
+  // Cleanup listeners
+  const wDef = WALLETS.find(w => w.id === activeWalletType);
+  if (wDef) {
+    const rawProvider = wDef.getProvider();
+    rawProvider?.removeListener?.("accountsChanged", handleAccountsChanged);
+    rawProvider?.removeListener?.("chainChanged", handleChainChanged);
+  }
 
-function startCountdown(){
-  if(cdTimer)clearInterval(cdTimer);
-  cdTimer=setInterval(()=>{
-    const left=Math.max(0,roundEndTime-Math.floor(Date.now()/1000));
-    const d=Math.floor(left/86400),h=Math.floor((left%86400)/3600),m=Math.floor((left%3600)/60),s=left%60;
-    document.getElementById("cd-d").textContent=pad(d);
-    document.getElementById("cd-h").textContent=pad(h);
-    document.getElementById("cd-m").textContent=pad(m);
-    document.getElementById("cd-s").textContent=pad(s);
-    document.getElementById("progress-bar").style.width=(roundDuration>0?Math.round(left/roundDuration*100):0)+"%";
-    if(left===0)document.getElementById("btn-draw").style.display="block";
-  },1000);
-}
+  provider = null; signer = null; contract = null; wallet = null; activeWalletType = null;
+  roundEndTime = 0;
+  if (cdTimer) clearInterval(cdTimer);
+  if (coolTimer) clearInterval(coolTimer);
 
-function startCooldownWatch(){
-  if(coolTimer)clearInterval(coolTimer);
-  coolTimer=setInterval(async()=>{
-    if(!contract||!wallet)return;
-    try{
-      const cd=Number(await contract.cooldownRemaining(wallet));
-      const el=document.getElementById("cooldown-txt");
-      if(cd>0){el.textContent="Next purchase available in "+cd+"s";document.getElementById("btn-buy").disabled=true;}
-      else{el.textContent="";await refreshLimit();}
-    }catch(_){}
-  },3000);
-}
+  document.getElementById("wallet-addr").innerHTML = "Not connected";
+  document.getElementById("wallet-bal").textContent = "— zkLTC";
+  document.getElementById("wav-icon").textContent = "◈";
+  const btn = document.getElementById("btn-connect");
+  btn.textContent = "Connect Wallet"; btn.className = "btn-wc";
+  document.getElementById("btn-disconnect").style.display = "none";
 
-function pad(n){return String(n).padStart(2,"0");}
-function toast(msg,type=""){
-  const el=document.getElementById("toast");
-  el.textContent=msg;el.className="show "+type;
-  clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
-}
+  document.getElementById("stat-jackpot").textContent = "—";
+  document.getElementById("stat-round").textContent = "#—";
+  document.getElementById("stat-tickets").textContent = "—";
+  try { document.getElementById("stat-players").textContent = "—"; } catch (_) {}
+  document.getElementById("banner-jackpot").textContent = "—";
+  document.getElementById("cd-d").textContent = "—";
+  document.getElementById("cd-h").textContent = "—";
+  document.getElementById("cd-m").textContent = "—";
+  document.getElementById("cd-s").textContent = "—";
+  document.getElementById("progress-bar").style.width = "0%";
 
-function disconnectWallet(){
-  // Reset state
-  provider=null;signer=null;contract=null;wallet=null;
-  roundEndTime=0;
-  if(cdTimer)clearInterval(cdTimer);
-  if(coolTimer)clearInterval(coolTimer);
-
-  // Reset wallet UI
-  document.getElementById("wallet-addr").innerHTML="Not connected";
-  document.getElementById("wallet-bal").textContent="— zkLTC";
-  const btn=document.getElementById("btn-connect");
-  btn.textContent="Connect Wallet";btn.className="btn-wc";
-  document.getElementById("btn-disconnect").style.display="none";
-
-  // Reset stats
-  document.getElementById("stat-jackpot").textContent="—";
-  document.getElementById("stat-round").textContent="#—";
-  document.getElementById("stat-tickets").textContent="—";
-  try{document.getElementById("stat-players").textContent="—";}catch(_){}
-  document.getElementById("banner-jackpot").textContent="—";
-  document.getElementById("cd-d").textContent="—";
-  document.getElementById("cd-h").textContent="—";
-  document.getElementById("cd-m").textContent="—";
-  document.getElementById("cd-s").textContent="—";
-  document.getElementById("progress-bar").style.width="0%";
-
-  // Reset ticket badge
-  const badge=document.getElementById("ticket-badge");
-  badge.textContent="Connect wallet";badge.className="ticket-badge";
-  document.getElementById("btn-buy").disabled=true;
-  document.getElementById("cooldown-txt").textContent="";
+  const badge = document.getElementById("ticket-badge");
+  badge.textContent = "Connect wallet"; badge.className = "ticket-badge";
+  document.getElementById("btn-buy").disabled = true;
+  document.getElementById("cooldown-txt").textContent = "";
   hideTxStatus();
 
-  // Reset social proof
-  document.getElementById("sp-players").textContent="—";
-  document.getElementById("sp-last").textContent="—";
-  document.getElementById("sp-round").textContent="—";
+  document.getElementById("sp-players").textContent = "—";
+  document.getElementById("sp-last").textContent = "—";
+  document.getElementById("sp-round").textContent = "—";
 
-  // Reset lists
-  document.getElementById("activity-list").innerHTML='<div class="act-empty">Waiting for activity...</div>';
-  document.getElementById("history-list").innerHTML='<div class="empty">Connect wallet to view your ticket history</div>';
-  document.getElementById("winning-panel").style.display="none";
-  document.getElementById("btn-draw").style.display="none";
+  document.getElementById("activity-list").innerHTML = '<div class="act-empty">Waiting for activity...</div>';
+  document.getElementById("history-list").innerHTML = '<div class="empty">Connect wallet to view your ticket history</div>';
+  document.getElementById("winning-panel").style.display = "none";
+  document.getElementById("btn-draw").style.display = "none";
 
   toast("Wallet disconnected");
 }
 
-function showTxStatus(type,msg){
-  const el=document.getElementById("tx-status");
-  const sp=document.getElementById("tx-spinner");
-  const tm=document.getElementById("tx-msg");
-  el.className="tx-status show "+type;
-  tm.textContent=msg;
-  sp.style.display=type==="processing"?"block":"none";
-}
-function hideTxStatus(){
-  document.getElementById("tx-status").className="tx-status";
+// ─────────────────────────────────────────────
+//  CONTRACT INTERACTIONS
+// ─────────────────────────────────────────────
+async function refresh() {
+  if (!contract) return;
+  try {
+    const r = await contract.getCurrentRound();
+    const rid = Number(r.roundId);
+    const jpVal = parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
+    document.getElementById("stat-jackpot").textContent = jpVal;
+    try { document.getElementById("banner-jackpot").textContent = jpVal; } catch (_) {}
+    document.getElementById("stat-round").textContent = "#" + rid;
+    document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
+    roundEndTime = Number(r.endTime);
+
+    if (Math.floor(Date.now() / 1000) >= roundEndTime && !r.drawn)
+      document.getElementById("btn-draw").style.display = "block";
+
+    if (rid > 1) {
+      try {
+        const w = await contract.getWinningNumbers(rid - 1);
+        for (let i = 0; i < 6; i++) document.getElementById("wb" + (i + 1)).textContent = Number(w[i]);
+        document.getElementById("winning-round").textContent = "#" + (rid - 1);
+        document.getElementById("winning-panel").style.display = "block";
+      } catch (_) {}
+    }
+
+    try {
+      const tickets = await contract.getTickets(rid);
+      updateActivityFeed(tickets, rid);
+      updateSocialProof(tickets, rid);
+    } catch (_) {}
+
+    await refreshLimit();
+    await refreshHistory();
+  } catch (e) { console.error(e); }
 }
 
-function updateActivityFeed(tickets,roundId){
-  const list=document.getElementById("activity-list");
-  if(!tickets||tickets.length===0){
-    list.innerHTML='<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
+async function refreshLimit() {
+  if (!contract || !wallet) return;
+  const rem = Number(await contract.ticketsRemaining(wallet));
+  const used = 3 - rem;
+  const badge = document.getElementById("ticket-badge");
+  const btn = document.getElementById("btn-buy");
+  if (rem === 0) {
+    badge.textContent = "3/3 tickets used this round";
+    badge.className = "ticket-badge full";
+    btn.disabled = true;
+  } else if (used > 0) {
+    badge.textContent = used + "/3 used · " + rem + " remaining";
+    badge.className = "ticket-badge partial";
+    btn.disabled = false;
+  } else {
+    badge.textContent = "3 tickets available";
+    badge.className = "ticket-badge open";
+    btn.disabled = false;
+  }
+}
+
+async function refreshHistory() {
+  if (!contract || !wallet) return;
+  const rid = Number(await contract.currentRoundId());
+  const list = document.getElementById("history-list");
+  const items = [];
+  for (let r = Math.max(1, rid - 5); r <= rid; r++) {
+    try {
+      const tickets = await contract.getTickets(r);
+      const mine = tickets.filter(t => t.player.toLowerCase() === wallet.toLowerCase());
+      if (!mine.length) continue;
+      let drawn = false, winNums = null;
+      if (r < rid) { try { winNums = await contract.getWinningNumbers(r); drawn = true; } catch (_) {} }
+      for (const t of mine) {
+        const nums = t.numbers.map(n => Number(n));
+        let badge = '<span class="badge bpend">Pending</span>', claimBtn = "";
+        if (drawn && winNums) {
+          const wn = winNums.map(n => Number(n));
+          const m = nums.filter(n => wn.includes(n)).length;
+          if (m >= 6) badge = '<span class="badge b1">Jackpot!</span>';
+          else if (m === 5) badge = '<span class="badge b2">2nd Prize</span>';
+          else if (m === 4) badge = '<span class="badge b3">3rd Prize</span>';
+          else if (m === 3) badge = '<span class="badge b4">4th Prize</span>';
+          else badge = '<span class="badge blose">No match</span>';
+          if (m >= 3) {
+            const claimed = await contract.hasClaimedReward(r, wallet);
+            claimBtn = claimed
+              ? '<span style="font-size:10px;color:var(--ink4)">Claimed</span>'
+              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
+          }
+        }
+        const mb = nums.map(n => `<div class="mball">${n}</div>`).join("");
+        items.push(`<div class="hitem"><div class="hleft"><span class="hround">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:8px">${badge}${claimBtn}</div></div>`);
+      }
+    } catch (_) {}
+  }
+  list.innerHTML = items.length ? items.join("") : '<div class="empty">No tickets found for this wallet</div>';
+}
+
+async function buyTicket() {
+  if (!contract) { toast("Connect wallet first", "error"); return; }
+  let numbers;
+  if (currentTab === "pick") {
+    const v = [1, 2, 3, 4, 5, 6].map(i => parseInt(document.getElementById("n" + i).value));
+    if (v.some(n => isNaN(n) || n < 1 || n > 45)) { toast("Numbers must be between 1 and 45", "error"); return; }
+    if (new Set(v).size < 6) { toast("All numbers must be unique!", "error"); return; }
+    numbers = v;
+  } else {
+    const v = [1, 2, 3, 4, 5, 6].map(i => parseInt(document.getElementById("rb" + i).textContent));
+    if (v.some(isNaN)) { toast("Please roll your numbers first", "error"); return; }
+    numbers = v;
+  }
+  try {
+    document.getElementById("btn-buy").disabled = true;
+    document.getElementById("btn-buy").textContent = "Processing...";
+    showTxStatus("processing", "Waiting for wallet confirmation...");
+    const price = ethers.parseEther("0.001");
+    let tx;
+    if (currentTab === "pick") tx = await contract.buyCustomTicket(numbers, 1, { value: price });
+    else tx = await contract.buyRandomTicket(1, { value: price });
+    showTxStatus("processing", "Transaction submitted, confirming on-chain...");
+    await tx.wait();
+    showTxStatus("success", "Ticket purchased! Numbers: " + numbers.join(" · "));
+    setTimeout(() => hideTxStatus(), 4000);
+    await refresh();
+  } catch (e) {
+    showTxStatus("error", (e?.reason || e?.message || "Transaction failed").slice(0, 80));
+    setTimeout(() => hideTxStatus(), 5000);
+  } finally {
+    document.getElementById("btn-buy").textContent = "Buy Ticket";
+    await refreshLimit();
+  }
+}
+
+async function drawNumbers() {
+  if (!contract) return;
+  try {
+    toast("Triggering weekly draw...");
+    const tx = await contract.performUpkeep("0x");
+    await tx.wait();
+    toast("Draw complete!", "success");
+    document.getElementById("btn-draw").style.display = "none";
+    await refresh();
+  } catch (e) { toast(e?.reason || "Draw failed", "error"); }
+}
+
+async function claimReward(rid) {
+  if (!contract) return;
+  try {
+    toast("Claiming reward...");
+    const tx = await contract.claimReward(rid);
+    await tx.wait();
+    toast("Reward claimed!", "success");
+    await refresh();
+  } catch (e) { toast(e?.reason || "Claim failed", "error"); }
+}
+
+// ─────────────────────────────────────────────
+//  UI HELPERS
+// ─────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById("tab-pick").className = "tab" + (tab === "pick" ? " active" : "");
+  document.getElementById("tab-rand").className = "tab" + (tab === "rand" ? " active" : "");
+  document.getElementById("panel-pick").style.display = tab === "pick" ? "" : "none";
+  document.getElementById("panel-rand").style.display = tab === "rand" ? "" : "none";
+  if (tab === "rand") reroll();
+}
+
+function reroll() {
+  const p = [];
+  while (p.length < 6) { const n = Math.floor(Math.random() * 45) + 1; if (!p.includes(n)) p.push(n); }
+  p.sort((a, b) => a - b);
+  for (let i = 0; i < 6; i++) { const el = document.getElementById("rb" + (i + 1)); el.textContent = p[i]; el.className = "brand set"; }
+}
+
+function startCountdown() {
+  if (cdTimer) clearInterval(cdTimer);
+  cdTimer = setInterval(() => {
+    const left = Math.max(0, roundEndTime - Math.floor(Date.now() / 1000));
+    const d = Math.floor(left / 86400), h = Math.floor((left % 86400) / 3600), m = Math.floor((left % 3600) / 60), s = left % 60;
+    document.getElementById("cd-d").textContent = pad(d);
+    document.getElementById("cd-h").textContent = pad(h);
+    document.getElementById("cd-m").textContent = pad(m);
+    document.getElementById("cd-s").textContent = pad(s);
+    document.getElementById("progress-bar").style.width = (roundDuration > 0 ? Math.round(left / roundDuration * 100) : 0) + "%";
+    if (left === 0) document.getElementById("btn-draw").style.display = "block";
+  }, 1000);
+}
+
+function startCooldownWatch() {
+  if (coolTimer) clearInterval(coolTimer);
+  coolTimer = setInterval(async () => {
+    if (!contract || !wallet) return;
+    try {
+      const cd = Number(await contract.cooldownRemaining(wallet));
+      const el = document.getElementById("cooldown-txt");
+      if (cd > 0) {
+        el.textContent = "Next purchase available in " + cd + "s";
+        document.getElementById("btn-buy").disabled = true;
+      } else {
+        el.textContent = "";
+        await refreshLimit(); // ← FIX: re-enable button after cooldown
+      }
+    } catch (_) {
+      // FIX: don't silently fail — re-enable button so user isn't stuck
+      document.getElementById("cooldown-txt").textContent = "";
+      await refreshLimit();
+    }
+  }, 3000);
+}
+
+function updateActivityFeed(tickets, roundId) {
+  const list = document.getElementById("activity-list");
+  if (!tickets || tickets.length === 0) {
+    list.innerHTML = '<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
     return;
   }
-  const recent=[...tickets].reverse().slice(0,5);
-  list.innerHTML=recent.map(t=>{
-    const nums=t.numbers.map(n=>Number(n));
-    const addr=t.player.slice(0,6)+"..."+t.player.slice(-4);
+  const recent = [...tickets].reverse().slice(0, 5);
+  list.innerHTML = recent.map(t => {
+    const nums = t.numbers.map(n => Number(n));
+    const addr = t.player.slice(0, 6) + "..." + t.player.slice(-4);
     return `<div class="activity-item">
       <div class="act-left">
         <div class="act-icon">🎟️</div>
@@ -930,18 +1077,31 @@ function updateActivityFeed(tickets,roundId){
   }).join("");
 }
 
-function updateSocialProof(tickets,roundId){
-  const unique=new Set(tickets.map(t=>t.player)).size;
-  document.getElementById("sp-players").textContent=unique||"0";
-  document.getElementById("sp-round").textContent="#"+roundId;
-  try{document.getElementById("stat-players").textContent=unique||"0";}catch(_){}
-  if(tickets.length>0){
-    document.getElementById("sp-last").textContent="just now";
-  } else {
-    document.getElementById("sp-last").textContent="—";
-  }
+function updateSocialProof(tickets, roundId) {
+  const unique = new Set(tickets.map(t => t.player)).size;
+  document.getElementById("sp-players").textContent = unique || "0";
+  document.getElementById("sp-round").textContent = "#" + roundId;
+  try { document.getElementById("stat-players").textContent = unique || "0"; } catch (_) {}
+  document.getElementById("sp-last").textContent = tickets.length > 0 ? "just now" : "—";
 }
 
+function showTxStatus(type, msg) {
+  const el = document.getElementById("tx-status");
+  el.className = "tx-status show " + type;
+  document.getElementById("tx-msg").textContent = msg;
+  document.getElementById("tx-spinner").style.display = type === "processing" ? "block" : "none";
+}
+function hideTxStatus() {
+  document.getElementById("tx-status").className = "tx-status";
+}
+
+function pad(n) { return String(n).padStart(2, "0"); }
+
+function toast(msg, type = "") {
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.className = "show " + type;
+  clearTimeout(el._t); el._t = setTimeout(() => el.className = "", 3500);
+}
 </script>
 </body>
 </html>
