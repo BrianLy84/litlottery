@@ -5,6 +5,52 @@
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>LitBillionaire — Weekly On-Chain Lottery</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js">
+function disconnectWallet(){
+  // Reset state
+  provider=null;signer=null;contract=null;wallet=null;
+  roundEndTime=0;
+  if(cdTimer)clearInterval(cdTimer);
+  if(coolTimer)clearInterval(coolTimer);
+
+  // Reset wallet UI
+  document.getElementById("wallet-addr").innerHTML="Not connected";
+  document.getElementById("wallet-bal").textContent="— zkLTC";
+  const btn=document.getElementById("btn-connect");
+  btn.textContent="Connect Wallet";btn.className="btn-wc";
+  document.getElementById("btn-disconnect").style.display="none";
+
+  // Reset stats
+  document.getElementById("stat-jackpot").textContent="—";
+  document.getElementById("stat-round").textContent="#—";
+  document.getElementById("stat-tickets").textContent="—";
+  document.getElementById("banner-jackpot").textContent="—";
+  document.getElementById("cd-d").textContent="—";
+  document.getElementById("cd-h").textContent="—";
+  document.getElementById("cd-m").textContent="—";
+  document.getElementById("cd-s").textContent="—";
+  document.getElementById("progress-bar").style.width="0%";
+
+  // Reset ticket badge
+  const badge=document.getElementById("ticket-badge");
+  badge.textContent="Connect wallet";badge.className="ticket-badge";
+  document.getElementById("btn-buy").disabled=true;
+  document.getElementById("cooldown-txt").textContent="";
+  hideTxStatus();
+
+  // Reset social proof
+  document.getElementById("sp-players").textContent="—";
+  document.getElementById("sp-last").textContent="—";
+  document.getElementById("sp-round").textContent="—";
+
+  // Reset lists
+  document.getElementById("activity-list").innerHTML='<div class="act-empty">Waiting for activity...</div>';
+  document.getElementById("history-list").innerHTML='<div class="empty">Connect wallet to view your ticket history</div>';
+  document.getElementById("winning-panel").style.display="none";
+  document.getElementById("btn-draw").style.display="none";
+
+  toast("Wallet disconnected");
+}
+
 function showTxStatus(type,msg){
   const el=document.getElementById("tx-status");
   const sp=document.getElementById("tx-spinner");
@@ -130,6 +176,9 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .btn-wc{background:var(--ink);color:#FFF8E8;border:none;padding:9px 20px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.3px;transition:all .2s}
 .btn-wc:hover{background:var(--ink2);transform:translateY(-1px)}
 .btn-wc.on{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
+.wallet-actions{display:flex;gap:8px;align-items:center}
+.btn-disconnect{background:transparent;color:var(--ink4);border:1px solid var(--border);padding:7px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.btn-disconnect:hover{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5}
 
 /* ── STATS ── */
 .stats{display:grid;grid-template-columns:1.8fr 1fr 1fr;gap:14px;margin-bottom:20px}
@@ -394,7 +443,10 @@ footer a:hover{color:var(--teal2)}
       <div class="wbal" id="wallet-bal">— zkLTC</div>
     </div>
   </div>
-  <button class="btn-wc" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+  <div class="wallet-actions">
+    <button class="btn-wc" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
+    <button class="btn-disconnect" id="btn-disconnect" onclick="disconnectWallet()" style="display:none">Disconnect</button>
+  </div>
 </div>
 
 
@@ -568,6 +620,7 @@ async function connectWallet(){
     const bal=await provider.getBalance(wallet);
     document.getElementById("wallet-bal").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
     const btn=document.getElementById("btn-connect");btn.textContent="Connected";btn.className="btn-wc on";
+    document.getElementById("btn-disconnect").style.display="block";
     document.getElementById("btn-buy").disabled=false;
     await refresh();startCountdown();startCooldownWatch();
     toast("Wallet connected!","success");
@@ -742,6 +795,52 @@ function toast(msg,type=""){
   const el=document.getElementById("toast");
   el.textContent=msg;el.className="show "+type;
   clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
+}
+
+function disconnectWallet(){
+  // Reset state
+  provider=null;signer=null;contract=null;wallet=null;
+  roundEndTime=0;
+  if(cdTimer)clearInterval(cdTimer);
+  if(coolTimer)clearInterval(coolTimer);
+
+  // Reset wallet UI
+  document.getElementById("wallet-addr").innerHTML="Not connected";
+  document.getElementById("wallet-bal").textContent="— zkLTC";
+  const btn=document.getElementById("btn-connect");
+  btn.textContent="Connect Wallet";btn.className="btn-wc";
+  document.getElementById("btn-disconnect").style.display="none";
+
+  // Reset stats
+  document.getElementById("stat-jackpot").textContent="—";
+  document.getElementById("stat-round").textContent="#—";
+  document.getElementById("stat-tickets").textContent="—";
+  document.getElementById("banner-jackpot").textContent="—";
+  document.getElementById("cd-d").textContent="—";
+  document.getElementById("cd-h").textContent="—";
+  document.getElementById("cd-m").textContent="—";
+  document.getElementById("cd-s").textContent="—";
+  document.getElementById("progress-bar").style.width="0%";
+
+  // Reset ticket badge
+  const badge=document.getElementById("ticket-badge");
+  badge.textContent="Connect wallet";badge.className="ticket-badge";
+  document.getElementById("btn-buy").disabled=true;
+  document.getElementById("cooldown-txt").textContent="";
+  hideTxStatus();
+
+  // Reset social proof
+  document.getElementById("sp-players").textContent="—";
+  document.getElementById("sp-last").textContent="—";
+  document.getElementById("sp-round").textContent="—";
+
+  // Reset lists
+  document.getElementById("activity-list").innerHTML='<div class="act-empty">Waiting for activity...</div>';
+  document.getElementById("history-list").innerHTML='<div class="empty">Connect wallet to view your ticket history</div>';
+  document.getElementById("winning-panel").style.display="none";
+  document.getElementById("btn-draw").style.display="none";
+
+  toast("Wallet disconnected");
 }
 
 function showTxStatus(type,msg){
