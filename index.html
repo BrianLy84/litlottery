@@ -4,7 +4,54 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>LitBillionaire — Weekly On-Chain Lottery</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js">
+function showTxStatus(type,msg){
+  const el=document.getElementById("tx-status");
+  const sp=document.getElementById("tx-spinner");
+  const tm=document.getElementById("tx-msg");
+  el.className="tx-status show "+type;
+  tm.textContent=msg;
+  sp.style.display=type==="processing"?"block":"none";
+}
+function hideTxStatus(){
+  document.getElementById("tx-status").className="tx-status";
+}
+
+function updateActivityFeed(tickets,roundId){
+  const list=document.getElementById("activity-list");
+  if(!tickets||tickets.length===0){
+    list.innerHTML='<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
+    return;
+  }
+  const recent=[...tickets].reverse().slice(0,5);
+  list.innerHTML=recent.map(t=>{
+    const nums=t.numbers.map(n=>Number(n));
+    const addr=t.player.slice(0,6)+"..."+t.player.slice(-4);
+    return `<div class="activity-item">
+      <div class="act-left">
+        <div class="act-icon">🎟️</div>
+        <div>
+          <div class="act-addr">${addr}</div>
+          <div class="act-nums">${nums.join(" · ")}</div>
+        </div>
+      </div>
+      <div class="act-time">Round #${roundId}</div>
+    </div>`;
+  }).join("");
+}
+
+function updateSocialProof(tickets,roundId){
+  const unique=new Set(tickets.map(t=>t.player)).size;
+  document.getElementById("sp-players").textContent=unique||"0";
+  document.getElementById("sp-round").textContent="#"+roundId;
+  if(tickets.length>0){
+    document.getElementById("sp-last").textContent="just now";
+  } else {
+    document.getElementById("sp-last").textContent="—";
+  }
+}
+
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -201,6 +248,96 @@ footer a:hover{color:var(--teal2)}
   .ball{width:46px;height:46px}
   .ball input{font-size:18px}
 }
+
+/* ── SOCIAL PROOF BAR ── */
+.social-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:var(--paper);border:1px solid var(--border);
+  border-radius:12px;padding:11px 18px;margin-bottom:16px;
+  flex-wrap:wrap;gap:10px;box-shadow:var(--shadow);
+}
+.sp-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500}
+.sp-dot{width:7px;height:7px;border-radius:50%;background:var(--teal2);animation:pulse-dot 2s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
+.sp-val{color:var(--ink);font-weight:600}
+.sp-div{width:1px;height:14px;background:var(--border)}
+
+/* ── ACTIVITY FEED ── */
+.activity-panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
+.activity-list{display:flex;flex-direction:column;gap:0}
+.activity-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid var(--border);
+  animation:fadein .4s ease;
+}
+.activity-item:last-child{border-bottom:none}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+.act-left{display:flex;align-items:center;gap:10px}
+.act-icon{width:28px;height:28px;border-radius:8px;background:var(--teal-bg);border:1px solid var(--teal-border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.act-addr{font-size:12px;color:var(--ink2);font-weight:500;font-family:monospace}
+.act-nums{font-size:10px;color:var(--ink4);margin-top:1px}
+.act-time{font-size:11px;color:var(--ink4);white-space:nowrap}
+.act-empty{text-align:center;padding:16px;color:var(--ink4);font-size:12px;font-style:italic}
+
+/* ── JACKPOT HIGHLIGHT ── */
+.sc.jp .sval{
+  font-size:44px;
+  color:var(--gold);
+  text-shadow:0 0 20px rgba(191,140,10,.15);
+}
+.sc.jp{
+  background:linear-gradient(160deg,#FDFAF2,#FDF5E0);
+  border-color:#D4A820;
+  box-shadow:0 2px 12px rgba(191,140,10,.08),0 4px 20px rgba(191,140,10,.04);
+}
+.jackpot-growing{
+  display:flex;align-items:center;gap:6px;margin-top:6px;
+}
+.jg-arrow{font-size:11px;color:var(--teal2)}
+.jg-txt{font-size:11px;color:var(--teal2);font-weight:600}
+
+/* ── TICKET LIMIT BADGE ── */
+.ticket-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--cream);border:1px solid var(--border2);
+  border-radius:8px;padding:6px 12px;font-size:12px;
+  color:var(--ink2);font-weight:500;
+}
+.ticket-badge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
+.ticket-badge.partial{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold)}
+.ticket-badge.open{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal2)}
+
+/* ── CTA BUTTON PULSE ── */
+.btn-buy:not(:disabled){
+  background:var(--ink);
+  box-shadow:0 4px 14px rgba(13,11,8,.2);
+  position:relative;overflow:hidden;
+}
+.btn-buy:not(:disabled)::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);
+  animation:shimmer 3s infinite;
+}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+/* ── TX FEEDBACK ── */
+.tx-status{
+  display:none;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:10px;margin-bottom:10px;
+  font-size:12px;font-weight:500;
+}
+.tx-status.show{display:flex}
+.tx-status.processing{background:#FFF8E8;border:1px solid var(--gold-border);color:var(--gold)}
+.tx-status.success{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal2)}
+.tx-status.error{background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626}
+.tx-spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── COUNTDOWN BIG ── */
+.cd-digits{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+.cd-unit{text-align:center}
+.cd-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--ink);line-height:1;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:4px 10px;min-width:48px;display:inline-block}
+.cd-lbl2{font-size:9px;color:var(--ink4);letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:600}
 </style>
 </head>
 <body>
@@ -260,6 +397,25 @@ footer a:hover{color:var(--teal2)}
   <button class="btn-wc" id="btn-connect" onclick="connectWallet()">Connect Wallet</button>
 </div>
 
+
+<!-- SOCIAL PROOF -->
+<div class="social-bar">
+  <div class="sp-item">
+    <div class="sp-dot"></div>
+    <span><span class="sp-val" id="sp-players">—</span> players this round</span>
+  </div>
+  <div class="sp-div"></div>
+  <div class="sp-item">
+    <span>🎟️</span>
+    <span>Last ticket: <span class="sp-val" id="sp-last">—</span></span>
+  </div>
+  <div class="sp-div"></div>
+  <div class="sp-item">
+    <span>🏆</span>
+    <span>Round <span class="sp-val" id="sp-round">—</span> · Draw Friday</span>
+  </div>
+</div>
+
 <!-- STATS -->
 <div class="stats">
   <div class="sc jp">
@@ -269,12 +425,12 @@ footer a:hover{color:var(--teal2)}
   </div>
   <div class="sc">
     <div class="slbl">Round</div>
-    <div class="sval" id="stat-round">#—</div>
+    <div class="sval" id="stat-round" style="font-size:32px;color:var(--ink)">#—</div>
     <div class="sunit">current</div>
   </div>
   <div class="sc">
     <div class="slbl">Tickets Sold</div>
-    <div class="sval" id="stat-tickets">—</div>
+    <div class="sval" id="stat-tickets" style="font-size:32px;color:var(--ink)">—</div>
     <div class="sunit">this round</div>
   </div>
 </div>
@@ -283,9 +439,14 @@ footer a:hover{color:var(--teal2)}
 <div class="cdcard">
   <div class="cdrow">
     <span class="cdlbl">Next Draw — Friday 20:00 GMT+7</span>
-    <span class="cdtime" id="countdown">— — —</span>
+    <div class="cd-digits">
+      <div class="cd-unit"><span class="cd-num" id="cd-d">—</span><div class="cd-lbl2">Days</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-h">—</span><div class="cd-lbl2">Hours</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-m">—</span><div class="cd-lbl2">Mins</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-s">—</span><div class="cd-lbl2">Secs</div></div>
+    </div>
   </div>
-  <div class="prog"><div class="progf" id="progress-bar" style="width:0%"></div></div>
+  <div class="prog" style="margin-top:12px"><div class="progf" id="progress-bar" style="width:0%"></div></div>
 </div>
 
 <!-- PRIZES -->
@@ -325,11 +486,12 @@ footer a:hover{color:var(--teal2)}
     <div class="rtip">Tap any ball to re-roll your lucky numbers</div>
   </div>
   <div class="tmeta">
-    <div style="display:flex;align-items:center">
-      <div class="ldots"><div class="ldot" id="d0"></div><div class="ldot" id="d1"></div><div class="ldot" id="d2"></div></div>
-      <span class="ltxt" id="limit-txt">Connect wallet to see allowance</span>
-    </div>
+    <span class="ticket-badge" id="ticket-badge">Connect wallet</span>
     <span class="tplbl">Ticket: <span>0.001 zkLTC</span> each</span>
+  </div>
+  <div class="tx-status" id="tx-status">
+    <div class="tx-spinner" id="tx-spinner"></div>
+    <span id="tx-msg">Processing...</span>
   </div>
   <div class="cdmsg" id="cooldown-txt"></div>
   <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>Buy Ticket</button>
@@ -343,6 +505,15 @@ footer a:hover{color:var(--teal2)}
   <div class="wballs">
     <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
     <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
+  </div>
+</div>
+
+
+<!-- ACTIVITY FEED -->
+<div class="activity-panel">
+  <div class="ph"><div class="phico">⚡</div><div class="phtitle">Recent Activity</div></div>
+  <div class="activity-list" id="activity-list">
+    <div class="act-empty">Waiting for activity...</div>
   </div>
 </div>
 
@@ -416,6 +587,12 @@ async function refresh(){
     roundEndTime=Number(r.endTime);
     if(Math.floor(Date.now()/1000)>=roundEndTime&&!r.drawn)document.getElementById("btn-draw").style.display="block";
     if(rid>1){try{const w=await contract.getWinningNumbers(rid-1);for(let i=0;i<6;i++)document.getElementById("wb"+(i+1)).textContent=Number(w[i]);document.getElementById("winning-round").textContent="#"+(rid-1);document.getElementById("winning-panel").style.display="block";}catch(_){}}
+    // Update activity + social proof
+    try{
+      const tickets=await contract.getTickets(rid);
+      updateActivityFeed(tickets,rid);
+      updateSocialProof(tickets,rid);
+    }catch(_){}
     await refreshLimit();await refreshHistory();
   }catch(e){console.error(e);}
 }
@@ -424,10 +601,21 @@ async function refreshLimit(){
   if(!contract||!wallet)return;
   const rem=Number(await contract.ticketsRemaining(wallet));
   const used=3-rem;
-  for(let i=0;i<3;i++)document.getElementById("d"+i).className="ldot"+(i<used?" used":"");
-  const lt=document.getElementById("limit-txt");
-  if(rem===0){lt.textContent="No tickets remaining this round";document.getElementById("btn-buy").disabled=true;}
-  else{lt.textContent=rem+" ticket"+(rem>1?"s":"")+" remaining";document.getElementById("btn-buy").disabled=false;}
+  const badge=document.getElementById("ticket-badge");
+  const btn=document.getElementById("btn-buy");
+  if(rem===0){
+    badge.textContent="3/3 tickets used this round";
+    badge.className="ticket-badge full";
+    btn.disabled=true;
+  } else if(used>0){
+    badge.textContent=used+"/3 used · "+rem+" remaining";
+    badge.className="ticket-badge partial";
+    btn.disabled=false;
+  } else {
+    badge.textContent="3 tickets available";
+    badge.className="ticket-badge open";
+    btn.disabled=false;
+  }
 }
 
 async function refreshHistory(){
@@ -476,15 +664,21 @@ async function buyTicket(){
   }
   try{
     document.getElementById("btn-buy").disabled=true;
-    document.getElementById("btn-buy").textContent="Confirming...";
-    toast("Waiting for MetaMask...");
+    document.getElementById("btn-buy").textContent="Processing...";
+    showTxStatus("processing","Waiting for MetaMask confirmation...");
     const price=ethers.parseEther("0.001");
     let tx;
     if(currentTab==="pick")tx=await contract.buyCustomTicket(numbers,1,{value:price});
     else tx=await contract.buyRandomTicket(1,{value:price});
-    toast("Transaction submitted...");await tx.wait();
-    toast("Ticket purchased! "+numbers.join(" · "),"success");await refresh();
-  }catch(e){toast((e?.reason||e?.message||"Transaction failed").slice(0,80),"error");}
+    showTxStatus("processing","Transaction submitted, confirming on-chain...");
+    await tx.wait();
+    showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
+    setTimeout(()=>hideTxStatus(),4000);
+    await refresh();
+  }catch(e){
+    showTxStatus("error",(e?.reason||e?.message||"Transaction failed").slice(0,80));
+    setTimeout(()=>hideTxStatus(),5000);
+  }
   finally{document.getElementById("btn-buy").textContent="Buy Ticket";await refreshLimit();}
 }
 
@@ -521,7 +715,10 @@ function startCountdown(){
   cdTimer=setInterval(()=>{
     const left=Math.max(0,roundEndTime-Math.floor(Date.now()/1000));
     const d=Math.floor(left/86400),h=Math.floor((left%86400)/3600),m=Math.floor((left%3600)/60),s=left%60;
-    document.getElementById("countdown").textContent=d+"d "+pad(h)+"h "+pad(m)+"m "+pad(s)+"s";
+    document.getElementById("cd-d").textContent=pad(d);
+    document.getElementById("cd-h").textContent=pad(h);
+    document.getElementById("cd-m").textContent=pad(m);
+    document.getElementById("cd-s").textContent=pad(s);
     document.getElementById("progress-bar").style.width=(roundDuration>0?Math.round(left/roundDuration*100):0)+"%";
     if(left===0)document.getElementById("btn-draw").style.display="block";
   },1000);
@@ -546,6 +743,53 @@ function toast(msg,type=""){
   el.textContent=msg;el.className="show "+type;
   clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
 }
+
+function showTxStatus(type,msg){
+  const el=document.getElementById("tx-status");
+  const sp=document.getElementById("tx-spinner");
+  const tm=document.getElementById("tx-msg");
+  el.className="tx-status show "+type;
+  tm.textContent=msg;
+  sp.style.display=type==="processing"?"block":"none";
+}
+function hideTxStatus(){
+  document.getElementById("tx-status").className="tx-status";
+}
+
+function updateActivityFeed(tickets,roundId){
+  const list=document.getElementById("activity-list");
+  if(!tickets||tickets.length===0){
+    list.innerHTML='<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
+    return;
+  }
+  const recent=[...tickets].reverse().slice(0,5);
+  list.innerHTML=recent.map(t=>{
+    const nums=t.numbers.map(n=>Number(n));
+    const addr=t.player.slice(0,6)+"..."+t.player.slice(-4);
+    return `<div class="activity-item">
+      <div class="act-left">
+        <div class="act-icon">🎟️</div>
+        <div>
+          <div class="act-addr">${addr}</div>
+          <div class="act-nums">${nums.join(" · ")}</div>
+        </div>
+      </div>
+      <div class="act-time">Round #${roundId}</div>
+    </div>`;
+  }).join("");
+}
+
+function updateSocialProof(tickets,roundId){
+  const unique=new Set(tickets.map(t=>t.player)).size;
+  document.getElementById("sp-players").textContent=unique||"0";
+  document.getElementById("sp-round").textContent="#"+roundId;
+  if(tickets.length>0){
+    document.getElementById("sp-last").textContent="just now";
+  } else {
+    document.getElementById("sp-last").textContent="—";
+  }
+}
+
 </script>
 </body>
 </html>
