@@ -27,8 +27,6 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .main-grid{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:start}
 .main-left{display:flex;flex-direction:column;gap:0}
 .main-right{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
-
-/* ── HERO BANNER ── */
 .hero{background:#FAF6ED;border:1px solid #C8B870;border-radius:20px;overflow:hidden;margin-bottom:24px;}
 .hero-inner{display:flex;align-items:stretch;min-height:190px}
 .hero-left{flex:1;padding:32px 36px;border-right:1px solid #D8C878;display:flex;flex-direction:column;justify-content:center;}
@@ -39,7 +37,7 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .hero-title span{color:#9A6800}
 .hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:16px;color:#6A5218;letter-spacing:1.5px;margin-bottom:22px;font-weight:600}
 .hero-pills{display:flex;gap:8px;flex-wrap:wrap}
-.pill{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;font-size:10px;letter-spacing:1.5px;font-weight:600;font-family:'DM Sans',sans-serif}
+.pill{display:flex;align-items:center;gap:5px;padding:6px 13px;border-radius:20px;font-size:10px;letter-spacing:1.5px;font-weight:600;}
 .pill-live{background:#E0F4EC;border:1px solid #60B898;color:#085A40}
 .pill-chain{background:#F0E8CC;border:1px solid #B89830;color:#6A4A08}
 .pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
@@ -54,37 +52,23 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .hero-bottom{background:#EFE8D0;border-top:1px solid #C8B060;padding:12px 36px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;}
 .bstat{display:flex;align-items:center;gap:6px}
 .bstat-ico{font-size:13px}
-.bstat-txt{font-size:11px;color:#5A4010;font-weight:500;letter-spacing:.2px}
+.bstat-txt{font-size:11px;color:#5A4010;font-weight:500;}
 .bstat-txt b{color:#2A1E00;font-weight:700}
 .bsdiv{width:1px;height:14px;background:#C8B060}
-
-/* ── WALLET BAR ── */
 .wbar{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:14px 20px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow)}
 .w-left{display:flex;align-items:center;gap:12px}
 .wav{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--teal-bg),var(--gold-bg));border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:17px}
-.waddr{font-size:13px;color:var(--ink3);font-weight:400}
-.waddr b{color:var(--ink);font-weight:500}
+.waddr{font-size:13px;color:var(--ink3);}
 .wbal{font-size:13px;color:var(--gold);font-weight:600}
 .btn-wc{background:var(--ink);color:#FFF8E8;border:none;padding:9px 20px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;letter-spacing:.3px;transition:all .2s}
 .btn-wc:hover{background:var(--ink2);transform:translateY(-1px)}
 .btn-wc.on{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
 .wallet-actions{display:flex;gap:8px;align-items:center}
-.btn-disconnect{background:transparent;color:var(--ink4);border:1px solid var(--border);padding:7px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;cursor:pointer;transition:all .2s;letter-spacing:.3px}
+.btn-disconnect{background:transparent;color:var(--ink4);border:1px solid var(--border);padding:7px 14px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;transition:all .2s;}
 .btn-disconnect:hover{background:#FEF2F2;color:#DC2626;border-color:#FCA5A5}
-
-/* ── WALLET MODAL ── */
-.modal-overlay{
-  position:fixed;inset:0;background:rgba(13,11,8,.55);backdrop-filter:blur(4px);
-  z-index:1000;display:flex;align-items:center;justify-content:center;
-  opacity:0;pointer-events:none;transition:opacity .25s;
-}
+.modal-overlay{position:fixed;inset:0;background:rgba(13,11,8,.55);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s;}
 .modal-overlay.open{opacity:1;pointer-events:all}
-.modal-box{
-  background:var(--paper);border:1px solid var(--border2);border-radius:20px;
-  padding:28px 28px 24px;width:380px;max-width:92vw;
-  box-shadow:0 20px 60px rgba(0,0,0,.18);
-  transform:translateY(12px) scale(.97);transition:transform .25s,opacity .25s;
-}
+.modal-box{background:var(--paper);border:1px solid var(--border2);border-radius:20px;padding:28px 28px 24px;width:380px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.18);transform:translateY(12px) scale(.97);transition:transform .25s,opacity .25s;}
 .modal-overlay.open .modal-box{transform:translateY(0) scale(1)}
 .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--ink)}
@@ -92,43 +76,31 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .modal-close:hover{background:var(--cream);color:var(--ink)}
 .modal-sub{font-size:11px;color:var(--ink4);margin-bottom:18px;line-height:1.5}
 .wallet-options{display:flex;flex-direction:column;gap:10px}
-.wallet-opt{
-  display:flex;align-items:center;gap:14px;
-  padding:14px 16px;border-radius:12px;cursor:pointer;
-  border:1.5px solid var(--border);background:var(--cream);
-  transition:all .2s;font-family:'DM Sans',sans-serif;
-}
+.wallet-opt{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--cream);transition:all .2s;}
 .wallet-opt:hover{border-color:var(--border2);background:var(--paper);box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.wallet-opt:active{transform:translateY(0)}
 .wallet-opt.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 .wo-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;border:1px solid var(--border)}
 .wo-info{flex:1;text-align:left}
 .wo-name{font-size:13px;font-weight:600;color:var(--ink);margin-bottom:2px}
-.wo-desc{font-size:10px;color:var(--ink4);letter-spacing:.2px}
+.wo-desc{font-size:10px;color:var(--ink4);}
 .wo-badge{font-size:9px;padding:3px 8px;border-radius:5px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
 .wo-badge.detected{background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border)}
 .wo-badge.notfound{background:var(--cream);color:var(--ink4);border:1px solid var(--border)}
 .modal-divider{display:flex;align-items:center;gap:10px;margin:14px 0 4px}
 .modal-divider span{font-size:10px;color:var(--ink4);letter-spacing:1px;white-space:nowrap;text-transform:uppercase}
 .modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* ── STATS ── */
 .stats{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:14px;margin-bottom:20px}
 .sc{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:18px 20px;box-shadow:var(--shadow)}
-.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF7E8);border-color:var(--gold-border)}
+.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF5E0);border-color:#D4A820;box-shadow:0 2px 12px rgba(191,140,10,.08),0 4px 20px rgba(191,140,10,.04);}
 .slbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;margin-bottom:8px;text-transform:uppercase}
 .sval{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--ink);line-height:1}
-.sc.jp .sval{font-size:40px;color:var(--gold)}
+.sc.jp .sval{font-size:44px;color:var(--gold);text-shadow:0 0 20px rgba(191,140,10,.15);}
 .sunit{font-size:11px;color:var(--ink4);margin-top:4px}
-
-/* ── COUNTDOWN ── */
 .cdcard{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:16px 20px;margin-bottom:20px;box-shadow:var(--shadow)}
 .cdrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
 .cdlbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:500;text-transform:uppercase}
 .prog{height:3px;background:var(--border);border-radius:3px;overflow:hidden}
 .progf{height:100%;background:linear-gradient(90deg,var(--teal2),var(--gold2));border-radius:3px;transition:width 1s linear}
-
-/* ── PRIZES ── */
 .prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .pc{background:var(--paper);border:1px solid var(--border);border-radius:14px;padding:18px 12px;text-align:center;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
 .pc:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
@@ -139,22 +111,16 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .pico{font-size:20px;margin-bottom:8px}
 .pname{font-size:9px;letter-spacing:1.8px;font-weight:600;margin-bottom:4px;text-transform:uppercase}
 .pc.p1 .pname{color:var(--gold)}.pc.p2 .pname{color:var(--teal2)}.pc.p3 .pname{color:var(--blue)}.pc.p4 .pname{color:var(--purple)}
-.pmatch{font-size:10px;color:var(--ink4);margin-bottom:10px;font-weight:400}
+.pmatch{font-size:10px;color:var(--ink4);margin-bottom:10px;}
 .ppct{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;line-height:1}
 .pc.p1 .ppct{color:var(--gold)}.pc.p2 .ppct{color:var(--teal2)}.pc.p3 .ppct{color:var(--blue)}.pc.p4 .ppct{color:var(--purple)}
-
-/* ── PANEL ── */
 .panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:24px;margin-bottom:16px;box-shadow:var(--shadow)}
 .ph{display:flex;align-items:center;gap:10px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--border)}
 .phico{width:32px;height:32px;border-radius:8px;background:var(--gold-bg);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:14px}
 .phtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--ink)}
-
-/* ── TABS ── */
 .tabs{display:flex;gap:4px;background:var(--cream);border:1px solid var(--border);border-radius:12px;padding:4px;margin-bottom:24px}
-.tab{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--ink4);font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.3px}
+.tab{flex:1;padding:9px;border-radius:9px;font-size:12px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--ink4);font-family:'DM Sans',sans-serif;transition:all .2s;}
 .tab.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
-
-/* ── NUMBER BALLS ── */
 .balls{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-bottom:22px}
 .bitem{display:flex;flex-direction:column;align-items:center;gap:5px}
 .blbl{font-size:9px;color:var(--ink4);letter-spacing:1.2px;font-weight:600;text-transform:uppercase}
@@ -164,25 +130,23 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .brand{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;color:var(--ink4)}
 .brand.set{color:var(--ink)}
 .rtip{text-align:center;font-size:11px;color:var(--ink4);margin-bottom:18px;font-style:italic}
-
-/* ── TICKET META ── */
 .tmeta{display:flex;align-items:center;justify-content:space-between;padding:13px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border);margin-bottom:16px;flex-wrap:wrap;gap:8px}
 .tplbl{font-size:11px;color:var(--ink3)}
 .tplbl span{color:var(--gold);font-weight:600}
-.cdmsg{text-align:center;font-size:11px;color:var(--gold);min-height:18px;margin-bottom:10px;font-style:italic}
-
-/* ── BUTTONS ── */
+.ticket-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--ink2);font-weight:500;}
+.ticket-badge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
+.ticket-badge.partial{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold)}
+.ticket-badge.open{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal2)}
 .btn-buy{width:100%;padding:16px;background:var(--ink);color:#FDF8EC;border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase}
 .btn-buy:hover:not(:disabled){background:var(--ink2);transform:translateY(-1px);box-shadow:0 6px 24px rgba(50,35,5,.15)}
-.btn-buy:disabled{background:var(--border);color:var(--ink4);cursor:not-allowed;letter-spacing:1px}
+.btn-buy:disabled{background:var(--border);color:var(--ink4);cursor:not-allowed;letter-spacing:1px;font-size:13px;}
+.btn-buy:not(:disabled){box-shadow:0 4px 14px rgba(13,11,8,.2);position:relative;overflow:hidden;}
+.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);animation:shimmer 3s infinite;}
+@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 .btn-draw{width:100%;padding:12px;margin-top:10px;background:var(--teal-bg);color:var(--teal2);border:1px solid var(--teal-border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
 .btn-draw:hover:not(:disabled){background:#D5F5EB}
-
-/* ── WINNING BALLS ── */
 .wballs{display:flex;gap:8px;justify-content:center;margin:14px 0;flex-wrap:wrap}
 .wball{width:46px;height:46px;border-radius:50%;background:linear-gradient(145deg,var(--teal2),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.1)}
-
-/* ── HISTORY ── */
 .hlist{display:flex;flex-direction:column;gap:8px}
 .hitem{display:flex;align-items:center;justify-content:space-between;background:var(--cream);border:1px solid var(--border);border-radius:11px;padding:12px 16px;flex-wrap:wrap;gap:8px;transition:border-color .2s}
 .hitem:hover{border-color:var(--border2)}
@@ -200,47 +164,22 @@ body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);m
 .btn-claim{font-size:10px;padding:5px 12px;background:var(--gold2);color:#FFF8E0;border:none;border-radius:6px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.5px;text-transform:uppercase}
 .btn-claim:hover{background:var(--gold)}
 .empty{text-align:center;padding:24px;color:var(--ink4);font-size:13px;font-style:italic}
-
-/* ── TOAST ── */
 #toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#FDF8EC;padding:12px 24px;border-radius:10px;font-size:12px;font-weight:500;transition:transform .3s;z-index:9999;white-space:nowrap;max-width:90vw;box-shadow:var(--shadow-md)}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #toast.success{background:var(--teal2);color:#fff}
 #toast.error{background:#8A3020;color:#fff}
-
-/* ── FOOTER ── */
 footer{text-align:center;padding-top:24px;margin-top:8px;border-top:1px solid var(--border)}
-footer p{font-size:11px;color:var(--ink4);letter-spacing:.3px}
+footer p{font-size:11px;color:var(--ink4);}
 footer a{color:var(--ink3);text-decoration:none;font-weight:500}
 footer a:hover{color:var(--teal2)}
-
-/* ── RESPONSIVE ── */
-@media(max-width:900px){
-  .main-grid{grid-template-columns:1fr}
-  .main-right{position:static}
-  .stats{grid-template-columns:1fr 1fr 1fr}
-  .sc.jp{grid-column:span 3}
-}
-@media(max-width:600px){
-  .stats{grid-template-columns:1fr 1fr}
-  .sc.jp{grid-column:span 2}
-  .prizes{grid-template-columns:repeat(2,1fr)}
-  .hero-title{font-size:34px}
-  .hero-inner{flex-direction:column}
-  .hero-right{width:100%;border-left:none;border-top:1px solid #D8C878}
-  .ball{width:44px;height:44px}
-  .ball input{font-size:17px}
-  .page{padding:0 16px 60px}
-}
-
-/* ── SOCIAL PROOF BAR ── */
+@media(max-width:900px){.main-grid{grid-template-columns:1fr}.main-right{position:static}.stats{grid-template-columns:1fr 1fr 1fr}.sc.jp{grid-column:span 3}}
+@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.sc.jp{grid-column:span 2}.prizes{grid-template-columns:repeat(2,1fr)}.hero-title{font-size:34px}.hero-inner{flex-direction:column}.hero-right{width:100%;border-left:none;border-top:1px solid #D8C878}.ball{width:44px;height:44px}.ball input{font-size:17px}.page{padding:0 16px 60px}}
 .social-bar{display:flex;align-items:center;justify-content:space-between;background:var(--paper);border:1px solid var(--border);border-radius:12px;padding:11px 18px;margin-bottom:16px;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow);}
 .sp-item{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink3);font-weight:500}
 .sp-dot{width:7px;height:7px;border-radius:50%;background:var(--teal2);animation:pulse-dot 2s infinite}
 @keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(.8)}}
 .sp-val{color:var(--ink);font-weight:600}
 .sp-div{width:1px;height:14px;background:var(--border)}
-
-/* ── ACTIVITY FEED ── */
 .activity-panel{background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow)}
 .activity-list{display:flex;flex-direction:column;gap:0}
 .activity-item{display:flex;align-items:center;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--border);animation:fadein .4s ease;}
@@ -252,23 +191,6 @@ footer a:hover{color:var(--teal2)}
 .act-nums{font-size:10px;color:var(--ink4);margin-top:1px}
 .act-time{font-size:11px;color:var(--ink4);white-space:nowrap}
 .act-empty{text-align:center;padding:16px;color:var(--ink4);font-size:12px;font-style:italic}
-
-/* ── JACKPOT HIGHLIGHT ── */
-.sc.jp .sval{font-size:44px;color:var(--gold);text-shadow:0 0 20px rgba(191,140,10,.15);}
-.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF5E0);border-color:#D4A820;box-shadow:0 2px 12px rgba(191,140,10,.08),0 4px 20px rgba(191,140,10,.04);}
-
-/* ── TICKET LIMIT BADGE ── */
-.ticket-badge{display:inline-flex;align-items:center;gap:6px;background:var(--cream);border:1px solid var(--border2);border-radius:8px;padding:6px 12px;font-size:12px;color:var(--ink2);font-weight:500;}
-.ticket-badge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
-.ticket-badge.partial{background:var(--gold-bg);border-color:var(--gold-border);color:var(--gold)}
-.ticket-badge.open{background:var(--teal-bg);border-color:var(--teal-border);color:var(--teal2)}
-
-/* ── CTA BUTTON PULSE ── */
-.btn-buy:not(:disabled){background:var(--ink);box-shadow:0 4px 14px rgba(13,11,8,.2);position:relative;overflow:hidden;}
-.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);animation:shimmer 3s infinite;}
-@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-
-/* ── TX FEEDBACK ── */
 .tx-status{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:12px;font-weight:500;}
 .tx-status.show{display:flex}
 .tx-status.processing{background:#FFF8E8;border:1px solid var(--gold-border);color:var(--gold)}
@@ -276,69 +198,47 @@ footer a:hover{color:var(--teal2)}
 .tx-status.error{background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626}
 .tx-spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* ── COUNTDOWN BIG ── */
 .cd-digits{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
 .cd-unit{text-align:center}
 .cd-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:var(--ink);line-height:1;background:var(--cream);border:1px solid var(--border);border-radius:8px;padding:4px 10px;min-width:48px;display:inline-block}
 .cd-lbl2{font-size:9px;color:var(--ink4);letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:600}
-
-/* ── CONNECTED WALLET ICON ── */
-.wav-img{width:22px;height:22px;border-radius:5px;object-fit:contain}
 </style>
 </head>
 <body>
 <div class="page">
-
-<!-- HERO -->
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-left">
-      <div class="hero-eyebrow">
-        <div class="eline"></div>
-        <span class="etxt">EST. 2026 · ON-CHAIN LOTTERY</span>
-        <div class="eline"></div>
-      </div>
+      <div class="hero-eyebrow"><div class="eline"></div><span class="etxt">EST. 2026 &middot; ON-CHAIN LOTTERY</span><div class="eline"></div></div>
       <div class="hero-title">Lit<span>Billionaire</span></div>
       <div class="hero-sub">Where fortunes are made on-chain</div>
       <div class="hero-pills">
         <div class="pill pill-live"><span class="pdot"></span>Live on LiteForge</div>
-        <div class="pill pill-chain">⛓ LitVM Powered</div>
+        <div class="pill pill-chain">&#9935; LitVM Powered</div>
       </div>
     </div>
     <div class="hero-right">
-      <div class="stat-row">
-        <div class="stat-lbl">Jackpot pool</div>
-        <div><span class="stat-val gold" id="banner-jackpot">—</span><span class="stat-unit">zkLTC</span></div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-lbl">Next draw</div>
-        <div><span class="stat-val" style="font-size:18px">Fri 20:00</span><span class="stat-unit">GMT+7</span></div>
-      </div>
-      <div class="stat-row">
-        <div class="stat-lbl">Ticket price</div>
-        <div><span class="stat-val" style="font-size:20px">0.001</span><span class="stat-unit">zkLTC</span></div>
-      </div>
+      <div class="stat-row"><div class="stat-lbl">Jackpot pool</div><div><span class="stat-val gold" id="banner-jackpot">&#8212;</span><span class="stat-unit">zkLTC</span></div></div>
+      <div class="stat-row"><div class="stat-lbl">Next draw</div><div><span class="stat-val" style="font-size:18px">Fri 20:00</span><span class="stat-unit">GMT+7</span></div></div>
+      <div class="stat-row"><div class="stat-lbl">Ticket price</div><div><span class="stat-val" style="font-size:20px">0.001</span><span class="stat-unit">zkLTC</span></div></div>
     </div>
   </div>
   <div class="hero-bottom">
-    <div class="bstat"><span class="bstat-ico">🥇</span><span class="bstat-txt">Match 6 &rarr; <b>60%</b></span></div>
+    <div class="bstat"><span class="bstat-ico">&#127945;</span><span class="bstat-txt">Match 6 &rarr; <b>60%</b></span></div>
     <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-ico">🥈</span><span class="bstat-txt">Match 5 &rarr; <b>20%</b></span></div>
+    <div class="bstat"><span class="bstat-ico">&#127946;</span><span class="bstat-txt">Match 5 &rarr; <b>20%</b></span></div>
     <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-ico">🥉</span><span class="bstat-txt">Match 4 &rarr; <b>10%</b></span></div>
+    <div class="bstat"><span class="bstat-ico">&#127947;</span><span class="bstat-txt">Match 4 &rarr; <b>10%</b></span></div>
     <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-ico">🎖️</span><span class="bstat-txt">Match 3 &rarr; <b>5%</b></span></div>
+    <div class="bstat"><span class="bstat-ico">&#127894;</span><span class="bstat-txt">Match 3 &rarr; <b>5%</b></span></div>
   </div>
 </div>
-
-<!-- WALLET -->
 <div class="wbar">
   <div class="w-left">
-    <div class="wav" id="wav-icon">◈</div>
+    <div class="wav" id="wav-icon">&#9672;</div>
     <div>
       <div class="waddr" id="wallet-addr">Not connected</div>
-      <div class="wbal" id="wallet-bal">— zkLTC</div>
+      <div class="wbal" id="wallet-bal">&#8212; zkLTC</div>
     </div>
   </div>
   <div class="wallet-actions">
@@ -346,106 +246,61 @@ footer a:hover{color:var(--teal2)}
     <button class="btn-disconnect" id="btn-disconnect" onclick="disconnectWallet()" style="display:none">Disconnect</button>
   </div>
 </div>
-
-<!-- WALLET MODAL -->
 <div class="modal-overlay" id="wallet-modal" onclick="handleModalClick(event)">
   <div class="modal-box">
     <div class="modal-head">
       <div class="modal-title">Connect Wallet</div>
-      <button class="modal-close" onclick="closeWalletModal()">✕</button>
+      <button class="modal-close" onclick="closeWalletModal()">&#10005;</button>
     </div>
     <div class="modal-sub">Choose your wallet to connect to LitBillionaire. Make sure you're on the LiteForge Testnet.</div>
-    <div class="wallet-options" id="wallet-options">
-      <!-- Populated by JS -->
-    </div>
+    <div class="wallet-options" id="wallet-options"></div>
     <div class="modal-divider"><span>or</span></div>
     <div class="wallet-options">
       <div class="wallet-opt" onclick="connectWithProvider('walletconnect')">
-        <div class="wo-icon" style="background:#E8F0FF">
-          <img src="https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/Logo/Gradient/Logo.png" width="26" height="26" style="border-radius:6px" onerror="this.parentElement.textContent='🔗'"/>
-        </div>
-        <div class="wo-info">
-          <div class="wo-name">WalletConnect</div>
-          <div class="wo-desc">Connect via QR code · Works with 300+ wallets</div>
-        </div>
+        <div class="wo-icon" style="background:#E8F0FF"><img src="https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/Logo/Gradient/Logo.png" width="26" height="26" style="border-radius:6px" onerror="this.parentElement.textContent='&#128279;'"/></div>
+        <div class="wo-info"><div class="wo-name">WalletConnect</div><div class="wo-desc">Connect via QR code &middot; Works with 300+ wallets</div></div>
         <span class="wo-badge notfound">SCAN QR</span>
       </div>
     </div>
   </div>
 </div>
-
-<!-- SOCIAL PROOF -->
 <div class="social-bar">
-  <div class="sp-item">
-    <div class="sp-dot"></div>
-    <span><span class="sp-val" id="sp-players">—</span> players this round</span>
-  </div>
+  <div class="sp-item"><div class="sp-dot"></div><span><span class="sp-val" id="sp-players">&#8212;</span> players this round</span></div>
   <div class="sp-div"></div>
-  <div class="sp-item">
-    <span>🎟️</span>
-    <span>Last ticket: <span class="sp-val" id="sp-last">—</span></span>
-  </div>
+  <div class="sp-item"><span>&#127903;&#65039;</span><span>Last ticket: <span class="sp-val" id="sp-last">&#8212;</span></span></div>
   <div class="sp-div"></div>
-  <div class="sp-item">
-    <span>🏆</span>
-    <span>Round <span class="sp-val" id="sp-round">—</span> · Draw Friday</span>
-  </div>
+  <div class="sp-item"><span>&#127942;</span><span>Round <span class="sp-val" id="sp-round">&#8212;</span> &middot; Draw Friday</span></div>
 </div>
-
-<!-- STATS -->
 <div class="stats">
-  <div class="sc jp">
-    <div class="slbl">Jackpot Pool</div>
-    <div class="sval" id="stat-jackpot">—</div>
-    <div class="sunit">zkLTC</div>
-  </div>
-  <div class="sc">
-    <div class="slbl">Round</div>
-    <div class="sval" id="stat-round" style="font-size:32px;color:var(--ink)">#—</div>
-    <div class="sunit">current</div>
-  </div>
-  <div class="sc">
-    <div class="slbl">Tickets Sold</div>
-    <div class="sval" id="stat-tickets" style="font-size:32px;color:var(--ink)">—</div>
-    <div class="sunit">this round</div>
-  </div>
-  <div class="sc">
-    <div class="slbl">Players</div>
-    <div class="sval" id="stat-players" style="font-size:32px;color:var(--ink)">—</div>
-    <div class="sunit">unique wallets</div>
-  </div>
+  <div class="sc jp"><div class="slbl">Jackpot Pool</div><div class="sval" id="stat-jackpot">&#8212;</div><div class="sunit">zkLTC</div></div>
+  <div class="sc"><div class="slbl">Round</div><div class="sval" id="stat-round" style="font-size:32px;color:var(--ink)">#&#8212;</div><div class="sunit">current</div></div>
+  <div class="sc"><div class="slbl">Tickets Sold</div><div class="sval" id="stat-tickets" style="font-size:32px;color:var(--ink)">&#8212;</div><div class="sunit">this round</div></div>
+  <div class="sc"><div class="slbl">Players</div><div class="sval" id="stat-players" style="font-size:32px;color:var(--ink)">&#8212;</div><div class="sunit">unique wallets</div></div>
 </div>
-
-<!-- COUNTDOWN -->
 <div class="cdcard">
   <div class="cdrow">
-    <span class="cdlbl">Next Draw — Friday 20:00 GMT+7</span>
+    <span class="cdlbl">Next Draw &#8212; Friday 20:00 GMT+7</span>
     <div class="cd-digits">
-      <div class="cd-unit"><span class="cd-num" id="cd-d">—</span><div class="cd-lbl2">Days</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-h">—</span><div class="cd-lbl2">Hours</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-m">—</span><div class="cd-lbl2">Mins</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-s">—</span><div class="cd-lbl2">Secs</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-d">&#8212;</span><div class="cd-lbl2">Days</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-h">&#8212;</span><div class="cd-lbl2">Hours</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-m">&#8212;</span><div class="cd-lbl2">Mins</div></div>
+      <div class="cd-unit"><span class="cd-num" id="cd-s">&#8212;</span><div class="cd-lbl2">Secs</div></div>
     </div>
   </div>
   <div class="prog" style="margin-top:12px"><div class="progf" id="progress-bar" style="width:0%"></div></div>
 </div>
-
-</div><!-- end page top section -->
-
+</div>
 <div class="page" style="padding-top:0">
 <div class="main-grid">
 <div class="main-left">
-<!-- PRIZES -->
 <div class="prizes">
-  <div class="pc p1"><div class="pico">🥇</div><div class="pname">Jackpot</div><div class="pmatch">Match all 6</div><div class="ppct">60%</div></div>
-  <div class="pc p2"><div class="pico">🥈</div><div class="pname">2nd Prize</div><div class="pmatch">Match 5 of 6</div><div class="ppct">20%</div></div>
-  <div class="pc p3"><div class="pico">🥉</div><div class="pname">3rd Prize</div><div class="pmatch">Match 4 of 6</div><div class="ppct">10%</div></div>
-  <div class="pc p4"><div class="pico">🎖️</div><div class="pname">4th Prize</div><div class="pmatch">Match 3 of 6</div><div class="ppct">5%</div></div>
+  <div class="pc p1"><div class="pico">&#127945;</div><div class="pname">Jackpot</div><div class="pmatch">Match all 6</div><div class="ppct">60%</div></div>
+  <div class="pc p2"><div class="pico">&#127946;</div><div class="pname">2nd Prize</div><div class="pmatch">Match 5 of 6</div><div class="ppct">20%</div></div>
+  <div class="pc p3"><div class="pico">&#127947;</div><div class="pname">3rd Prize</div><div class="pmatch">Match 4 of 6</div><div class="ppct">10%</div></div>
+  <div class="pc p4"><div class="pico">&#127894;</div><div class="pname">4th Prize</div><div class="pmatch">Match 3 of 6</div><div class="ppct">5%</div></div>
 </div>
-
-<!-- BUY TICKET -->
 <div class="panel">
-  <div class="ph"><div class="phico">🎟️</div><div class="phtitle">Buy Your Ticket</div></div>
+  <div class="ph"><div class="phico">&#127903;&#65039;</div><div class="phtitle">Buy Your Ticket</div></div>
   <div class="tabs">
     <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
     <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
@@ -479,65 +334,38 @@ footer a:hover{color:var(--teal2)}
     <div class="tx-spinner" id="tx-spinner"></div>
     <span id="tx-msg">Processing...</span>
   </div>
-  <div class="cdmsg" id="cooldown-txt"></div>
   <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>Buy Ticket</button>
   <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">Trigger Weekly Draw</button>
 </div>
-
-</div><!-- end main-left -->
+</div>
 <div class="main-right">
-<!-- LAST DRAW -->
 <div class="panel" id="winning-panel" style="display:none">
-  <div class="ph"><div class="phico">🏆</div><div class="phtitle">Last Draw Result</div></div>
-  <div style="text-align:center;font-size:11px;color:var(--ink4);letter-spacing:.5px;margin-bottom:2px">Round <span id="winning-round">—</span> winning numbers</div>
+  <div class="ph"><div class="phico">&#127942;</div><div class="phtitle">Last Draw Result</div></div>
+  <div style="text-align:center;font-size:11px;color:var(--ink4);margin-bottom:2px">Round <span id="winning-round">&#8212;</span> winning numbers</div>
   <div class="wballs">
     <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
     <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
   </div>
 </div>
-
-<!-- ACTIVITY FEED -->
 <div class="activity-panel">
-  <div class="ph"><div class="phico">⚡</div><div class="phtitle">Recent Activity</div></div>
-  <div class="activity-list" id="activity-list">
-    <div class="act-empty">Waiting for activity...</div>
-  </div>
+  <div class="ph"><div class="phico">&#9889;</div><div class="phtitle">Recent Activity</div></div>
+  <div class="activity-list" id="activity-list"><div class="act-empty">Waiting for activity...</div></div>
 </div>
-
-<!-- HISTORY -->
 <div class="panel">
-  <div class="ph"><div class="phico">📋</div><div class="phtitle">My Ticket History</div></div>
+  <div class="ph"><div class="phico">&#128203;</div><div class="phtitle">My Ticket History</div></div>
   <div class="hlist" id="history-list"><div class="empty">Connect wallet to view your ticket history</div></div>
 </div>
-
-</div><!-- end main-right -->
-</div><!-- end main-grid -->
-<footer>
-  <p>LitBillionaire Lottery · LiteForge Testnet ·
-    <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract ↗</a> ·
-    <a href="https://litvm.com" target="_blank">LitVM ↗</a>
-  </p>
-</footer>
 </div>
-
+</div>
+<footer><p>LitBillionaire Lottery &middot; LiteForge Testnet &middot; <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract &#8599;</a> &middot; <a href="https://litvm.com" target="_blank">LitVM &#8599;</a></p></footer>
+</div>
 <div id="toast"></div>
-
 <script>
-// ─────────────────────────────────────────────
-//  CONFIG
-// ─────────────────────────────────────────────
-const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
-const CHAIN_ID         = "0x1159";
-const CHAIN_ID_DEC     = 4441;
-const NETWORK = {
-  chainId: CHAIN_ID,
-  chainName: "LiteForge Testnet",
-  nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
-  rpcUrls: ["https://rpc.liteforge.litvm.com"],
-  blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
-};
-
-const ABI = [
+const CONTRACT_ADDRESS="0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
+const CHAIN_ID="0x1159";
+const NETWORK={chainId:CHAIN_ID,chainName:"LiteForge Testnet",nativeCurrency:{name:"zkLTC",symbol:"zkLTC",decimals:18},rpcUrls:["https://rpc.liteforge.litvm.com"],blockExplorerUrls:["https://liteforge.explorer.caldera.xyz"]};
+// cooldownRemaining REMOVED from ABI
+const ABI=[
   "function buyRandomTicket(uint256 quantity) external payable",
   "function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable",
   "function performUpkeep(bytes calldata) external",
@@ -545,562 +373,248 @@ const ABI = [
   "function getCurrentRound() external view returns (tuple(uint256 roundId,uint256 startTime,uint256 endTime,uint256 jackpot,uint256[6] winningNumbers,bool drawn,bool active,uint256 totalTickets))",
   "function getTickets(uint256 roundId) external view returns (tuple(address player,uint256[6] numbers,bool isCustom)[])",
   "function ticketsRemaining(address wallet) external view returns (uint256)",
-  "function cooldownRemaining(address wallet) external view returns (uint256)",
   "function getWinningNumbers(uint256 roundId) external view returns (uint256[6])",
   "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
   "function currentRoundId() external view returns (uint256)"
 ];
-
-// ─────────────────────────────────────────────
-//  STATE
-// ─────────────────────────────────────────────
-let provider, signer, contract, wallet = null;
-let roundEndTime = 0, roundDuration = 604800;
-let cdTimer = null, coolTimer = null, currentTab = "pick";
-let activeWalletType = null;
-
-// ─────────────────────────────────────────────
-//  WALLET DEFINITIONS
-// ─────────────────────────────────────────────
-const WALLETS = [
-  {
-    id: "metamask",
-    name: "MetaMask",
-    desc: "Browser extension · Most popular",
-    icon: "🦊",
-    iconBg: "#FFF3E0",
-    detect: () => window.ethereum?.isMetaMask && !window.ethereum?.isBraveWallet,
-    getProvider: () => {
-      // If multiple wallets, find MetaMask specifically
-      if (window.ethereum?.providers) {
-        return window.ethereum.providers.find(p => p.isMetaMask && !p.isBraveWallet);
-      }
-      return window.ethereum;
-    }
-  },
-  {
-    id: "coinbase",
-    name: "Coinbase Wallet",
-    desc: "Browser extension · Coinbase",
-    icon: "🔵",
-    iconBg: "#EEF4FF",
-    detect: () => window.ethereum?.isCoinbaseWallet || !!window.coinbaseWalletExtension,
-    getProvider: () => {
-      if (window.ethereum?.providers) {
-        return window.ethereum.providers.find(p => p.isCoinbaseWallet);
-      }
-      if (window.coinbaseWalletExtension) return window.coinbaseWalletExtension;
-      return window.ethereum;
-    }
-  },
-  {
-    id: "brave",
-    name: "Brave Wallet",
-    desc: "Built-in Brave browser wallet",
-    icon: "🦁",
-    iconBg: "#FFF5E0",
-    detect: () => window.ethereum?.isBraveWallet,
-    getProvider: () => {
-      if (window.ethereum?.providers) {
-        return window.ethereum.providers.find(p => p.isBraveWallet);
-      }
-      return window.ethereum;
-    }
-  },
-  {
-    id: "rabby",
-    name: "Rabby Wallet",
-    desc: "Browser extension · DeBank",
-    icon: "🐰",
-    iconBg: "#F0F0FF",
-    detect: () => window.ethereum?.isRabby,
-    getProvider: () => window.ethereum
-  },
-  {
-    id: "trust",
-    name: "Trust Wallet",
-    desc: "Mobile · In-app browser",
-    icon: "🛡️",
-    iconBg: "#E8F4FF",
-    detect: () => window.ethereum?.isTrust || window.trustwallet,
-    getProvider: () => window.trustwallet || window.ethereum
-  },
-  {
-    id: "okx",
-    name: "OKX Wallet",
-    desc: "Browser extension · OKX",
-    icon: "⬛",
-    iconBg: "#F5F5F5",
-    detect: () => !!window.okxwallet,
-    getProvider: () => window.okxwallet
-  },
-  {
-    id: "injected",
-    name: "Injected Wallet",
-    desc: "Other browser wallet",
-    icon: "💎",
-    iconBg: "#F0FAF6",
-    detect: () => !!window.ethereum && !window.ethereum?.isMetaMask && !window.ethereum?.isCoinbaseWallet && !window.ethereum?.isBraveWallet && !window.ethereum?.isRabby,
-    getProvider: () => window.ethereum
-  }
+let provider,signer,contract,wallet=null;
+let roundEndTime=0,roundDuration=604800;
+let cdTimer=null,currentTab="pick",activeWalletType=null;
+const WALLETS=[
+  {id:"metamask",name:"MetaMask",desc:"Browser extension - Most popular",icon:"&#129418;",iconBg:"#FFF3E0",detect:()=>window.ethereum?.isMetaMask&&!window.ethereum?.isBraveWallet,getProvider:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isMetaMask&&!p.isBraveWallet);return window.ethereum;}},
+  {id:"coinbase",name:"Coinbase Wallet",desc:"Browser extension - Coinbase",icon:"&#128309;",iconBg:"#EEF4FF",detect:()=>window.ethereum?.isCoinbaseWallet||!!window.coinbaseWalletExtension,getProvider:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isCoinbaseWallet);if(window.coinbaseWalletExtension)return window.coinbaseWalletExtension;return window.ethereum;}},
+  {id:"brave",name:"Brave Wallet",desc:"Built-in Brave browser wallet",icon:"&#129409;",iconBg:"#FFF5E0",detect:()=>window.ethereum?.isBraveWallet,getProvider:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isBraveWallet);return window.ethereum;}},
+  {id:"rabby",name:"Rabby Wallet",desc:"Browser extension - DeBank",icon:"&#128048;",iconBg:"#F0F0FF",detect:()=>window.ethereum?.isRabby,getProvider:()=>window.ethereum},
+  {id:"trust",name:"Trust Wallet",desc:"Mobile - In-app browser",icon:"&#128737;&#65039;",iconBg:"#E8F4FF",detect:()=>window.ethereum?.isTrust||window.trustwallet,getProvider:()=>window.trustwallet||window.ethereum},
+  {id:"okx",name:"OKX Wallet",desc:"Browser extension - OKX",icon:"&#11035;",iconBg:"#F5F5F5",detect:()=>!!window.okxwallet,getProvider:()=>window.okxwallet},
+  {id:"injected",name:"Injected Wallet",desc:"Other browser wallet",icon:"&#128142;",iconBg:"#F0FAF6",detect:()=>!!window.ethereum&&!window.ethereum?.isMetaMask&&!window.ethereum?.isCoinbaseWallet&&!window.ethereum?.isBraveWallet&&!window.ethereum?.isRabby,getProvider:()=>window.ethereum}
 ];
-
-// ─────────────────────────────────────────────
-//  MODAL
-// ─────────────────────────────────────────────
-function openWalletModal() {
-  buildWalletOptions();
-  document.getElementById("wallet-modal").classList.add("open");
+function openWalletModal(){buildWalletOptions();document.getElementById("wallet-modal").classList.add("open")}
+function closeWalletModal(){document.getElementById("wallet-modal").classList.remove("open")}
+function handleModalClick(e){if(e.target===document.getElementById("wallet-modal"))closeWalletModal()}
+document.addEventListener("keydown",e=>{if(e.key==="Escape")closeWalletModal()});
+function buildWalletOptions(){
+  const container=document.getElementById("wallet-options");
+  const detected=WALLETS.filter(w=>w.detect());
+  const notDetected=WALLETS.filter(w=>!w.detect());
+  let html="";
+  detected.forEach(w=>{html+=`<div class="wallet-opt" onclick="connectWithWallet('${w.id}')"><div class="wo-icon" style="background:${w.iconBg}">${w.icon}</div><div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-desc">${w.desc}</div></div><span class="wo-badge detected">DETECTED</span></div>`;});
+  if(notDetected.length>0&&detected.length>0)html+=`<div class="modal-divider"><span>not installed</span></div>`;
+  notDetected.forEach(w=>{html+=`<div class="wallet-opt disabled"><div class="wo-icon" style="background:${w.iconBg};opacity:.5">${w.icon}</div><div class="wo-info"><div class="wo-name" style="color:var(--ink4)">${w.name}</div><div class="wo-desc">${w.desc}</div></div><span class="wo-badge notfound">NOT FOUND</span></div>`;});
+  if(!detected.length&&!notDetected.length)html=`<div class="empty" style="padding:16px">No wallets detected.</div>`;
+  container.innerHTML=html;
 }
-function closeWalletModal() {
-  document.getElementById("wallet-modal").classList.remove("open");
+async function connectWithWallet(walletId){
+  const wDef=WALLETS.find(w=>w.id===walletId);
+  if(!wDef){toast("Wallet not found","error");return;}
+  const rawProvider=wDef.getProvider();
+  if(!rawProvider){toast(`${wDef.name} not found.`,"error");return;}
+  closeWalletModal();toast(`Connecting ${wDef.name}...`);
+  try{
+    try{await rawProvider.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN_ID}]});}
+    catch(e){if(e.code===4902)await rawProvider.request({method:"wallet_addEthereumChain",params:[NETWORK]});else throw e;}
+    provider=new ethers.BrowserProvider(rawProvider);
+    await provider.send("eth_requestAccounts",[]);
+    signer=await provider.getSigner();
+    wallet=await signer.getAddress();
+    contract=new ethers.Contract(CONTRACT_ADDRESS,ABI,signer);
+    activeWalletType=walletId;
+    const short=wallet.slice(0,6)+"..."+wallet.slice(-4);
+    document.getElementById("wallet-addr").innerHTML=`<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef.name}</span>`;
+    document.getElementById("wav-icon").innerHTML=wDef.icon;
+    const bal=await provider.getBalance(wallet);
+    document.getElementById("wallet-bal").textContent=parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
+    const btn=document.getElementById("btn-connect");btn.textContent="Connected";btn.className="btn-wc on";
+    document.getElementById("btn-disconnect").style.display="block";
+    document.getElementById("btn-buy").disabled=false;
+    rawProvider.on?.("accountsChanged",handleAccountsChanged);
+    rawProvider.on?.("chainChanged",handleChainChanged);
+    await refresh();startCountdown();
+    toast(`${wDef.name} connected!`,"success");
+  }catch(e){toast(e.message?.slice(0,80)||"Connection failed","error");}
 }
-function handleModalClick(e) {
-  if (e.target === document.getElementById("wallet-modal")) closeWalletModal();
+async function connectWithProvider(type){if(type==="walletconnect")toast("WalletConnect: Integrate @walletconnect/web3-provider SDK for QR","error");}
+function handleAccountsChanged(accounts){
+  if(!accounts||accounts.length===0)disconnectWallet();
+  else{wallet=accounts[0];const short=wallet.slice(0,6)+"..."+wallet.slice(-4);const wDef=WALLETS.find(w=>w.id===activeWalletType);document.getElementById("wallet-addr").innerHTML=`<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef?.name||""}</span>`;refresh();toast("Account switched","success");}
 }
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeWalletModal(); });
-
-function buildWalletOptions() {
-  const container = document.getElementById("wallet-options");
-  const detected = WALLETS.filter(w => w.detect());
-  const notDetected = WALLETS.filter(w => !w.detect());
-
-  let html = "";
-
-  if (detected.length > 0) {
-    detected.forEach(w => {
-      html += `
-        <div class="wallet-opt" onclick="connectWithWallet('${w.id}')">
-          <div class="wo-icon" style="background:${w.iconBg}">${w.icon}</div>
-          <div class="wo-info">
-            <div class="wo-name">${w.name}</div>
-            <div class="wo-desc">${w.desc}</div>
-          </div>
-          <span class="wo-badge detected">DETECTED</span>
-        </div>`;
-    });
-  }
-
-  if (notDetected.length > 0) {
-    if (detected.length > 0) {
-      html += `<div class="modal-divider"><span>not installed</span></div>`;
-    }
-    notDetected.forEach(w => {
-      html += `
-        <div class="wallet-opt disabled" title="Install ${w.name} first">
-          <div class="wo-icon" style="background:${w.iconBg};opacity:.5">${w.icon}</div>
-          <div class="wo-info">
-            <div class="wo-name" style="color:var(--ink4)">${w.name}</div>
-            <div class="wo-desc">${w.desc}</div>
-          </div>
-          <span class="wo-badge notfound">NOT FOUND</span>
-        </div>`;
-    });
-  }
-
-  if (detected.length === 0 && notDetected.length === 0) {
-    html = `<div class="empty" style="padding:16px">No wallets detected. Please install MetaMask or another Web3 wallet.</div>`;
-  }
-
-  container.innerHTML = html;
-}
-
-// ─────────────────────────────────────────────
-//  CONNECT
-// ─────────────────────────────────────────────
-async function connectWithWallet(walletId) {
-  const wDef = WALLETS.find(w => w.id === walletId);
-  if (!wDef) { toast("Wallet not found", "error"); return; }
-
-  const rawProvider = wDef.getProvider();
-  if (!rawProvider) { toast(`${wDef.name} not found. Please install it.`, "error"); return; }
-
-  closeWalletModal();
-  toast(`Connecting ${wDef.name}...`);
-
-  try {
-    // Switch or add network
-    try {
-      await rawProvider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
-    } catch (e) {
-      if (e.code === 4902) {
-        await rawProvider.request({ method: "wallet_addEthereumChain", params: [NETWORK] });
-      } else {
-        throw e;
-      }
-    }
-
-    provider = new ethers.BrowserProvider(rawProvider);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    wallet = await signer.getAddress();
-    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-    activeWalletType = walletId;
-
-    // Update UI
-    const short = wallet.slice(0, 6) + "..." + wallet.slice(-4);
-    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef.name}</span>`;
-    document.getElementById("wav-icon").textContent = wDef.icon;
-
-    const bal = await provider.getBalance(wallet);
-    document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4) + " zkLTC";
-
-    const btn = document.getElementById("btn-connect");
-    btn.textContent = "Connected"; btn.className = "btn-wc on";
-    document.getElementById("btn-disconnect").style.display = "block";
-    document.getElementById("btn-buy").disabled = false;
-
-    // Listen for account/chain changes
-    rawProvider.on?.("accountsChanged", handleAccountsChanged);
-    rawProvider.on?.("chainChanged", handleChainChanged);
-
-    await refresh();
-    startCountdown();
-    startCooldownWatch();
-    toast(`${wDef.name} connected!`, "success");
-
-  } catch (e) {
-    toast(e.message?.slice(0, 80) || "Connection failed", "error");
-  }
-}
-
-async function connectWithProvider(type) {
-  if (type === "walletconnect") {
-    toast("WalletConnect: Please integrate @walletconnect/web3-provider SDK for QR support", "error");
-    // Placeholder – integrate WalletConnect v2 SDK here if needed
-  }
-}
-
-function handleAccountsChanged(accounts) {
-  if (!accounts || accounts.length === 0) {
-    disconnectWallet();
-  } else {
-    wallet = accounts[0];
-    const short = wallet.slice(0, 6) + "..." + wallet.slice(-4);
-    const wDef = WALLETS.find(w => w.id === activeWalletType);
-    document.getElementById("wallet-addr").innerHTML =
-      `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef?.name || ""}</span>`;
-    refresh();
-    toast("Account switched", "success");
-  }
-}
-
-function handleChainChanged(chainId) {
-  if (chainId !== CHAIN_ID) {
-    toast("Wrong network! Please switch to LiteForge Testnet", "error");
-  } else {
-    toast("Network switched to LiteForge ✓", "success");
-    refresh();
-  }
-}
-
-function disconnectWallet() {
-  // Cleanup listeners
-  const wDef = WALLETS.find(w => w.id === activeWalletType);
-  if (wDef) {
-    const rawProvider = wDef.getProvider();
-    rawProvider?.removeListener?.("accountsChanged", handleAccountsChanged);
-    rawProvider?.removeListener?.("chainChanged", handleChainChanged);
-  }
-
-  provider = null; signer = null; contract = null; wallet = null; activeWalletType = null;
-  roundEndTime = 0;
-  if (cdTimer) clearInterval(cdTimer);
-  if (coolTimer) clearInterval(coolTimer);
-
-  document.getElementById("wallet-addr").innerHTML = "Not connected";
-  document.getElementById("wallet-bal").textContent = "— zkLTC";
-  document.getElementById("wav-icon").textContent = "◈";
-  const btn = document.getElementById("btn-connect");
-  btn.textContent = "Connect Wallet"; btn.className = "btn-wc";
-  document.getElementById("btn-disconnect").style.display = "none";
-
-  document.getElementById("stat-jackpot").textContent = "—";
-  document.getElementById("stat-round").textContent = "#—";
-  document.getElementById("stat-tickets").textContent = "—";
-  try { document.getElementById("stat-players").textContent = "—"; } catch (_) {}
-  document.getElementById("banner-jackpot").textContent = "—";
-  document.getElementById("cd-d").textContent = "—";
-  document.getElementById("cd-h").textContent = "—";
-  document.getElementById("cd-m").textContent = "—";
-  document.getElementById("cd-s").textContent = "—";
-  document.getElementById("progress-bar").style.width = "0%";
-
-  const badge = document.getElementById("ticket-badge");
-  badge.textContent = "Connect wallet"; badge.className = "ticket-badge";
-  document.getElementById("btn-buy").disabled = true;
-  document.getElementById("cooldown-txt").textContent = "";
+function handleChainChanged(chainId){if(chainId!==CHAIN_ID)toast("Wrong network! Switch to LiteForge Testnet","error");else{toast("Network switched to LiteForge","success");refresh();}}
+function disconnectWallet(){
+  const wDef=WALLETS.find(w=>w.id===activeWalletType);
+  if(wDef){const rp=wDef.getProvider();rp?.removeListener?.("accountsChanged",handleAccountsChanged);rp?.removeListener?.("chainChanged",handleChainChanged);}
+  provider=null;signer=null;contract=null;wallet=null;activeWalletType=null;roundEndTime=0;
+  if(cdTimer)clearInterval(cdTimer);
+  document.getElementById("wallet-addr").textContent="Not connected";
+  document.getElementById("wallet-bal").textContent="— zkLTC";
+  document.getElementById("wav-icon").innerHTML="&#9672;";
+  const btn=document.getElementById("btn-connect");btn.textContent="Connect Wallet";btn.className="btn-wc";
+  document.getElementById("btn-disconnect").style.display="none";
+  ["stat-jackpot","stat-round","stat-tickets","stat-players","banner-jackpot","cd-d","cd-h","cd-m","cd-s","sp-players","sp-last","sp-round"].forEach(id=>{try{document.getElementById(id).textContent="—";}catch(_){}});
+  document.getElementById("progress-bar").style.width="0%";
+  const badge=document.getElementById("ticket-badge");badge.textContent="Connect wallet";badge.className="ticket-badge";
+  document.getElementById("btn-buy").disabled=true;document.getElementById("btn-buy").textContent="Buy Ticket";
   hideTxStatus();
-
-  document.getElementById("sp-players").textContent = "—";
-  document.getElementById("sp-last").textContent = "—";
-  document.getElementById("sp-round").textContent = "—";
-
-  document.getElementById("activity-list").innerHTML = '<div class="act-empty">Waiting for activity...</div>';
-  document.getElementById("history-list").innerHTML = '<div class="empty">Connect wallet to view your ticket history</div>';
-  document.getElementById("winning-panel").style.display = "none";
-  document.getElementById("btn-draw").style.display = "none";
-
+  document.getElementById("activity-list").innerHTML='<div class="act-empty">Waiting for activity...</div>';
+  document.getElementById("history-list").innerHTML='<div class="empty">Connect wallet to view your ticket history</div>';
+  document.getElementById("winning-panel").style.display="none";document.getElementById("btn-draw").style.display="none";
   toast("Wallet disconnected");
 }
-
-// ─────────────────────────────────────────────
-//  CONTRACT INTERACTIONS
-// ─────────────────────────────────────────────
-async function refresh() {
-  if (!contract) return;
-  try {
-    const r = await contract.getCurrentRound();
-    const rid = Number(r.roundId);
-    const jpVal = parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
-    document.getElementById("stat-jackpot").textContent = jpVal;
-    try { document.getElementById("banner-jackpot").textContent = jpVal; } catch (_) {}
-    document.getElementById("stat-round").textContent = "#" + rid;
-    document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
-    roundEndTime = Number(r.endTime);
-
-    if (Math.floor(Date.now() / 1000) >= roundEndTime && !r.drawn)
-      document.getElementById("btn-draw").style.display = "block";
-
-    if (rid > 1) {
-      try {
-        const w = await contract.getWinningNumbers(rid - 1);
-        for (let i = 0; i < 6; i++) document.getElementById("wb" + (i + 1)).textContent = Number(w[i]);
-        document.getElementById("winning-round").textContent = "#" + (rid - 1);
-        document.getElementById("winning-panel").style.display = "block";
-      } catch (_) {}
+async function refresh(){
+  if(!contract)return;
+  try{
+    const r=await contract.getCurrentRound();
+    const rid=Number(r.roundId);
+    const jpVal=parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
+    document.getElementById("stat-jackpot").textContent=jpVal;
+    try{document.getElementById("banner-jackpot").textContent=jpVal;}catch(_){}
+    document.getElementById("stat-round").textContent="#"+rid;
+    document.getElementById("stat-tickets").textContent=Number(r.totalTickets).toLocaleString();
+    roundEndTime=Number(r.endTime);
+    if(Math.floor(Date.now()/1000)>=roundEndTime&&!r.drawn)document.getElementById("btn-draw").style.display="block";
+    if(rid>1){try{const w=await contract.getWinningNumbers(rid-1);for(let i=0;i<6;i++)document.getElementById("wb"+(i+1)).textContent=Number(w[i]);document.getElementById("winning-round").textContent="#"+(rid-1);document.getElementById("winning-panel").style.display="block";}catch(_){}}
+    try{const tickets=await contract.getTickets(rid);updateActivityFeed(tickets,rid);updateSocialProof(tickets,rid);}catch(_){}
+    await refreshLimit();await refreshHistory();
+  }catch(e){console.error(e);}
+}
+async function refreshLimit(){
+  if(!contract||!wallet)return;
+  try{
+    const rem=Number(await contract.ticketsRemaining(wallet));
+    const used=3-rem;
+    const badge=document.getElementById("ticket-badge");
+    const btn=document.getElementById("btn-buy");
+    if(rem===0){
+      badge.textContent="3/3 tickets used this week";badge.className="ticket-badge full";
+      btn.disabled=true;btn.textContent="Limit reached — come back next round";
+    }else if(used>0){
+      badge.textContent=used+"/3 used · "+rem+" remaining this week";badge.className="ticket-badge partial";
+      btn.disabled=false;btn.textContent="Buy Ticket";
+    }else{
+      badge.textContent="3 tickets available this week";badge.className="ticket-badge open";
+      btn.disabled=false;btn.textContent="Buy Ticket";
     }
-
-    try {
-      const tickets = await contract.getTickets(rid);
-      updateActivityFeed(tickets, rid);
-      updateSocialProof(tickets, rid);
-    } catch (_) {}
-
-    await refreshLimit();
-    await refreshHistory();
-  } catch (e) { console.error(e); }
+  }catch(e){console.error("refreshLimit:",e);}
 }
-
-async function refreshLimit() {
-  if (!contract || !wallet) return;
-  const rem = Number(await contract.ticketsRemaining(wallet));
-  const used = 3 - rem;
-  const badge = document.getElementById("ticket-badge");
-  const btn = document.getElementById("btn-buy");
-  if (rem === 0) {
-    badge.textContent = "3/3 tickets used this round";
-    badge.className = "ticket-badge full";
-    btn.disabled = true;
-  } else if (used > 0) {
-    badge.textContent = used + "/3 used · " + rem + " remaining";
-    badge.className = "ticket-badge partial";
-    btn.disabled = false;
-  } else {
-    badge.textContent = "3 tickets available";
-    badge.className = "ticket-badge open";
-    btn.disabled = false;
-  }
-}
-
-async function refreshHistory() {
-  if (!contract || !wallet) return;
-  const rid = Number(await contract.currentRoundId());
-  const list = document.getElementById("history-list");
-  const items = [];
-  for (let r = Math.max(1, rid - 5); r <= rid; r++) {
-    try {
-      const tickets = await contract.getTickets(r);
-      const mine = tickets.filter(t => t.player.toLowerCase() === wallet.toLowerCase());
-      if (!mine.length) continue;
-      let drawn = false, winNums = null;
-      if (r < rid) { try { winNums = await contract.getWinningNumbers(r); drawn = true; } catch (_) {} }
-      for (const t of mine) {
-        const nums = t.numbers.map(n => Number(n));
-        let badge = '<span class="badge bpend">Pending</span>', claimBtn = "";
-        if (drawn && winNums) {
-          const wn = winNums.map(n => Number(n));
-          const m = nums.filter(n => wn.includes(n)).length;
-          if (m >= 6) badge = '<span class="badge b1">Jackpot!</span>';
-          else if (m === 5) badge = '<span class="badge b2">2nd Prize</span>';
-          else if (m === 4) badge = '<span class="badge b3">3rd Prize</span>';
-          else if (m === 3) badge = '<span class="badge b4">4th Prize</span>';
-          else badge = '<span class="badge blose">No match</span>';
-          if (m >= 3) {
-            const claimed = await contract.hasClaimedReward(r, wallet);
-            claimBtn = claimed
-              ? '<span style="font-size:10px;color:var(--ink4)">Claimed</span>'
-              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
-          }
+async function refreshHistory(){
+  if(!contract||!wallet)return;
+  const rid=Number(await contract.currentRoundId());
+  const list=document.getElementById("history-list");
+  const items=[];
+  for(let r=Math.max(1,rid-5);r<=rid;r++){
+    try{
+      const tickets=await contract.getTickets(r);
+      const mine=tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
+      if(!mine.length)continue;
+      let drawn=false,winNums=null;
+      if(r<rid){try{winNums=await contract.getWinningNumbers(r);drawn=true;}catch(_){}}
+      for(const t of mine){
+        const nums=t.numbers.map(n=>Number(n));
+        let badge='<span class="badge bpend">Pending</span>',claimBtn="";
+        if(drawn&&winNums){
+          const wn=winNums.map(n=>Number(n));
+          const m=nums.filter(n=>wn.includes(n)).length;
+          if(m>=6)badge='<span class="badge b1">Jackpot!</span>';
+          else if(m===5)badge='<span class="badge b2">2nd Prize</span>';
+          else if(m===4)badge='<span class="badge b3">3rd Prize</span>';
+          else if(m===3)badge='<span class="badge b4">4th Prize</span>';
+          else badge='<span class="badge blose">No match</span>';
+          if(m>=3){const claimed=await contract.hasClaimedReward(r,wallet);claimBtn=claimed?'<span style="font-size:10px;color:var(--ink4)">Claimed</span>':`<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;}
         }
-        const mb = nums.map(n => `<div class="mball">${n}</div>`).join("");
+        const mb=nums.map(n=>`<div class="mball">${n}</div>`).join("");
         items.push(`<div class="hitem"><div class="hleft"><span class="hround">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:8px">${badge}${claimBtn}</div></div>`);
       }
-    } catch (_) {}
+    }catch(_){}
   }
-  list.innerHTML = items.length ? items.join("") : '<div class="empty">No tickets found for this wallet</div>';
+  list.innerHTML=items.length?items.join(""):'<div class="empty">No tickets found for this wallet</div>';
 }
-
-async function buyTicket() {
-  if (!contract) { toast("Connect wallet first", "error"); return; }
+async function buyTicket(){
+  if(!contract){toast("Connect wallet first","error");return;}
   let numbers;
-  if (currentTab === "pick") {
-    const v = [1, 2, 3, 4, 5, 6].map(i => parseInt(document.getElementById("n" + i).value));
-    if (v.some(n => isNaN(n) || n < 1 || n > 45)) { toast("Numbers must be between 1 and 45", "error"); return; }
-    if (new Set(v).size < 6) { toast("All numbers must be unique!", "error"); return; }
-    numbers = v;
-  } else {
-    const v = [1, 2, 3, 4, 5, 6].map(i => parseInt(document.getElementById("rb" + i).textContent));
-    if (v.some(isNaN)) { toast("Please roll your numbers first", "error"); return; }
-    numbers = v;
+  if(currentTab==="pick"){
+    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
+    if(v.some(n=>isNaN(n)||n<1||n>45)){toast("Numbers must be between 1 and 45","error");return;}
+    if(new Set(v).size<6){toast("All numbers must be unique!","error");return;}
+    numbers=v;
+  }else{
+    const v=[1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
+    if(v.some(isNaN)){toast("Please roll your numbers first","error");return;}
+    numbers=v;
   }
-  try {
-    document.getElementById("btn-buy").disabled = true;
-    document.getElementById("btn-buy").textContent = "Processing...";
-    showTxStatus("processing", "Waiting for wallet confirmation...");
-    const price = ethers.parseEther("0.001");
+  try{
+    document.getElementById("btn-buy").disabled=true;document.getElementById("btn-buy").textContent="Processing...";
+    showTxStatus("processing","Waiting for wallet confirmation...");
+    const price=ethers.parseEther("0.001");
     let tx;
-    if (currentTab === "pick") tx = await contract.buyCustomTicket(numbers, 1, { value: price });
-    else tx = await contract.buyRandomTicket(1, { value: price });
-    showTxStatus("processing", "Transaction submitted, confirming on-chain...");
+    if(currentTab==="pick")tx=await contract.buyCustomTicket(numbers,1,{value:price});
+    else tx=await contract.buyRandomTicket(1,{value:price});
+    showTxStatus("processing","Transaction submitted, confirming on-chain...");
     await tx.wait();
-    showTxStatus("success", "Ticket purchased! Numbers: " + numbers.join(" · "));
-    setTimeout(() => hideTxStatus(), 4000);
+    showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
+    setTimeout(()=>hideTxStatus(),4000);
     await refresh();
-  } catch (e) {
-    showTxStatus("error", (e?.reason || e?.message || "Transaction failed").slice(0, 80));
-    setTimeout(() => hideTxStatus(), 5000);
-  } finally {
-    document.getElementById("btn-buy").textContent = "Buy Ticket";
+  }catch(e){
+    showTxStatus("error",(e?.reason||e?.message||"Transaction failed").slice(0,80));
+    setTimeout(()=>hideTxStatus(),5000);
     await refreshLimit();
   }
 }
-
-async function drawNumbers() {
-  if (!contract) return;
-  try {
-    toast("Triggering weekly draw...");
-    const tx = await contract.performUpkeep("0x");
-    await tx.wait();
-    toast("Draw complete!", "success");
-    document.getElementById("btn-draw").style.display = "none";
-    await refresh();
-  } catch (e) { toast(e?.reason || "Draw failed", "error"); }
+async function drawNumbers(){
+  if(!contract)return;
+  try{toast("Triggering weekly draw...");const tx=await contract.performUpkeep("0x");await tx.wait();toast("Draw complete!","success");document.getElementById("btn-draw").style.display="none";await refresh();}
+  catch(e){toast(e?.reason||"Draw failed","error");}
 }
-
-async function claimReward(rid) {
-  if (!contract) return;
-  try {
-    toast("Claiming reward...");
-    const tx = await contract.claimReward(rid);
-    await tx.wait();
-    toast("Reward claimed!", "success");
-    await refresh();
-  } catch (e) { toast(e?.reason || "Claim failed", "error"); }
+async function claimReward(rid){
+  if(!contract)return;
+  try{toast("Claiming reward...");const tx=await contract.claimReward(rid);await tx.wait();toast("Reward claimed!","success");await refresh();}
+  catch(e){toast(e?.reason||"Claim failed","error");}
 }
-
-// ─────────────────────────────────────────────
-//  UI HELPERS
-// ─────────────────────────────────────────────
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById("tab-pick").className = "tab" + (tab === "pick" ? " active" : "");
-  document.getElementById("tab-rand").className = "tab" + (tab === "rand" ? " active" : "");
-  document.getElementById("panel-pick").style.display = tab === "pick" ? "" : "none";
-  document.getElementById("panel-rand").style.display = tab === "rand" ? "" : "none";
-  if (tab === "rand") reroll();
+function switchTab(tab){
+  currentTab=tab;
+  document.getElementById("tab-pick").className="tab"+(tab==="pick"?" active":"");
+  document.getElementById("tab-rand").className="tab"+(tab==="rand"?" active":"");
+  document.getElementById("panel-pick").style.display=tab==="pick"?"":"none";
+  document.getElementById("panel-rand").style.display=tab==="rand"?"":"none";
+  if(tab==="rand")reroll();
 }
-
-function reroll() {
-  const p = [];
-  while (p.length < 6) { const n = Math.floor(Math.random() * 45) + 1; if (!p.includes(n)) p.push(n); }
-  p.sort((a, b) => a - b);
-  for (let i = 0; i < 6; i++) { const el = document.getElementById("rb" + (i + 1)); el.textContent = p[i]; el.className = "brand set"; }
+function reroll(){
+  const p=[];while(p.length<6){const n=Math.floor(Math.random()*45)+1;if(!p.includes(n))p.push(n);}
+  p.sort((a,b)=>a-b);
+  for(let i=0;i<6;i++){const el=document.getElementById("rb"+(i+1));el.textContent=p[i];el.className="brand set";}
 }
-
-function startCountdown() {
-  if (cdTimer) clearInterval(cdTimer);
-  cdTimer = setInterval(() => {
-    const left = Math.max(0, roundEndTime - Math.floor(Date.now() / 1000));
-    const d = Math.floor(left / 86400), h = Math.floor((left % 86400) / 3600), m = Math.floor((left % 3600) / 60), s = left % 60;
-    document.getElementById("cd-d").textContent = pad(d);
-    document.getElementById("cd-h").textContent = pad(h);
-    document.getElementById("cd-m").textContent = pad(m);
-    document.getElementById("cd-s").textContent = pad(s);
-    document.getElementById("progress-bar").style.width = (roundDuration > 0 ? Math.round(left / roundDuration * 100) : 0) + "%";
-    if (left === 0) document.getElementById("btn-draw").style.display = "block";
-  }, 1000);
+function startCountdown(){
+  if(cdTimer)clearInterval(cdTimer);
+  cdTimer=setInterval(()=>{
+    const left=Math.max(0,roundEndTime-Math.floor(Date.now()/1000));
+    const d=Math.floor(left/86400),h=Math.floor((left%86400)/3600),m=Math.floor((left%3600)/60),s=left%60;
+    document.getElementById("cd-d").textContent=pad(d);document.getElementById("cd-h").textContent=pad(h);
+    document.getElementById("cd-m").textContent=pad(m);document.getElementById("cd-s").textContent=pad(s);
+    document.getElementById("progress-bar").style.width=(roundDuration>0?Math.round(left/roundDuration*100):0)+"%";
+    if(left===0)document.getElementById("btn-draw").style.display="block";
+  },1000);
 }
-
-function startCooldownWatch() {
-  if (coolTimer) clearInterval(coolTimer);
-  coolTimer = setInterval(async () => {
-    if (!contract || !wallet) return;
-    try {
-      const cd = Number(await contract.cooldownRemaining(wallet));
-      const el = document.getElementById("cooldown-txt");
-      if (cd > 0) {
-        el.textContent = "Next purchase available in " + cd + "s";
-        document.getElementById("btn-buy").disabled = true;
-      } else {
-        el.textContent = "";
-        await refreshLimit(); // ← FIX: re-enable button after cooldown
-      }
-    } catch (_) {
-      // FIX: don't silently fail — re-enable button so user isn't stuck
-      document.getElementById("cooldown-txt").textContent = "";
-      await refreshLimit();
-    }
-  }, 3000);
+function updateActivityFeed(tickets,roundId){
+  const list=document.getElementById("activity-list");
+  if(!tickets||tickets.length===0){list.innerHTML='<div class="act-empty">No activity yet — be the first!</div>';return;}
+  const recent=[...tickets].reverse().slice(0,5);
+  list.innerHTML=recent.map(t=>{const nums=t.numbers.map(n=>Number(n));const addr=t.player.slice(0,6)+"..."+t.player.slice(-4);return`<div class="activity-item"><div class="act-left"><div class="act-icon">&#127903;&#65039;</div><div><div class="act-addr">${addr}</div><div class="act-nums">${nums.join(" · ")}</div></div></div><div class="act-time">Round #${roundId}</div></div>`;}).join("");
 }
-
-function updateActivityFeed(tickets, roundId) {
-  const list = document.getElementById("activity-list");
-  if (!tickets || tickets.length === 0) {
-    list.innerHTML = '<div class="act-empty">No activity yet — be the first to buy a ticket!</div>';
-    return;
-  }
-  const recent = [...tickets].reverse().slice(0, 5);
-  list.innerHTML = recent.map(t => {
-    const nums = t.numbers.map(n => Number(n));
-    const addr = t.player.slice(0, 6) + "..." + t.player.slice(-4);
-    return `<div class="activity-item">
-      <div class="act-left">
-        <div class="act-icon">🎟️</div>
-        <div>
-          <div class="act-addr">${addr}</div>
-          <div class="act-nums">${nums.join(" · ")}</div>
-        </div>
-      </div>
-      <div class="act-time">Round #${roundId}</div>
-    </div>`;
-  }).join("");
+function updateSocialProof(tickets,roundId){
+  const unique=new Set(tickets.map(t=>t.player)).size;
+  document.getElementById("sp-players").textContent=unique||"0";
+  document.getElementById("sp-round").textContent="#"+roundId;
+  try{document.getElementById("stat-players").textContent=unique||"0";}catch(_){}
+  document.getElementById("sp-last").textContent=tickets.length>0?"just now":"—";
 }
-
-function updateSocialProof(tickets, roundId) {
-  const unique = new Set(tickets.map(t => t.player)).size;
-  document.getElementById("sp-players").textContent = unique || "0";
-  document.getElementById("sp-round").textContent = "#" + roundId;
-  try { document.getElementById("stat-players").textContent = unique || "0"; } catch (_) {}
-  document.getElementById("sp-last").textContent = tickets.length > 0 ? "just now" : "—";
+function showTxStatus(type,msg){
+  const el=document.getElementById("tx-status");el.className="tx-status show "+type;
+  document.getElementById("tx-msg").textContent=msg;
+  document.getElementById("tx-spinner").style.display=type==="processing"?"block":"none";
 }
-
-function showTxStatus(type, msg) {
-  const el = document.getElementById("tx-status");
-  el.className = "tx-status show " + type;
-  document.getElementById("tx-msg").textContent = msg;
-  document.getElementById("tx-spinner").style.display = type === "processing" ? "block" : "none";
-}
-function hideTxStatus() {
-  document.getElementById("tx-status").className = "tx-status";
-}
-
-function pad(n) { return String(n).padStart(2, "0"); }
-
-function toast(msg, type = "") {
-  const el = document.getElementById("toast");
-  el.textContent = msg; el.className = "show " + type;
-  clearTimeout(el._t); el._t = setTimeout(() => el.className = "", 3500);
+function hideTxStatus(){document.getElementById("tx-status").className="tx-status";}
+function pad(n){return String(n).padStart(2,"0");}
+function toast(msg,type=""){
+  const el=document.getElementById("toast");el.textContent=msg;el.className="show "+type;
+  clearTimeout(el._t);el._t=setTimeout(()=>el.className="",3500);
 }
 </script>
 </body>
