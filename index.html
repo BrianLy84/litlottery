@@ -1,893 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>LitBillionaire — Weekly On-Chain Lottery</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-:root{
-  --ink:#0D0B08;--ink2:#2A2010;--ink3:#5A4A20;--ink4:#8A7A50;
-  --gold:#9A6800;--gold2:#C48A10;--gold3:#E8B840;
-  --gold-bg:#FDFAF2;--gold-border:#D4A820;
-  --teal:#085A40;--teal2:#0A7A60;
-  --teal-bg:#F0FAF6;--teal-border:#60C4A0;
-  --blue:#1A3A7A;--blue-bg:#EEF4FF;--blue-border:#80A8E0;
-  --purple:#5A2A8A;--purple-bg:#F5F0FF;--purple-border:#B080D8;
-  --cream:#F8F5EE;--paper:#FFFFFF;
-  --border:#E0D0A0;--border2:#C8B070;
-  --shadow:0 1px 3px rgba(100,80,20,.06),0 4px 16px rgba(100,80,20,.05);
-  --shadow-md:0 2px 8px rgba(100,80,20,.1),0 8px 32px rgba(100,80,20,.06);
-}
-html{scroll-behavior:smooth}
-body{background:var(--cream);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh}
-.page{max-width:1100px;margin:0 auto;padding:0 24px 80px}
-.main-grid{display:grid;grid-template-columns:1fr 340px;gap:20px;align-items:start}
-.main-left{display:flex;flex-direction:column;gap:0}
-.main-right{display:flex;flex-direction:column;gap:16px;position:sticky;top:20px}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LitBillionaire — On-Chain Lottery</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: #0A0A0A;
+            color: #EAEAEA;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .page { max-width: 1100px; margin: 0 auto; }
 
-/* HERO */
-.hero{background:#FAF6ED;border:1.5px solid #C8B060;border-radius:20px;overflow:hidden;margin-bottom:20px}
-.hero-inner{display:flex;align-items:stretch;min-height:190px}
-.hero-left{flex:1;padding:28px 32px;border-right:1px solid #D8C060;display:flex;flex-direction:column;justify-content:center}
-.hero-eyebrow{font-size:10px;letter-spacing:3px;color:#6A4A10;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:8px}
-.eline{width:20px;height:1px;background:#C0980A}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:48px;font-weight:700;letter-spacing:1px;line-height:1;color:#0A0800;margin-bottom:6px}
-.hero-title span{color:#9A5800}
-.hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:#5A3E10;letter-spacing:1.5px;margin-bottom:18px;font-weight:600}
-.hero-pills{display:flex;gap:8px;flex-wrap:wrap}
-.pill{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:20px;font-size:10px;letter-spacing:1.5px;font-weight:700}
-.pill-live{background:#D8F4EC;border:1.5px solid #50A880;color:#064A30}
-.pill-chain{background:#EEE0B8;border:1.5px solid #A87A18;color:#5A3A00}
-.pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-.hero-right{width:270px;padding:22px 24px;background:#F0E8D0;display:flex;flex-direction:column;justify-content:center}
-.stat-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid #C8A840}
-.stat-row:last-child{border-bottom:none}
-.stat-lbl{font-size:10px;letter-spacing:1.5px;color:#5A3E08;font-weight:700;text-transform:uppercase}
-.stat-val{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:700;color:#0A0800;line-height:1}
-.stat-val.gold{color:#7A5000;font-size:26px}
-.stat-unit{font-size:11px;color:#6A5010;margin-left:3px;font-weight:600}
-.hero-bottom{background:#E8D8A8;border-top:1.5px solid #B89830;padding:11px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
-.bstat{display:flex;align-items:center;gap:5px}
-.bstat-txt{font-size:11px;color:#3A2800;font-weight:600}
-.bstat-txt b{color:#1A0E00;font-weight:800}
-.bsdiv{width:1px;height:14px;background:#B89830}
+        /* HERO - GIỮ NGUYÊN THEO YÊU CẦU */
+        .hero {
+            background: linear-gradient(135deg, #1F1708, #2A1F0F);
+            border: 2px solid #F5C518;
+            border-radius: 24px;
+            padding: 50px 40px;
+            text-align: center;
+            margin-bottom: 40px;
+            box-shadow: 0 0 40px rgba(245, 197, 24, 0.3);
+        }
+        .hero-eyebrow {
+            font-size: 13px;
+            letter-spacing: 4px;
+            color: #F5C518;
+            margin-bottom: 10px;
+        }
+        .hero-title {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 72px;
+            font-weight: 700;
+            color: #F5C518;
+            margin: 15px 0;
+        }
+        .hero-sub {
+            font-family: 'Cormorant Garamond', serif;
+            font-style: italic;
+            font-size: 22px;
+            color: #D4A820;
+            margin-bottom: 30px;
+        }
+        .hero-pills {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        .pill {
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        .pill-live { background: #0F2A1F; border: 1px solid #22CC88; color: #22CC88; }
+        .pill-chain { background: #2A210F; border: 1px solid #F5C518; color: #F5C518; }
 
-/* WALLET BAR */
-.wbar{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:12px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow)}
-.w-left{display:flex;align-items:center;gap:10px}
-.wav{width:36px;height:36px;border-radius:9px;background:var(--gold-bg);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:16px}
-.waddr{font-size:13px;color:var(--ink2);font-weight:600}
-.wbal{font-size:12px;color:var(--gold);font-weight:700}
-.btn-wc{background:var(--ink);color:#FFF8E8;border:none;padding:9px 18px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-wc:hover{background:var(--ink2)}
-.btn-wc.on{background:var(--teal-bg);color:var(--teal);border:1.5px solid var(--teal-border)}
-.btn-disconnect{background:transparent;color:var(--ink4);border:1.5px solid var(--border);padding:7px 13px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s}
-.btn-disconnect:hover{background:#FEF2F2;color:#8A1010;border-color:#F08080}
-
-/* MODAL */
-.modal-overlay{position:fixed;inset:0;background:rgba(13,11,8,.6);backdrop-filter:blur(4px);z-index:1000;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .25s}
-.modal-overlay.open{opacity:1;pointer-events:all}
-.modal-box{background:var(--paper);border:1.5px solid var(--border2);border-radius:20px;padding:26px 26px 22px;width:380px;max-width:92vw;box-shadow:0 20px 60px rgba(0,0,0,.2);transform:translateY(12px) scale(.97);transition:transform .25s,opacity .25s}
-.modal-overlay.open .modal-box{transform:none}
-.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
-.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--ink)}
-.modal-close{background:none;border:none;font-size:18px;color:var(--ink4);cursor:pointer;padding:2px 6px;border-radius:6px;transition:background .2s}
-.modal-close:hover{background:var(--cream);color:var(--ink)}
-.modal-sub{font-size:11px;color:var(--ink3);margin-bottom:16px;line-height:1.5;font-weight:500}
-.wallet-options{display:flex;flex-direction:column;gap:9px}
-.wallet-opt{display:flex;align-items:center;gap:12px;padding:13px 15px;border-radius:12px;cursor:pointer;border:1.5px solid var(--border);background:var(--cream);transition:all .2s}
-.wallet-opt:hover{border-color:var(--border2);background:var(--paper);box-shadow:var(--shadow-md);transform:translateY(-1px)}
-.wallet-opt.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
-.wo-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:1px solid var(--border)}
-.wo-info{flex:1;text-align:left}
-.wo-name{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:2px}
-.wo-desc{font-size:10px;color:var(--ink4);font-weight:500}
-.wo-badge{font-size:9px;padding:3px 8px;border-radius:5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
-.wo-badge.detected{background:var(--teal-bg);color:var(--teal);border:1px solid var(--teal-border)}
-.wo-badge.notfound{background:var(--cream);color:var(--ink4);border:1px solid var(--border)}
-.modal-divider{display:flex;align-items:center;gap:10px;margin:12px 0}
-.modal-divider span{font-size:10px;color:var(--ink4);letter-spacing:1px;text-transform:uppercase}
-.modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:var(--border)}
-
-/* SOCIAL BAR */
-.social-bar{background:var(--paper);border:1.5px solid var(--border);border-radius:12px;padding:11px 18px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:var(--shadow)}
-.sp-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3);font-weight:500}
-.sp-dot{width:7px;height:7px;border-radius:50%;background:var(--teal2);animation:pulse-dot 2s infinite;flex-shrink:0}
-@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
-.sp-val{color:var(--ink);font-weight:700}
-.sp-div{width:1px;height:14px;background:var(--border)}
-
-/* STATS */
-.stats{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:12px;margin-bottom:18px}
-.sc{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;box-shadow:var(--shadow)}
-.sc.jp{background:linear-gradient(160deg,#FDFAF2,#FDF2D8);border-color:#C8980A;box-shadow:0 2px 14px rgba(180,120,10,.1)}
-.slbl{font-size:10px;color:var(--ink4);letter-spacing:1.8px;font-weight:700;margin-bottom:7px;text-transform:uppercase}
-.sval{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;color:var(--ink);line-height:1}
-.sc.jp .sval{font-size:42px;color:#7A5000}
-.sunit{font-size:11px;color:var(--ink3);margin-top:4px;font-weight:600}
-
-/* COUNTDOWN */
-.cdcard{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:16px 20px;margin-bottom:18px;box-shadow:var(--shadow)}
-.cdrow{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px}
-.cdlbl{font-size:11px;color:var(--ink2);letter-spacing:1.2px;font-weight:700;text-transform:uppercase}
-.prog{height:4px;background:var(--border);border-radius:4px;overflow:hidden}
-.progf{height:100%;background:linear-gradient(90deg,var(--teal2),var(--gold2));border-radius:4px;transition:width 1s linear}
-.cd-digits{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
-.cd-unit{text-align:center}
-.cd-num{font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:700;color:#0A0800;line-height:1;background:var(--cream);border:1.5px solid var(--border2);border-radius:8px;padding:4px 10px;min-width:46px;display:inline-block}
-.cd-lbl2{font-size:9px;color:var(--ink3);letter-spacing:1px;margin-top:3px;text-transform:uppercase;font-weight:700}
-
-/* PRIZES */
-.prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
-.pc{background:var(--paper);border:1.5px solid var(--border);border-radius:13px;padding:16px 10px;text-align:center;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s}
-.pc:hover{transform:translateY(-2px);box-shadow:var(--shadow-md)}
-.pc.p1{background:var(--gold-bg);border-color:var(--gold-border)}
-.pc.p2{background:var(--teal-bg);border-color:var(--teal-border)}
-.pc.p3{background:var(--blue-bg);border-color:var(--blue-border)}
-.pc.p4{background:var(--purple-bg);border-color:var(--purple-border)}
-.pico{font-size:18px;margin-bottom:6px}
-.pname{font-size:9px;letter-spacing:1.8px;font-weight:700;margin-bottom:4px;text-transform:uppercase}
-.pc.p1 .pname{color:#7A5000}.pc.p2 .pname{color:#085A40}.pc.p3 .pname{color:#1A3A7A}.pc.p4 .pname{color:#5A2A8A}
-.pmatch{font-size:10px;color:var(--ink3);margin-bottom:8px;font-weight:600}
-.ppct{font-family:'Cormorant Garamond',serif;font-size:30px;font-weight:600;line-height:1}
-.pc.p1 .ppct{color:#7A5000}.pc.p2 .ppct{color:#085A40}.pc.p3 .ppct{color:#1A3A7A}.pc.p4 .ppct{color:#5A2A8A}
-
-/* PANEL */
-.panel{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:22px;margin-bottom:14px;box-shadow:var(--shadow)}
-.ph{display:flex;align-items:center;gap:10px;margin-bottom:18px;padding-bottom:14px;border-bottom:1.5px solid var(--border)}
-.phico{width:30px;height:30px;border-radius:8px;background:var(--gold-bg);border:1px solid var(--gold-border);display:flex;align-items:center;justify-content:center;font-size:13px}
-.phtitle{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--ink)}
-
-/* TABS */
-.tabs{display:flex;gap:4px;background:var(--cream);border:1.5px solid var(--border);border-radius:12px;padding:4px;margin-bottom:20px}
-.tab{flex:1;padding:8px;border-radius:9px;font-size:12px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--ink4);font-family:'DM Sans',sans-serif;transition:all .2s}
-.tab.active{background:var(--paper);color:var(--ink);box-shadow:var(--shadow)}
-
-/* BALLS */
-.balls{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:20px}
-.bitem{display:flex;flex-direction:column;align-items:center;gap:4px}
-.blbl{font-size:9px;color:var(--ink3);letter-spacing:1.2px;font-weight:700;text-transform:uppercase}
-.ball{width:50px;height:50px;border-radius:50%;background:var(--cream);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;transition:all .2s;cursor:pointer}
-.ball:hover,.ball:focus-within{border-color:var(--teal-border);background:var(--teal-bg);box-shadow:0 0 0 4px rgba(10,122,96,.08)}
-.ball input{width:100%;height:100%;background:transparent;border:none;text-align:center;color:var(--ink);font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;outline:none;cursor:pointer}
-.brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:var(--ink4)}
-.brand.set{color:var(--ink)}
-.rtip{text-align:center;font-size:11px;color:var(--ink3);margin-bottom:16px;font-style:italic;font-weight:500}
-
-/* TICKET META */
-.tmeta{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-top:1.5px solid var(--border);border-bottom:1.5px solid var(--border);margin-bottom:14px;flex-wrap:wrap;gap:8px}
-.tplbl{font-size:11px;color:var(--ink2);font-weight:600}
-.tplbl span{color:var(--gold);font-weight:700}
-.ticket-badge{display:inline-flex;align-items:center;gap:5px;background:var(--cream);border:1.5px solid var(--border2);border-radius:8px;padding:5px 11px;font-size:11px;color:var(--ink2);font-weight:700}
-.ticket-badge.full{background:#FEF2F2;border-color:#F08080;color:#8A1010}
-.ticket-badge.partial{background:var(--gold-bg);border-color:var(--gold-border);color:#7A5000}
-.ticket-badge.open{background:var(--teal-bg);border-color:var(--teal-border);color:#085A40}
-
-/* BUY BUTTON */
-.btn-buy{width:100%;padding:15px;background:var(--ink);color:#FDF8EC;border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;letter-spacing:2px;cursor:pointer;transition:all .2s;text-transform:uppercase;box-shadow:0 4px 14px rgba(13,11,8,.22);position:relative;overflow:hidden}
-.btn-buy:hover:not(:disabled){background:var(--ink2);transform:translateY(-1px)}
-.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.06) 50%,transparent 100%);animation:shimmer 3s infinite}
-@keyframes shimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-.btn-buy:disabled{background:#C8B888;color:#7A6830;cursor:not-allowed;letter-spacing:1px;font-size:13px;box-shadow:none}
-.btn-draw{width:100%;padding:11px;margin-top:10px;background:var(--teal-bg);color:var(--teal);border:1.5px solid var(--teal-border);border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:700;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase}
-.btn-draw:hover:not(:disabled){background:#C8F0E0}
-
-/* TX STATUS */
-.tx-status{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:12px;font-weight:600}
-.tx-status.show{display:flex}
-.tx-status.processing{background:#FFF8E8;border:1.5px solid var(--gold-border);color:#7A5000}
-.tx-status.success{background:var(--teal-bg);border:1.5px solid var(--teal-border);color:#085A40}
-.tx-status.error{background:#FEF2F2;border:1.5px solid #F08080;color:#8A1010}
-.tx-spinner{width:13px;height:13px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* FAIR PLAY RULES */
-.fairplay{background:#FFFDF4;border:1.5px solid #D4A820;border-radius:14px;padding:18px 20px;margin-top:16px}
-.fp-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
-.fp-icon{font-size:15px}
-.fp-title{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#3A2000}
-.fp-rules{display:flex;flex-direction:column;gap:10px}
-.fp-rule{display:flex;align-items:flex-start;gap:10px}
-.fp-badge{min-width:22px;height:22px;border-radius:50%;background:#C48A10;color:#FFF8E0;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
-.fp-text{font-size:12px;color:#3A2800;line-height:1.55;font-weight:500}
-.fp-text b{color:#1A1000;font-weight:700}
-
-/* WINNING PANEL */
-.wballs{display:flex;gap:7px;justify-content:center;margin:12px 0;flex-wrap:wrap}
-.wball{width:44px;height:44px;border-radius:50%;background:linear-gradient(145deg,var(--teal2),var(--gold2));display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.12)}
-
-/* ACTIVITY */
-.activity-panel{background:var(--paper);border:1.5px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:14px;box-shadow:var(--shadow)}
-.activity-list{display:flex;flex-direction:column;gap:0}
-.activity-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);animation:fadein .4s ease}
-.activity-item:last-child{border-bottom:none}
-@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-.act-left{display:flex;align-items:center;gap:9px}
-.act-icon{width:26px;height:26px;border-radius:7px;background:var(--teal-bg);border:1px solid var(--teal-border);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
-.act-addr{font-size:12px;color:var(--ink2);font-weight:600;font-family:monospace}
-.act-nums{font-size:10px;color:var(--ink3);margin-top:1px;font-weight:500}
-.act-time{font-size:10px;color:var(--ink4);white-space:nowrap;font-weight:500}
-.act-empty{text-align:center;padding:16px;color:var(--ink3);font-size:12px;font-style:italic;font-weight:500}
-
-/* HISTORY */
-.hlist{display:flex;flex-direction:column;gap:7px}
-.hitem{display:flex;align-items:center;justify-content:space-between;background:var(--cream);border:1.5px solid var(--border);border-radius:11px;padding:11px 14px;flex-wrap:wrap;gap:7px;transition:border-color .2s}
-.hitem:hover{border-color:var(--border2)}
-.hleft{display:flex;align-items:center;gap:10px}
-.hround{font-size:10px;color:var(--ink3);min-width:54px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.mballs{display:flex;gap:3px}
-.mball{width:24px;height:24px;border-radius:50%;background:var(--paper);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:11px;color:var(--ink2);font-weight:700}
-.badge{font-size:10px;padding:3px 9px;border-radius:5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
-.b1{background:var(--gold-bg);color:#7A5000;border:1px solid var(--gold-border)}
-.b2{background:var(--teal-bg);color:#085A40;border:1px solid var(--teal-border)}
-.b3{background:var(--blue-bg);color:#1A3A7A;border:1px solid var(--blue-border)}
-.b4{background:var(--purple-bg);color:#5A2A8A;border:1px solid var(--purple-border)}
-.blose{background:var(--cream);color:var(--ink4);border:1px solid var(--border)}
-.bpend{background:#FFFBEE;color:#7A5A00;border:1px solid #D4C050}
-.btn-claim{font-size:10px;padding:5px 11px;background:#C48A10;color:#FFF8E0;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;text-transform:uppercase}
-.btn-claim:hover{background:#9A6800}
-.empty{text-align:center;padding:22px;color:var(--ink3);font-size:13px;font-style:italic;font-weight:500}
-
-/* TOAST */
-#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#FDF8EC;padding:11px 22px;border-radius:10px;font-size:12px;font-weight:600;transition:transform .3s;z-index:9999;white-space:nowrap;max-width:90vw;box-shadow:var(--shadow-md)}
-#toast.show{transform:translateX(-50%) translateY(0)}
-#toast.success{background:var(--teal2);color:#fff}
-#toast.error{background:#8A2010;color:#fff}
-
-footer{text-align:center;padding-top:20px;margin-top:6px;border-top:1.5px solid var(--border)}
-footer p{font-size:11px;color:var(--ink3);font-weight:500}
-footer a{color:var(--ink2);text-decoration:none;font-weight:700}
-footer a:hover{color:var(--teal2)}
-
-@media(max-width:900px){.main-grid{grid-template-columns:1fr}.main-right{position:static}.stats{grid-template-columns:1fr 1fr 1fr}.sc.jp{grid-column:span 3}}
-@media(max-width:600px){.stats{grid-template-columns:1fr 1fr}.sc.jp{grid-column:span 2}.prizes{grid-template-columns:repeat(2,1fr)}.hero-title{font-size:34px}.hero-inner{flex-direction:column}.hero-right{width:100%;border-left:none;border-top:1px solid #D0B840}.ball{width:44px;height:44px}.ball input{font-size:17px}.page{padding:0 14px 60px}}
-</style>
+        h2, .panel-title { color: #F5C518; margin-bottom: 20px; }
+        .panel {
+            background: #111;
+            border: 1px solid #333;
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        .ball {
+            width: 68px; height: 68px;
+            background: #1A1A1A;
+            border: 3px solid #444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            color: #F5C518;
+            margin: 10px;
+        }
+        .btn-buy {
+            background: linear-gradient(90deg, #F5C518, #FFDD66);
+            color: #111;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: 700;
+            border: none;
+            border-radius: 16px;
+            width: 100%;
+            margin-top: 20px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
-<div class="page">
+    <div class="page">
 
-<!-- HERO -->
-<div class="hero">
-  <div class="hero-inner">
-    <div class="hero-left">
-      <div class="hero-eyebrow"><div class="eline"></div><span>EST. 2026 · ON-CHAIN LOTTERY</span><div class="eline"></div></div>
-      <div class="hero-title">Lit<span>Billionaire</span></div>
-      <div class="hero-sub">Where fortunes are made on-chain</div>
-      <div class="hero-pills">
-        <div class="pill pill-live"><span class="pdot"></span>Live on LiteForge</div>
-        <div class="pill pill-chain">⚡ LitVM Powered</div>
-      </div>
-    </div>
-    <div class="hero-right">
-      <div class="stat-row"><div class="stat-lbl">Jackpot Pool</div><div><span class="stat-val gold" id="banner-jackpot">1,284.7</span><span class="stat-unit">zkLTC</span></div></div>
-      <div class="stat-row"><div class="stat-lbl">Next Draw</div><div><span class="stat-val" style="font-size:17px">Fri 20:00</span><span class="stat-unit">GMT+7</span></div></div>
-      <div class="stat-row"><div class="stat-lbl">Ticket Price</div><div><span class="stat-val" style="font-size:19px">0.001</span><span class="stat-unit">zkLTC</span></div></div>
-    </div>
-  </div>
-  <div class="hero-bottom">
-    <div class="bstat"><span class="bstat-txt">🥇 Match 6 → <b>60%</b></span></div>
-    <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-txt">🥈 Match 5 → <b>20%</b></span></div>
-    <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-txt">🥉 Match 4 → <b>10%</b></span></div>
-    <div class="bsdiv"></div>
-    <div class="bstat"><span class="bstat-txt">🎖 Match 3 → <b>5%</b></span></div>
-  </div>
-</div>
-
-<!-- WALLET BAR -->
-<div class="wbar">
-  <div class="w-left">
-    <div class="wav" id="wav-icon">◈</div>
-    <div>
-      <div class="waddr" id="wallet-addr">Not connected</div>
-      <div class="wbal" id="wallet-bal">— zkLTC</div>
-    </div>
-  </div>
-  <div style="display:flex;gap:8px;align-items:center">
-    <button class="btn-wc" id="btn-connect" onclick="openWalletModal()">Connect Wallet</button>
-    <button class="btn-disconnect" id="btn-disconnect" onclick="disconnectWallet()" style="display:none">Disconnect</button>
-  </div>
-</div>
-
-<!-- WALLET MODAL -->
-<div class="modal-overlay" id="wallet-modal" onclick="handleModalClick(event)">
-  <div class="modal-box">
-    <div class="modal-head">
-      <div class="modal-title">Connect Wallet</div>
-      <button class="modal-close" onclick="closeWalletModal()">✕</button>
-    </div>
-    <p class="modal-sub">Choose your wallet to connect to LitBillionaire. Make sure you're on the LiteForge Testnet.</p>
-    <div class="wallet-options" id="wallet-options"></div>
-    <div class="modal-divider"><span>or</span></div>
-    <div class="wallet-options">
-      <div class="wallet-opt" onclick="connectWithProvider('walletconnect')">
-        <div class="wo-icon" style="background:#E8F0FF">
-          <img src="https://raw.githubusercontent.com/WalletConnect/walletconnect-assets/master/Logo/Gradient/Logo.png" width="24" height="24" style="border-radius:5px" onerror="this.parentElement.textContent='🔗'"/>
+        <!-- HERO PANEL -->
+        <div class="hero">
+            <div class="hero-eyebrow">
+                EST. 2026 · ON-CHAIN LOTTERY
+            </div>
+            <div class="hero-title">LitBillionaire</div>
+            <div class="hero-sub">Where fortunes are made on-chain</div>
+            
+            <div class="hero-pills">
+                <div class="pill pill-live">Live on LiteForge</div>
+                <div class="pill pill-chain">⛏ LitVM Powered</div>
+            </div>
         </div>
-        <div class="wo-info"><div class="wo-name">WalletConnect</div><div class="wo-desc">Connect via QR code · Works with 300+ wallets</div></div>
-        <span class="wo-badge notfound">SCAN QR</span>
-      </div>
+
+        <h2 style="text-align:center; margin:30px 0;">Giao diện Demo - Dark Theme</h2>
+
+        <div class="panel">
+            <h2 class="panel-title">Chọn 6 số của bạn</h2>
+            <div style="display:flex; justify-content:center; flex-wrap:wrap;">
+                <div class="ball">07</div>
+                <div class="ball">14</div>
+                <div class="ball">22</div>
+                <div class="ball">29</div>
+                <div class="ball">35</div>
+                <div class="ball">41</div>
+            </div>
+            <button class="btn-buy">Mua Vé (0.001 zkLTC)</button>
+        </div>
+
+        <p style="text-align:center; color:#888; margin-top:40px;">
+            Nếu vẫn bị đen hoàn toàn → thử mở bằng Chrome và Refresh (Ctrl + F5)
+        </p>
+
     </div>
-  </div>
-</div>
-
-<!-- SOCIAL PROOF -->
-<div class="social-bar">
-  <div class="sp-item"><div class="sp-dot"></div><span><span class="sp-val" id="sp-players">342</span> players this round</span></div>
-  <div class="sp-div"></div>
-  <div class="sp-item"><span style="font-size:13px">🎟️</span><span>Last ticket: <span class="sp-val" id="sp-last">2 min ago</span></span></div>
-  <div class="sp-div"></div>
-  <div class="sp-item"><span style="font-size:13px">🏆</span><span>Round <span class="sp-val" id="sp-round">#14</span> · Draw Friday</span></div>
-</div>
-
-<!-- STATS -->
-<div class="stats">
-  <div class="sc jp"><div class="slbl">Jackpot Pool</div><div class="sval" id="stat-jackpot">1,284.7</div><div class="sunit">zkLTC</div></div>
-  <div class="sc"><div class="slbl">Round</div><div class="sval" id="stat-round" style="font-size:30px;color:#0A0800">#14</div><div class="sunit">current</div></div>
-  <div class="sc"><div class="slbl">Tickets Sold</div><div class="sval" id="stat-tickets" style="font-size:30px;color:#0A0800">1,026</div><div class="sunit">this round</div></div>
-  <div class="sc"><div class="slbl">Players</div><div class="sval" id="stat-players" style="font-size:30px;color:#0A0800">342</div><div class="sunit">unique wallets</div></div>
-</div>
-
-<!-- COUNTDOWN -->
-<div class="cdcard">
-  <div class="cdrow">
-    <span class="cdlbl">Next Draw — Friday 20:00 GMT+7</span>
-    <div class="cd-digits">
-      <div class="cd-unit"><span class="cd-num" id="cd-d">--</span><div class="cd-lbl2">Days</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-h">--</span><div class="cd-lbl2">Hours</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-m">--</span><div class="cd-lbl2">Mins</div></div>
-      <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><div class="cd-lbl2">Secs</div></div>
-    </div>
-  </div>
-  <div class="prog" style="margin-top:10px"><div class="progf" id="progress-bar" style="width:0%"></div></div>
-</div>
-
-</div><!-- end page top -->
-
-<div class="page" style="padding-top:0">
-<div class="main-grid">
-<div class="main-left">
-
-<!-- PRIZES -->
-<div class="prizes">
-  <div class="pc p1"><div class="pico">🥇</div><div class="pname">Jackpot</div><div class="pmatch">Match all 6</div><div class="ppct">60%</div></div>
-  <div class="pc p2"><div class="pico">🥈</div><div class="pname">2nd Prize</div><div class="pmatch">Match 5 of 6</div><div class="ppct">20%</div></div>
-  <div class="pc p3"><div class="pico">🥉</div><div class="pname">3rd Prize</div><div class="pmatch">Match 4 of 6</div><div class="ppct">10%</div></div>
-  <div class="pc p4"><div class="pico">🎖</div><div class="pname">4th Prize</div><div class="pmatch">Match 3 of 6</div><div class="ppct">5%</div></div>
-</div>
-
-<!-- BUY TICKET -->
-<div class="panel">
-  <div class="ph"><div class="phico">🎟️</div><div class="phtitle">Buy Your Ticket</div></div>
-  <div class="tabs">
-    <button class="tab active" id="tab-pick" onclick="switchTab('pick')">Pick Numbers</button>
-    <button class="tab" id="tab-rand" onclick="switchTab('rand')">Quick Pick</button>
-  </div>
-  <div id="panel-pick">
-    <div class="balls">
-      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="7"/></div></div>
-      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="14"/></div></div>
-      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="21"/></div></div>
-      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="28"/></div></div>
-      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="35"/></div></div>
-      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42"/></div></div>
-    </div>
-  </div>
-  <div id="panel-rand" style="display:none">
-    <div class="balls">
-      <div class="bitem"><div class="blbl">No.1</div><div class="ball" onclick="reroll()"><span class="brand" id="rb1">?</span></div></div>
-      <div class="bitem"><div class="blbl">No.2</div><div class="ball" onclick="reroll()"><span class="brand" id="rb2">?</span></div></div>
-      <div class="bitem"><div class="blbl">No.3</div><div class="ball" onclick="reroll()"><span class="brand" id="rb3">?</span></div></div>
-      <div class="bitem"><div class="blbl">No.4</div><div class="ball" onclick="reroll()"><span class="brand" id="rb4">?</span></div></div>
-      <div class="bitem"><div class="blbl">No.5</div><div class="ball" onclick="reroll()"><span class="brand" id="rb5">?</span></div></div>
-      <div class="bitem"><div class="blbl">No.6</div><div class="ball" onclick="reroll()"><span class="brand" id="rb6">?</span></div></div>
-    </div>
-    <div class="rtip">Tap any ball to re-roll your lucky numbers</div>
-  </div>
-  <div class="tmeta">
-    <span class="ticket-badge open" id="ticket-badge">3 tickets available</span>
-    <span class="tplbl">Ticket: <span>0.001 zkLTC</span> each</span>
-  </div>
-  <div class="tx-status" id="tx-status">
-    <div class="tx-spinner" id="tx-spinner"></div>
-    <span id="tx-msg">Processing...</span>
-  </div>
-  <button class="btn-buy" id="btn-buy" onclick="buyTicket()">Buy Ticket</button>
-  <button class="btn-draw" id="btn-draw" onclick="drawNumbers()" style="display:none">Trigger Weekly Draw</button>
-
-  <!-- FAIR PLAY RULES -->
-  <div class="fairplay">
-    <div class="fp-head">
-      <span class="fp-icon">⚖️</span>
-      <span class="fp-title">Fair Play Rules</span>
-    </div>
-    <div class="fp-rules">
-      <div class="fp-rule">
-        <div class="fp-badge">1</div>
-        <div class="fp-text"><b>3 tickets per wallet per round.</b> Each wallet address is limited to a maximum of 3 tickets per weekly round to ensure fair participation for all players.</div>
-      </div>
-      <div class="fp-rule">
-        <div class="fp-badge">2</div>
-        <div class="fp-text"><b>Cooldown between purchases.</b> A minimum cooldown period applies between ticket purchases, preventing bot-driven bulk buying and keeping the game fair.</div>
-      </div>
-      <div class="fp-rule">
-        <div class="fp-badge">3</div>
-        <div class="fp-text"><b>On-chain verified randomness.</b> Winning numbers are drawn via a verifiable on-chain mechanism — no one, including the contract owner, can manipulate results.</div>
-      </div>
-    </div>
-  </div>
-</div>
-
-</div><!-- main-left -->
-
-<div class="main-right">
-
-<!-- WINNING NUMBERS -->
-<div class="panel" id="winning-panel" style="display:none">
-  <div class="ph"><div class="phico">🏆</div><div class="phtitle">Last Draw Result</div></div>
-  <div style="text-align:center;font-size:11px;color:var(--ink3);margin-bottom:2px;font-weight:600">Round <span id="winning-round">—</span> winning numbers</div>
-  <div class="wballs">
-    <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
-    <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
-  </div>
-</div>
-
-<!-- ACTIVITY FEED -->
-<div class="activity-panel">
-  <div class="ph"><div class="phico">⚡</div><div class="phtitle">Recent Activity</div></div>
-  <div class="activity-list" id="activity-list">
-    <div class="activity-item">
-      <div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">0x4f2a...c89e</div><div class="act-nums">7 · 14 · 21 · 28 · 35 · 42</div></div></div>
-      <div class="act-time">2 min ago</div>
-    </div>
-    <div class="activity-item">
-      <div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">0xa1b3...7f10</div><div class="act-nums">3 · 9 · 17 · 24 · 33 · 40</div></div></div>
-      <div class="act-time">7 min ago</div>
-    </div>
-    <div class="activity-item">
-      <div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">0xd8c4...2a55</div><div class="act-nums">1 · 11 · 22 · 30 · 39 · 45</div></div></div>
-      <div class="act-time">15 min ago</div>
-    </div>
-    <div class="activity-item">
-      <div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">0x7e09...bb34</div><div class="act-nums">4 · 8 · 16 · 27 · 36 · 41</div></div></div>
-      <div class="act-time">31 min ago</div>
-    </div>
-    <div class="activity-item">
-      <div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">0x3c5f...9120</div><div class="act-nums">2 · 10 · 19 · 29 · 37 · 43</div></div></div>
-      <div class="act-time">48 min ago</div>
-    </div>
-  </div>
-</div>
-
-<!-- HISTORY -->
-<div class="panel">
-  <div class="ph"><div class="phico">📋</div><div class="phtitle">My Ticket History</div></div>
-  <div class="hlist" id="history-list"><div class="empty">Connect wallet to view your ticket history</div></div>
-</div>
-
-</div><!-- main-right -->
-</div>
-
-<footer><p>LitBillionaire Lottery · LiteForge Testnet · <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract ↗</a> · <a href="https://litvm.com" target="_blank">LitVM ↗</a></p></footer>
-</div>
-
-<div id="toast"></div>
-
-<script>
-// ─── CONFIG ───────────────────────────────────────────────
-const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
-const CHAIN_ID = "0x1159";
-const NETWORK = {
-  chainId: CHAIN_ID,
-  chainName: "LiteForge Testnet",
-  nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
-  rpcUrls: ["https://rpc.liteforge.litvm.com"],
-  blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
-};
-const ABI = [
-  "function buyRandomTicket(uint256 quantity) external payable",
-  "function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable",
-  "function performUpkeep(bytes calldata) external",
-  "function claimReward(uint256 roundId) external",
-  "function getCurrentRound() external view returns (tuple(uint256 roundId,uint256 startTime,uint256 endTime,uint256 jackpot,uint256[6] winningNumbers,bool drawn,bool active,uint256 totalTickets))",
-  "function getTickets(uint256 roundId) external view returns (tuple(address player,uint256[6] numbers,bool isCustom)[])",
-  "function ticketsRemaining(address wallet) external view returns (uint256)",
-  "function getWinningNumbers(uint256 roundId) external view returns (uint256[6])",
-  "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
-  "function currentRoundId() external view returns (uint256)"
-];
-
-// ─── STATE ────────────────────────────────────────────────
-let provider, signer, contract, wallet = null;
-let roundEndTime = 0, roundDuration = 604800;
-let currentTab = "pick", activeWalletType = null;
-let cdTimer = null, actMinutes = 2;
-
-// ─── WALLET DEFINITIONS ───────────────────────────────────
-const WALLETS = [
-  { id:"metamask",   name:"MetaMask",        desc:"Browser extension · Most popular",          icon:"🦊", iconBg:"#FFF3E0", detect:()=>window.ethereum?.isMetaMask&&!window.ethereum?.isBraveWallet,   getProvider:()=>{ if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isMetaMask&&!p.isBraveWallet); return window.ethereum; } },
-  { id:"coinbase",   name:"Coinbase Wallet",  desc:"Browser extension · Coinbase",              icon:"🔵", iconBg:"#EEF4FF", detect:()=>window.ethereum?.isCoinbaseWallet||!!window.coinbaseWalletExtension, getProvider:()=>{ if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isCoinbaseWallet); if(window.coinbaseWalletExtension)return window.coinbaseWalletExtension; return window.ethereum; } },
-  { id:"brave",      name:"Brave Wallet",     desc:"Built-in Brave browser wallet",             icon:"🦁", iconBg:"#FFF5E0", detect:()=>window.ethereum?.isBraveWallet,  getProvider:()=>{ if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isBraveWallet); return window.ethereum; } },
-  { id:"rabby",      name:"Rabby Wallet",     desc:"Browser extension · DeBank",                icon:"🐰", iconBg:"#F0F0FF", detect:()=>window.ethereum?.isRabby,        getProvider:()=>window.ethereum },
-  { id:"trust",      name:"Trust Wallet",     desc:"Mobile · In-app browser",                   icon:"🛡️", iconBg:"#E8F4FF", detect:()=>window.ethereum?.isTrust||window.trustwallet, getProvider:()=>window.trustwallet||window.ethereum },
-  { id:"okx",        name:"OKX Wallet",       desc:"Browser extension · OKX",                   icon:"⬛", iconBg:"#F5F5F5", detect:()=>!!window.okxwallet,              getProvider:()=>window.okxwallet },
-  { id:"injected",   name:"Injected Wallet",  desc:"Other browser wallet",                       icon:"💎", iconBg:"#F0FAF6", detect:()=>!!window.ethereum&&!window.ethereum?.isMetaMask&&!window.ethereum?.isCoinbaseWallet&&!window.ethereum?.isBraveWallet&&!window.ethereum?.isRabby, getProvider:()=>window.ethereum }
-];
-
-// ─── COUNTDOWN (runs immediately, no wallet needed) ───────
-function getNextFriday20GMT7() {
-  const now = new Date();
-  const gmt7ms = now.getTime() + 7 * 3600000;
-  const gmt7 = new Date(gmt7ms);
-  // Build a UTC date representing Friday 20:00 in GMT+7 = Friday 13:00 UTC
-  let d = new Date(Date.UTC(gmt7.getUTCFullYear(), gmt7.getUTCMonth(), gmt7.getUTCDate(), 13, 0, 0, 0));
-  const dow = d.getUTCDay(); // 0=Sun … 5=Fri
-  const daysToFri = (5 - dow + 7) % 7;
-  if (daysToFri === 0 && (gmt7.getUTCHours() * 60 + gmt7.getUTCMinutes()) >= 20 * 60) {
-    d.setUTCDate(d.getUTCDate() + 7);
-  } else {
-    d.setUTCDate(d.getUTCDate() + daysToFri);
-  }
-  return d.getTime();
-}
-
-const DRAW_TARGET = getNextFriday20GMT7();
-const ROUND_START = DRAW_TARGET - roundDuration * 1000;
-
-function pad(n) { return String(n).padStart(2, "0"); }
-
-function tickCountdown() {
-  const now = Date.now();
-  const left = Math.max(0, Math.floor((DRAW_TARGET - now) / 1000));
-  document.getElementById("cd-d").textContent = pad(Math.floor(left / 86400));
-  document.getElementById("cd-h").textContent = pad(Math.floor((left % 86400) / 3600));
-  document.getElementById("cd-m").textContent = pad(Math.floor((left % 3600) / 60));
-  document.getElementById("cd-s").textContent = pad(left % 60);
-  const elapsed = Math.max(0, now - ROUND_START);
-  const total = DRAW_TARGET - ROUND_START;
-  document.getElementById("progress-bar").style.width = Math.min(100, Math.round(elapsed / total * 100)) + "%";
-  if (left === 0 && contract) document.getElementById("btn-draw").style.display = "block";
-}
-tickCountdown();
-setInterval(tickCountdown, 1000);
-
-// ─── LIVE MOCK ACTIVITY ───────────────────────────────────
-const MOCK_ADDRS = ["0x4f2a...c89e","0xa1b3...7f10","0xd8c4...2a55","0x7e09...bb34","0x3c5f...9120","0xb92e...a3f6","0x58cc...1d77","0xe401...c0ab"];
-setInterval(() => {
-  if (Math.random() < 0.35) {
-    const addr = MOCK_ADDRS[Math.floor(Math.random() * MOCK_ADDRS.length)];
-    const nums = [];
-    while (nums.length < 6) { const n = Math.floor(Math.random()*45)+1; if (!nums.includes(n)) nums.push(n); }
-    nums.sort((a,b) => a - b);
-    const list = document.getElementById("activity-list");
-    const item = document.createElement("div");
-    item.className = "activity-item";
-    item.innerHTML = `<div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">${addr}</div><div class="act-nums">${nums.join(" · ")}</div></div></div><div class="act-time">just now</div>`;
-    list.insertBefore(item, list.firstChild);
-    if (list.children.length > 5) list.removeChild(list.lastChild);
-    const s = document.getElementById("stat-tickets");
-    s.textContent = (parseInt(s.textContent.replace(/,/g,"")) + 1).toLocaleString();
-    actMinutes = 0;
-  }
-  actMinutes++;
-  document.getElementById("sp-last").textContent = actMinutes <= 1 ? "just now" : actMinutes + " min ago";
-}, 9000);
-
-// ─── MODAL ────────────────────────────────────────────────
-function openWalletModal() { buildWalletOptions(); document.getElementById("wallet-modal").classList.add("open"); }
-function closeWalletModal() { document.getElementById("wallet-modal").classList.remove("open"); }
-function handleModalClick(e) { if (e.target === document.getElementById("wallet-modal")) closeWalletModal(); }
-document.addEventListener("keydown", e => { if (e.key === "Escape") closeWalletModal(); });
-
-function buildWalletOptions() {
-  const container = document.getElementById("wallet-options");
-  const detected = WALLETS.filter(w => w.detect());
-  const notDetected = WALLETS.filter(w => !w.detect());
-  let html = "";
-  detected.forEach(w => {
-    html += `<div class="wallet-opt" onclick="connectWithWallet('${w.id}')"><div class="wo-icon" style="background:${w.iconBg}">${w.icon}</div><div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-desc">${w.desc}</div></div><span class="wo-badge detected">DETECTED</span></div>`;
-  });
-  if (notDetected.length > 0 && detected.length > 0) html += `<div class="modal-divider"><span>not installed</span></div>`;
-  notDetected.forEach(w => {
-    html += `<div class="wallet-opt disabled"><div class="wo-icon" style="background:${w.iconBg};opacity:.5">${w.icon}</div><div class="wo-info"><div class="wo-name" style="color:var(--ink4)">${w.name}</div><div class="wo-desc">${w.desc}</div></div><span class="wo-badge notfound">NOT FOUND</span></div>`;
-  });
-  if (!detected.length && !notDetected.length) html = `<div class="empty">No wallets detected.</div>`;
-  container.innerHTML = html;
-}
-
-// ─── CONNECT ──────────────────────────────────────────────
-async function connectWithWallet(walletId) {
-  const wDef = WALLETS.find(w => w.id === walletId);
-  if (!wDef) { toast("Wallet not found", "error"); return; }
-  const rawProvider = wDef.getProvider();
-  if (!rawProvider) { toast(`${wDef.name} not found`, "error"); return; }
-  closeWalletModal();
-  toast(`Connecting ${wDef.name}...`);
-  try {
-    try {
-      await rawProvider.request({ method: "wallet_switchEthereumChain", params: [{ chainId: CHAIN_ID }] });
-    } catch(e) {
-      if (e.code === 4902) await rawProvider.request({ method: "wallet_addEthereumChain", params: [NETWORK] });
-      else throw e;
-    }
-    provider = new ethers.BrowserProvider(rawProvider);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    wallet = await signer.getAddress();
-    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
-    activeWalletType = walletId;
-
-    const short = wallet.slice(0,6) + "..." + wallet.slice(-4);
-    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef.name}</span>`;
-    document.getElementById("wav-icon").textContent = wDef.icon;
-
-    const bal = await provider.getBalance(wallet);
-    document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4) + " zkLTC";
-
-    const btn = document.getElementById("btn-connect");
-    btn.textContent = "Connected"; btn.className = "btn-wc on";
-    document.getElementById("btn-disconnect").style.display = "block";
-
-    rawProvider.on?.("accountsChanged", handleAccountsChanged);
-    rawProvider.on?.("chainChanged", handleChainChanged);
-
-    await refresh();
-    toast(`${wDef.name} connected!`, "success");
-  } catch(e) {
-    toast((e.message?.slice(0,80)) || "Connection failed", "error");
-  }
-}
-
-async function connectWithProvider(type) {
-  if (type === "walletconnect") toast("WalletConnect: integrate @walletconnect/web3-provider SDK", "error");
-}
-
-function handleAccountsChanged(accounts) {
-  if (!accounts || accounts.length === 0) disconnectWallet();
-  else {
-    wallet = accounts[0];
-    const short = wallet.slice(0,6) + "..." + wallet.slice(-4);
-    const wDef = WALLETS.find(w => w.id === activeWalletType);
-    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:var(--ink4);font-weight:400">${wDef?.name||""}</span>`;
-    refresh(); toast("Account switched", "success");
-  }
-}
-
-function handleChainChanged(chainId) {
-  if (chainId !== CHAIN_ID) toast("Wrong network! Switch to LiteForge Testnet", "error");
-  else { toast("Network switched to LiteForge", "success"); refresh(); }
-}
-
-function disconnectWallet() {
-  const wDef = WALLETS.find(w => w.id === activeWalletType);
-  if (wDef) { const rp = wDef.getProvider(); rp?.removeListener?.("accountsChanged", handleAccountsChanged); rp?.removeListener?.("chainChanged", handleChainChanged); }
-  provider = null; signer = null; contract = null; wallet = null; activeWalletType = null;
-
-  document.getElementById("wallet-addr").textContent = "Not connected";
-  document.getElementById("wallet-bal").textContent = "— zkLTC";
-  document.getElementById("wav-icon").textContent = "◈";
-  const btn = document.getElementById("btn-connect");
-  btn.textContent = "Connect Wallet"; btn.className = "btn-wc";
-  document.getElementById("btn-disconnect").style.display = "none";
-
-  const badge = document.getElementById("ticket-badge");
-  badge.textContent = "3 tickets available"; badge.className = "ticket-badge open";
-  document.getElementById("btn-buy").disabled = false;
-  document.getElementById("btn-buy").textContent = "Buy Ticket";
-  hideTxStatus();
-  document.getElementById("history-list").innerHTML = '<div class="empty">Connect wallet to view your ticket history</div>';
-  document.getElementById("winning-panel").style.display = "none";
-  document.getElementById("btn-draw").style.display = "none";
-  toast("Wallet disconnected");
-}
-
-// ─── REFRESH DATA ─────────────────────────────────────────
-async function refresh() {
-  if (!contract) return;
-  try {
-    const r = await contract.getCurrentRound();
-    const rid = Number(r.roundId);
-    const jpVal = parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
-
-    document.getElementById("stat-jackpot").textContent = jpVal;
-    try { document.getElementById("banner-jackpot").textContent = jpVal; } catch(_) {}
-    document.getElementById("stat-round").textContent = "#" + rid;
-    document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
-    document.getElementById("sp-round").textContent = "#" + rid;
-
-    roundEndTime = Number(r.endTime);
-    if (Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn) document.getElementById("btn-draw").style.display = "block";
-
-    if (rid > 1) {
-      try {
-        const w = await contract.getWinningNumbers(rid - 1);
-        for (let i = 0; i < 6; i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
-        document.getElementById("winning-round").textContent = "#" + (rid - 1);
-        document.getElementById("winning-panel").style.display = "block";
-      } catch(_) {}
-    }
-
-    try {
-      const tickets = await contract.getTickets(rid);
-      updateActivityFeed(tickets, rid);
-      updateSocialProof(tickets, rid);
-    } catch(_) {}
-
-    await refreshLimit();
-    await refreshHistory();
-  } catch(e) { console.error("refresh:", e); }
-}
-
-async function refreshLimit() {
-  if (!contract || !wallet) return;
-  try {
-    const rem = Number(await contract.ticketsRemaining(wallet));
-    const used = 3 - rem;
-    const badge = document.getElementById("ticket-badge");
-    const btn = document.getElementById("btn-buy");
-    if (rem === 0) {
-      badge.textContent = "3/3 tickets used this week"; badge.className = "ticket-badge full";
-      btn.disabled = true; btn.textContent = "Limit reached — come back next round";
-    } else if (used > 0) {
-      badge.textContent = used + "/3 used · " + rem + " remaining"; badge.className = "ticket-badge partial";
-      btn.disabled = false; btn.textContent = "Buy Ticket";
-    } else {
-      badge.textContent = "3 tickets available this week"; badge.className = "ticket-badge open";
-      btn.disabled = false; btn.textContent = "Buy Ticket";
-    }
-  } catch(e) { console.error("refreshLimit:", e); }
-}
-
-async function refreshHistory() {
-  if (!contract || !wallet) return;
-  const rid = Number(await contract.currentRoundId());
-  const list = document.getElementById("history-list");
-  const items = [];
-  for (let r = Math.max(1, rid - 5); r <= rid; r++) {
-    try {
-      const tickets = await contract.getTickets(r);
-      const mine = tickets.filter(t => t.player.toLowerCase() === wallet.toLowerCase());
-      if (!mine.length) continue;
-      let drawn = false, winNums = null;
-      if (r < rid) { try { winNums = await contract.getWinningNumbers(r); drawn = true; } catch(_) {} }
-      for (const t of mine) {
-        const nums = t.numbers.map(n => Number(n));
-        let badge = '<span class="badge bpend">Pending</span>', claimBtn = "";
-        if (drawn && winNums) {
-          const wn = winNums.map(n => Number(n));
-          const m = nums.filter(n => wn.includes(n)).length;
-          if (m >= 6) badge = '<span class="badge b1">Jackpot!</span>';
-          else if (m === 5) badge = '<span class="badge b2">2nd Prize</span>';
-          else if (m === 4) badge = '<span class="badge b3">3rd Prize</span>';
-          else if (m === 3) badge = '<span class="badge b4">4th Prize</span>';
-          else badge = '<span class="badge blose">No match</span>';
-          if (m >= 3) {
-            const claimed = await contract.hasClaimedReward(r, wallet);
-            claimBtn = claimed ? '<span style="font-size:10px;color:var(--ink4);font-weight:500">Claimed</span>' : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
-          }
-        }
-        const mb = nums.map(n => `<div class="mball">${n}</div>`).join("");
-        items.push(`<div class="hitem"><div class="hleft"><span class="hround">Round #${r}</span><div class="mballs">${mb}</div></div><div style="display:flex;align-items:center;gap:7px">${badge}${claimBtn}</div></div>`);
-      }
-    } catch(_) {}
-  }
-  list.innerHTML = items.length ? items.join("") : '<div class="empty">No tickets found for this wallet</div>';
-}
-
-// ─── BUY ──────────────────────────────────────────────────
-async function buyTicket() {
-  if (!contract) { toast("Connect wallet first", "error"); return; }
-  let numbers;
-  if (currentTab === "pick") {
-    const v = [1,2,3,4,5,6].map(i => parseInt(document.getElementById("n"+i).value));
-    if (v.some(n => isNaN(n)||n<1||n>45)) { toast("Numbers must be between 1 and 45", "error"); return; }
-    if (new Set(v).size < 6) { toast("All numbers must be unique!", "error"); return; }
-    numbers = v;
-  } else {
-    const v = [1,2,3,4,5,6].map(i => parseInt(document.getElementById("rb"+i).textContent));
-    if (v.some(isNaN)) { toast("Please roll your numbers first", "error"); return; }
-    numbers = v;
-  }
-  try {
-    document.getElementById("btn-buy").disabled = true;
-    document.getElementById("btn-buy").textContent = "Processing...";
-    showTxStatus("processing", "Waiting for wallet confirmation...");
-    const price = ethers.parseEther("0.001");
-    let tx;
-    if (currentTab === "pick") tx = await contract.buyCustomTicket(numbers, 1, { value: price });
-    else tx = await contract.buyRandomTicket(1, { value: price });
-    showTxStatus("processing", "Transaction submitted, confirming on-chain...");
-    await tx.wait();
-    showTxStatus("success", "Ticket purchased! Numbers: " + numbers.join(" · "));
-    setTimeout(() => hideTxStatus(), 4000);
-    await refresh();
-  } catch(e) {
-    showTxStatus("error", (e?.reason || e?.message || "Transaction failed").slice(0, 80));
-    setTimeout(() => hideTxStatus(), 5000);
-    await refreshLimit();
-  }
-}
-
-async function drawNumbers() {
-  if (!contract) return;
-  try {
-    toast("Triggering weekly draw...");
-    const tx = await contract.performUpkeep("0x");
-    await tx.wait();
-    toast("Draw complete!", "success");
-    document.getElementById("btn-draw").style.display = "none";
-    await refresh();
-  } catch(e) { toast(e?.reason || "Draw failed", "error"); }
-}
-
-async function claimReward(rid) {
-  if (!contract) return;
-  try {
-    toast("Claiming reward...");
-    const tx = await contract.claimReward(rid);
-    await tx.wait();
-    toast("Reward claimed!", "success");
-    await refresh();
-  } catch(e) { toast(e?.reason || "Claim failed", "error"); }
-}
-
-// ─── UI HELPERS ───────────────────────────────────────────
-function switchTab(tab) {
-  currentTab = tab;
-  document.getElementById("tab-pick").className = "tab" + (tab === "pick" ? " active" : "");
-  document.getElementById("tab-rand").className = "tab" + (tab === "rand" ? " active" : "");
-  document.getElementById("panel-pick").style.display = tab === "pick" ? "" : "none";
-  document.getElementById("panel-rand").style.display = tab === "rand" ? "" : "none";
-  if (tab === "rand") reroll();
-}
-
-function reroll() {
-  const p = [];
-  while (p.length < 6) { const n = Math.floor(Math.random()*45)+1; if (!p.includes(n)) p.push(n); }
-  p.sort((a,b) => a - b);
-  for (let i = 0; i < 6; i++) {
-    const el = document.getElementById("rb"+(i+1));
-    el.textContent = p[i]; el.className = "brand set";
-  }
-}
-
-function updateActivityFeed(tickets, roundId) {
-  const list = document.getElementById("activity-list");
-  if (!tickets || tickets.length === 0) { list.innerHTML = '<div class="act-empty">No activity yet — be the first!</div>'; return; }
-  const recent = [...tickets].reverse().slice(0, 5);
-  list.innerHTML = recent.map(t => {
-    const nums = t.numbers.map(n => Number(n));
-    const addr = t.player.slice(0,6) + "..." + t.player.slice(-4);
-    return `<div class="activity-item"><div class="act-left"><div class="act-icon">🎟️</div><div><div class="act-addr">${addr}</div><div class="act-nums">${nums.join(" · ")}</div></div></div><div class="act-time">Round #${roundId}</div></div>`;
-  }).join("");
-}
-
-function updateSocialProof(tickets, roundId) {
-  const unique = new Set(tickets.map(t => t.player)).size;
-  document.getElementById("sp-players").textContent = unique || "0";
-  document.getElementById("sp-round").textContent = "#" + roundId;
-  try { document.getElementById("stat-players").textContent = unique || "0"; } catch(_) {}
-  document.getElementById("sp-last").textContent = tickets.length > 0 ? "just now" : "—";
-}
-
-function showTxStatus(type, msg) {
-  const el = document.getElementById("tx-status");
-  el.className = "tx-status show " + type;
-  document.getElementById("tx-msg").textContent = msg;
-  document.getElementById("tx-spinner").style.display = type === "processing" ? "block" : "none";
-}
-function hideTxStatus() { document.getElementById("tx-status").className = "tx-status"; }
-
-function toast(msg, type = "") {
-  const el = document.getElementById("toast");
-  el.textContent = msg; el.className = "show " + type;
-  clearTimeout(el._t); el._t = setTimeout(() => el.className = "", 3500);
-}
-</script>
 </body>
 </html>
