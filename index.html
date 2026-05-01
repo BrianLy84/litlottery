@@ -1,46 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>LitBillionaire — Weekly On-Chain Lottery</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.7.0/ethers.umd.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:wght@400;500;600&display=swap');
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size:14px}
-
 .wrap{max-width:980px;margin:0 auto;padding:14px}
 
+/* ── GOLD SHIMMER ── */
+@keyframes goldflow{0%{background-position:0% center}100%{background-position:200% center}}
+
 /* ── HERO ── */
-.hero{background:#FFFEFB;border:1.5px solid #C8A820;border-radius:20px;overflow:hidden;margin-bottom:13px;position:relative;box-shadow:0 2px 12px rgba(180,130,10,.08)}
+.hero{background:#FFFEFB;border:1.5px solid #C8A820;border-radius:20px;overflow:hidden;margin-bottom:13px;box-shadow:0 2px 12px rgba(180,130,10,.08)}
 .hero-top{display:flex;align-items:stretch;flex-wrap:wrap}
-.hero-left{flex:1;min-width:260px;padding:20px 22px 18px;border-right:1.5px solid #D4B840;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(120deg,#FFFEFB 65%,#FDF8EC);position:relative}
-/* Logo góc phải trong hero-left */
-.eyebrow{font-size:10px;letter-spacing:3px;font-weight:700;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px;background:linear-gradient(90deg,#7A5008 0%,#C9A020 25%,#F0CC60 45%,#FFF5A0 50%,#F0CC60 55%,#C9A020 75%,#7A5008 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 4s linear infinite}
-.eline{width:18px;height:1px;background:#C8A030}
-.hero-title{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:700;line-height:1;letter-spacing:.5px;margin-bottom:3px;padding-right:96px;background:linear-gradient(90deg,#5A3000 0%,#C9A020 20%,#F0CC60 40%,#FFF8C0 50%,#F0CC60 60%,#C9A020 80%,#5A3000 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 3s linear infinite;text-shadow:none}
-.hero-title em{font-style:normal;background:inherit;-webkit-background-clip:text;background-clip:text}
-.hero-tagline-wrap{display:flex;flex-direction:column;gap:1px;margin-bottom:14px;padding-right:96px}
-.hero-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;letter-spacing:2px;font-weight:600;display:flex;align-items:center;gap:6px;background:linear-gradient(90deg,#8A6010 0%,#D4A820 30%,#F0CC60 50%,#D4A820 70%,#8A6010 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 4.5s linear infinite}
-.hero-tagline::before,.hero-tagline::after{content:'';flex:1;max-width:22px;height:1px;background:#C8A030}
-.hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;letter-spacing:1.5px;font-weight:600;background:linear-gradient(90deg,#8A6010 0%,#C9A020 30%,#F0E060 50%,#C9A020 70%,#8A6010 100%);background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 6s linear infinite}
+.hero-left{flex:1;min-width:260px;padding:20px 22px 18px;border-right:1.5px solid #D4B840;display:flex;flex-direction:column;justify-content:center;background:linear-gradient(120deg,#FFFEFB 65%,#FDF8EC)}
+.eyebrow{font-size:10px;letter-spacing:3px;font-weight:700;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px;
+  background:linear-gradient(90deg,#7A5008 0%,#C9A020 25%,#F0CC60 45%,#FFF5A0 50%,#F0CC60 55%,#C9A020 75%,#7A5008 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 4s linear infinite}
+.eline{width:18px;height:1px;background:#C8A030;flex-shrink:0;-webkit-text-fill-color:unset;background-clip:unset;
+  /* reset gold on line */}
+/* override eline inside eyebrow to not inherit gradient clip */
+.eyebrow .eline{background:#C8A030;-webkit-background-clip:unset;background-clip:unset;-webkit-text-fill-color:unset}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:700;line-height:1;letter-spacing:.5px;margin-bottom:3px;
+  background:linear-gradient(90deg,#5A3000 0%,#C9A020 20%,#F0CC60 40%,#FFF8C0 50%,#F0CC60 60%,#C9A020 80%,#5A3000 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 3s linear infinite}
+.hero-title em{font-style:normal}
+.hero-tagline-wrap{display:flex;flex-direction:column;gap:2px;margin-bottom:14px}
+.hero-tagline{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;letter-spacing:2px;font-weight:600;display:flex;align-items:center;gap:6px;
+  background:linear-gradient(90deg,#8A6010 0%,#D4A820 30%,#F0CC60 50%,#D4A820 70%,#8A6010 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 4.5s linear infinite}
+.hero-tagline::before,.hero-tagline::after{content:'';flex:1;max-width:22px;height:1px;background:#C8A030;-webkit-text-fill-color:unset;background-clip:unset}
+.hero-sub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;letter-spacing:1.5px;font-weight:600;
+  background:linear-gradient(90deg,#8A6010 0%,#C9A020 30%,#F0E060 50%,#C9A020 70%,#8A6010 100%);
+  background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 6s linear infinite}
 .pills{display:flex;gap:8px;flex-wrap:wrap}
 .pill{display:inline-flex;align-items:center;gap:5px;padding:5px 11px;border-radius:20px;font-size:10px;letter-spacing:1.5px;font-weight:700}
 .pill-live{background:#C8F0E0;border:1.5px solid #40B888;color:#034030}
 .pill-chain{background:#EEE0B0;border:1.5px solid #A88020;color:#4A3000}
 .pdot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:blink 2s infinite}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
-    @keyframes goldflow{0%{background-position:0% center}100%{background-position:200% center}}
-
-.hero-right{width:200px;flex-shrink:0;background:linear-gradient(160deg,#F0D870,#E2C428);padding:16px 16px;display:flex;flex-direction:column;justify-content:center}
+.hero-right{width:200px;flex-shrink:0;background:linear-gradient(160deg,#F0D870,#E2C428);padding:16px;display:flex;flex-direction:column;justify-content:center}
 .hstat{padding:9px 0;border-bottom:1px solid rgba(100,70,0,.16)}
 .hstat:last-child{border-bottom:none}
 .hstat-lbl{font-size:9px;letter-spacing:2px;font-weight:700;color:#4A2E00;text-transform:uppercase;margin-bottom:2px}
 .hstat-val{font-family:'Cormorant Garamond',serif;font-size:21px;font-weight:700;color:#1E0E00;line-height:1}
 .hstat-val.big{font-size:28px;color:#5A3800}
 .hstat-unit{font-size:10px;color:#5A3800;font-weight:700;margin-left:3px}
-
 .prize-bar{background:linear-gradient(90deg,#1A0C00,#362000,#1A0C00);padding:9px 22px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px;border-top:1.5px solid #A88020}
 .pb-item{display:flex;align-items:center;gap:6px}
 .pb-medal{width:19px;height:19px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
-.m1{background:#D4A820;color:#1A0800}
-.m2{background:#A0A0A0;color:#101010}
-.m3{background:#C07830;color:#180800}
-.m4{background:#504020;color:#E8C870}
+.m1{background:#D4A820;color:#1A0800}.m2{background:#A0A0A0;color:#101010}.m3{background:#C07830;color:#180800}.m4{background:#504020;color:#E8C870}
 .pb-txt{font-size:11px;color:#E0C060;font-weight:600}
 .pb-txt b{color:#FFF090;font-weight:800}
 .pb-div{width:1px;height:13px;background:rgba(200,160,30,.22)}
@@ -53,28 +66,9 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .w-bal{font-size:11px;color:#9A6800;font-weight:700}
 .w-hint{font-size:10px;color:#5A4010;font-weight:600;margin-top:1px}
 .wallet-btns{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
-/* ENTER LOTTERY - hiệu ứng nhấp nháy nổi bật */
-.btn-enter{
-  padding:9px 20px;font-size:13px;
-  font-family:'Cormorant Garamond',serif;font-weight:700;
-  letter-spacing:1.5px;border-radius:10px;border:none;
-  background:linear-gradient(135deg,#C9A020,#F5CC50,#C9A020);
-  background-size:200% 200%;
-  color:#2A1A00;cursor:pointer;text-transform:uppercase;
-  box-shadow:0 0 0 0 rgba(212,168,32,.7);
-  animation:enterPulse 2s infinite;
-  position:relative;overflow:hidden;
-}
-.btn-enter::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,220,.35),transparent);
-  animation:shimEnter 1.8s infinite;
-}
-@keyframes enterPulse{
-  0%{box-shadow:0 0 0 0 rgba(212,168,32,.7);transform:scale(1)}
-  50%{box-shadow:0 0 0 8px rgba(212,168,32,0);transform:scale(1.03)}
-  100%{box-shadow:0 0 0 0 rgba(212,168,32,.7);transform:scale(1)}
-}
+.btn-enter{padding:9px 20px;font-size:13px;font-family:'Cormorant Garamond',serif;font-weight:700;letter-spacing:1.5px;border-radius:10px;border:none;background:linear-gradient(135deg,#C9A020,#F5CC50,#C9A020);background-size:200% 200%;color:#2A1A00;cursor:pointer;text-transform:uppercase;box-shadow:0 0 0 0 rgba(212,168,32,.7);animation:enterPulse 2s infinite;position:relative;overflow:hidden}
+.btn-enter::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,220,.35),transparent);animation:shimEnter 1.8s infinite}
+@keyframes enterPulse{0%{box-shadow:0 0 0 0 rgba(212,168,32,.7);transform:scale(1)}50%{box-shadow:0 0 0 8px rgba(212,168,32,0);transform:scale(1.03)}100%{box-shadow:0 0 0 0 rgba(212,168,32,.7);transform:scale(1)}}
 @keyframes shimEnter{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
 .btn-enter.connected{animation:none;box-shadow:none;transform:none;background:#E8F8F2;color:#044030;border:1.5px solid #40B888}
 .btn-conn{background:linear-gradient(135deg,#1A0E00,#3A2200);color:#FDF8DC;border:none;padding:9px 16px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 2px 8px rgba(26,14,0,.22)}
@@ -115,10 +109,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
 .pc{background:#FFFEFB;border:1.5px solid #D4B840;border-radius:12px;padding:13px 8px;text-align:center;box-shadow:0 2px 6px rgba(180,130,10,.06);transition:transform .18s}
 .pc:hover{transform:translateY(-2px)}
-.pc.p1{background:#FFFCF0;border-color:#C8A820}
-.pc.p2{background:#EEF8F4;border-color:#40B888}
-.pc.p3{background:#EEF3FF;border-color:#70A0E0}
-.pc.p4{background:#F5F0FF;border-color:#A870D8}
+.pc.p1{background:#FFFCF0;border-color:#C8A820}.pc.p2{background:#EEF8F4;border-color:#40B888}.pc.p3{background:#EEF3FF;border-color:#70A0E0}.pc.p4{background:#F5F0FF;border-color:#A870D8}
 .pc-ico{font-size:17px;margin-bottom:5px}
 .pc-name{font-size:9px;letter-spacing:2px;font-weight:700;text-transform:uppercase;margin-bottom:3px}
 .pc.p1 .pc-name{color:#7A5000}.pc.p2 .pc-name{color:#085A40}.pc.p3 .pc-name{color:#1A3A7A}.pc.p4 .pc-name{color:#4A2080}
@@ -132,7 +123,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .phico{width:27px;height:27px;border-radius:7px;background:#FDF8EC;border:1.5px solid #C8A820;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
 .phtitle{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:600;color:#0A0800}
 
-/* FAIR PLAY - màu nhẹ hơn */
+/* FAIR PLAY */
 .fairplay{background:linear-gradient(135deg,#F0FAF6,#FDF8EC);border:1.5px solid #80D0B0;border-radius:12px;padding:13px 15px;margin-bottom:15px}
 .fp-head{display:flex;align-items:center;gap:8px;margin-bottom:10px}
 .fp-ico{width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,#0A7A60,#C48A10);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
@@ -142,7 +133,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .fp-num{min-width:19px;height:19px;border-radius:50%;background:linear-gradient(135deg,#C48A10,#D4A820);color:#FFF8DC;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
 .fp-text{font-size:12px;color:#1E1400;line-height:1.5;font-weight:500}
 .fp-text b{color:#0A0800;font-weight:700}
-.fp-text s2{color:#4A3800;font-style:normal}
+.fp-sub{color:#4A3800}
 
 /* TABS */
 .tabs{display:flex;gap:3px;background:#F2EDE3;border:1.5px solid #D4B840;border-radius:11px;padding:3px;margin-bottom:17px}
@@ -164,46 +155,100 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .tmeta{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-top:1.5px solid #E8D080;border-bottom:1.5px solid #E8D080;margin-bottom:12px;flex-wrap:wrap;gap:8px}
 .tbadge{display:inline-flex;align-items:center;gap:5px;border-radius:8px;padding:5px 11px;font-size:11px;font-weight:700;border:1.5px solid}
 .tbadge.open{background:#EAF8F2;border-color:#40B888;color:#034030}
+.tbadge.partial{background:#FDF8EC;border-color:#C8A820;color:#7A5000}
+.tbadge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
 .tbadge.neutral{background:#F2EDE3;border-color:#C8A820;color:#5A3E00}
 .tprice{font-size:11px;color:#1E1400;font-weight:700}
 .tprice span{color:#9A6800;font-weight:700}
 
+/* TX STATUS */
+.tx-status{display:none;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;margin-bottom:10px;font-size:12px;font-weight:500}
+.tx-status.show{display:flex}
+.tx-status.processing{background:#FFF8E8;border:1px solid #E8D080;color:#9A6800}
+.tx-status.success{background:#EAF8F2;border:1px solid #40B888;color:#034030}
+.tx-status.error{background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626}
+.tx-spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 /* BUY BTN */
-.btn-buy{width:100%;padding:15px;background:linear-gradient(135deg,#C9A020,#F5D050,#C9A020);background-size:200% auto;color:#000000;border:none;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:800;letter-spacing:2.5px;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;animation:btnGold 3s linear infinite,btnPulse 2s ease-in-out infinite;box-shadow:0 0 0 0 rgba(212,168,32,.7)}
-.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,220,.5) 50%,transparent 100%);animation:shim 1.5s infinite}
+.btn-buy{width:100%;padding:16px;background:linear-gradient(135deg,#A07800,#D4A820,#F0CC40,#FFE060,#D4A820,#A07800);background-size:300% auto;color:#0A0600;border:2px solid #A07800;border-radius:12px;font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:900;letter-spacing:3px;text-transform:uppercase;cursor:pointer;position:relative;overflow:hidden;animation:btnGold 2.5s linear infinite,btnPulse 1.8s ease-in-out infinite;box-shadow:0 4px 18px rgba(160,120,0,.45)}
+.btn-buy:not(:disabled)::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.65) 45%,rgba(255,255,220,.8) 50%,rgba(255,255,255,.65) 55%,transparent 100%);animation:shim 1.2s infinite}
 @keyframes shim{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
-    @keyframes btnGold{0%{background-position:0% center}100%{background-position:200% center}}
-    @keyframes btnPulse{0%,100%{box-shadow:0 0 0 0 rgba(212,168,32,.6),0 4px 20px rgba(180,130,10,.3)}50%{box-shadow:0 0 0 8px rgba(212,168,32,.0),0 6px 28px rgba(180,130,10,.5)}}
+@keyframes btnGold{0%{background-position:0% center}100%{background-position:200% center}}
+@keyframes btnPulse{0%,100%{box-shadow:0 4px 18px rgba(160,120,0,.45),0 0 0 0 rgba(212,168,32,.7)}50%{box-shadow:0 6px 28px rgba(160,120,0,.65),0 0 0 10px rgba(212,168,32,0)}}
+.btn-buy:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(160,120,0,.6),0 0 0 3px rgba(212,168,32,.4)}
 .btn-buy:disabled{background:#E8D090;color:#6A5020;cursor:not-allowed;box-shadow:none;font-size:12px;letter-spacing:1px;animation:none}
+
+/* DRAW BTN */
+.btn-draw{width:100%;padding:12px;margin-top:10px;background:#EAF8F2;color:#034030;border:1.5px solid #40B888;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase;display:none}
+.btn-draw:hover{background:#D5F5EB}
 
 /* RIGHT COL */
 .rpanel{background:#FFFEFB;border:1.5px solid #D4B840;border-radius:14px;padding:17px;margin-bottom:12px;box-shadow:0 2px 8px rgba(180,130,10,.06)}
 .wballs{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap}
 .wball{width:40px;height:40px;border-radius:50%;background:linear-gradient(145deg,#0A7A60,#C8A020);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.13)}
-.act-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #E8D080}
+.act-item{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid #E8D080;animation:fadein .4s ease}
 .act-item:last-child{border-bottom:none}
+@keyframes fadein{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .act-l{display:flex;align-items:center;gap:8px}
 .act-dot{width:23px;height:23px;border-radius:6px;background:#EAF8F2;border:1px solid #40B888;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
 .act-addr{font-size:11px;color:#1E1400;font-weight:600;font-family:monospace}
 .act-nums{font-size:10px;color:#4A3800;margin-top:1px;font-weight:600}
 .act-time{font-size:10px;color:#5A3E00;white-space:nowrap;font-weight:500}
+.act-empty{text-align:center;padding:16px;color:#5A3E00;font-size:12px;font-style:italic}
 
-/* HISTORY - bên trái, dưới buy ticket */
+/* HISTORY */
 .hist-item{display:flex;align-items:center;justify-content:space-between;background:#FFFEFB;border:1.5px solid #C8A820;border-radius:12px;padding:12px 14px;margin-bottom:8px;flex-wrap:wrap;gap:8px;box-shadow:0 2px 6px rgba(180,130,10,.07);transition:border-color .2s}
-    .hist-item:hover{border-color:#D4A820;background:#FDF8EC}
+.hist-item:hover{border-color:#D4A820;background:#FDF8EC}
 .hist-l{display:flex;align-items:center;gap:8px}
 .hist-round{font-size:11px;color:#1E1000;min-width:62px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'Cormorant Garamond',serif}
 .mballs{display:flex;gap:4px;align-items:center}
 .mball{width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#FDF8EC,#F0E098);border:1.5px solid #C8A820;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;color:#1E1000;font-weight:700;box-shadow:0 1px 4px rgba(180,130,10,.15)}
 .badge{font-size:10px;padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
+.b1{background:#FFFCF0;color:#7A5000;border:1px solid #C8A820}
+.b2{background:#EEF8F4;color:#085A40;border:1px solid #40B888}
+.b3{background:#EEF3FF;color:#1A3A7A;border:1px solid #70A0E0}
 .b4{background:#F5F0FF;color:#4A2080;border:1px solid #A870D8}
-.bpend{background:#FFFBEE;color:#6A4800;border:1.5px solid #C8A020;font-weight:800}
 .blose{background:#F5F0E8;color:#4A3000;border:1.5px solid #C0A010}
+.bpend{background:#FFFBEE;color:#6A4800;border:1.5px solid #C8A020;font-weight:800}
 .btn-claim{font-size:10px;padding:4px 10px;background:linear-gradient(135deg,#C48A10,#D4A820);color:#FFF8DC;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
+.btn-claim:hover{background:#C8A010}
+.empty-hist{text-align:center;padding:20px;color:#5A3E00;font-size:12px;font-style:italic}
 
 footer{text-align:center;padding:14px 0 6px;border-top:1.5px solid #E0CC80;margin-top:6px}
 footer p{font-size:11px;color:#5A3E00;font-weight:600}
 footer a{color:#1E1400;text-decoration:none;font-weight:700}
+footer a:hover{color:#0A7A60}
+
+/* TOAST */
+#toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(100px);background:#1A0E00;color:#FDF8DC;padding:12px 24px;border-radius:10px;font-size:12px;font-weight:600;transition:transform .3s;z-index:9999;white-space:nowrap;max-width:90vw;text-align:center}
+#toast.show{transform:translateX(-50%) translateY(0)}
+#toast.success{background:#0A7A60;color:#fff}
+#toast.error{background:#8A3020;color:#fff}
+
+/* WALLET MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,8,0,.55);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:#FFFEFB;border:1.5px solid #C8A820;border-radius:18px;padding:24px;width:100%;max-width:380px;box-shadow:0 20px 60px rgba(0,0,0,.25);transform:translateY(12px) scale(.97);transition:transform .25s,opacity .25s}
+.modal-overlay.open .modal-box{transform:translateY(0) scale(1)}
+.modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.modal-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A0800}
+.modal-close{background:none;border:none;font-size:20px;color:#7A5830;cursor:pointer;padding:2px 6px;border-radius:6px}
+.modal-close:hover{background:#F2EDE3}
+.modal-sub{font-size:11px;color:#5A3E00;margin-bottom:16px;line-height:1.6;font-weight:500}
+.wallet-opt{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;cursor:pointer;border:1.5px solid #D4B840;background:#FFFEFB;margin-bottom:8px;transition:all .18s}
+.wallet-opt:hover{background:#FDF8EC;border-color:#C8A820}
+.wallet-opt.disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+.wo-icon{width:36px;height:36px;border-radius:8px;border:1px solid #D4B840;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.wo-info{flex:1}
+.wo-name{font-size:13px;font-weight:700;color:#0A0800;margin-bottom:2px}
+.wo-desc{font-size:10px;color:#5A3E00;font-weight:500}
+.wo-badge{font-size:9px;padding:3px 8px;border-radius:5px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;white-space:nowrap}
+.wo-badge.detected{background:#EAF8F2;color:#044030;border:1px solid #40B888}
+.wo-badge.notfound{background:#F2EDE3;color:#7A5830;border:1px solid #D4B840}
+.modal-divider{display:flex;align-items:center;gap:8px;margin:10px 0 6px}
+.modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:#E8D080}
+.modal-divider span{font-size:10px;color:#7A5830;font-weight:600;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 
 /* ── MOBILE ── */
 @media(max-width:700px){
@@ -212,7 +257,7 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
   .sc.jp{grid-column:span 2}
   .prizes{grid-template-columns:repeat(2,1fr)}
   .hero-top{flex-direction:column}
-  .hero-left{border-right:none;border-bottom:1.5px solid #D4B840;padding-right:110px}
+  .hero-left{border-right:none;border-bottom:1.5px solid #D4B840}
   .hero-right{width:100%;padding:14px 16px}
   .sbar{justify-content:center}
   .sb-div{display:none}
@@ -221,8 +266,7 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
   .cd-digs{flex-wrap:wrap;justify-content:flex-end}
 }
 @media(max-width:480px){
-  .hero-title{font-size:36px;padding-right:80px}
-  .hero-tagline-wrap{padding-right:80px}
+  .hero-title{font-size:36px}
   .stats-grid{grid-template-columns:1fr 1fr}
   .balls{gap:7px}
   .ball{width:44px;height:44px}
@@ -230,14 +274,19 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
   .cd-num{font-size:21px;min-width:37px;padding:3px 6px}
 }
 </style>
-
+</head>
+<body>
 <div class="wrap">
 
-<!-- HERO PANEL với logo góc phải -->
+<!-- HERO -->
 <div class="hero">
   <div class="hero-top">
     <div class="hero-left">
-      <div class="eyebrow"><div class="eline"></div><span>Est. 2026 · On-Chain Lottery</span><div class="eline"></div></div>
+      <div class="eyebrow">
+        <div class="eline"></div>
+        <span>Est. 2026 &middot; On-Chain Lottery</span>
+        <div class="eline"></div>
+      </div>
       <div class="hero-title">Lit<em>Billionaire</em></div>
       <div class="hero-tagline-wrap">
         <div class="hero-tagline">ON-CHAIN LOTTERY</div>
@@ -249,7 +298,7 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
       </div>
     </div>
     <div class="hero-right">
-      <div class="hstat"><div class="hstat-lbl">Jackpot Pool</div><div><span class="hstat-val big">1,284.7</span><span class="hstat-unit">zkLTC</span></div></div>
+      <div class="hstat"><div class="hstat-lbl">Jackpot Pool</div><div><span class="hstat-val big" id="banner-jackpot">&#8212;</span><span class="hstat-unit">zkLTC</span></div></div>
       <div class="hstat"><div class="hstat-lbl">Next Draw</div><div><span class="hstat-val">Fri 20:00</span><span class="hstat-unit">GMT+7</span></div></div>
       <div class="hstat"><div class="hstat-lbl">Ticket Price</div><div><span class="hstat-val">0.001</span><span class="hstat-unit">zkLTC</span></div></div>
     </div>
@@ -270,33 +319,33 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
   <div class="w-l">
     <div class="w-av" id="wav">&#9672;</div>
     <div>
-      <div class="w-addr" id="waddr">Not connected</div>
-      <div class="w-bal" id="wbal">&#8212; zkLTC</div>
+      <div class="w-addr" id="wallet-addr">Not connected</div>
+      <div class="w-bal" id="wallet-bal">&#8212; zkLTC</div>
       <div class="w-hint">Max 3 tickets &middot; resets each round</div>
     </div>
   </div>
   <div class="wallet-btns">
-    <button class="btn-enter" id="btn-enter" onclick="openModal()">Enter Lottery</button>
-    <button class="btn-conn" id="btn-conn" onclick="openModal()">Connect Wallet</button>
-    <button class="btn-disc" id="btn-disc" onclick="doDisconnect()">Disconnect</button>
+    <button class="btn-enter" id="btn-enter" onclick="openWalletModal()">Enter Lottery</button>
+    <button class="btn-conn" id="btn-connect" onclick="openWalletModal()">Connect Wallet</button>
+    <button class="btn-disc" id="btn-disconnect" onclick="disconnectWallet()">Disconnect</button>
   </div>
 </div>
 
 <!-- SOCIAL BAR -->
 <div class="sbar">
-  <div class="sb-item"><div class="live-dot"></div><span><span class="sb-val" id="sp-players">342</span> players this round</span></div>
+  <div class="sb-item"><div class="live-dot"></div><span><span class="sb-val" id="sp-players">&#8212;</span> players this round</span></div>
   <div class="sb-div"></div>
-  <div class="sb-item">&#127903; Last ticket: <span class="sb-val" id="sp-last">2 min ago</span></div>
+  <div class="sb-item">&#127903; Last ticket: <span class="sb-val" id="sp-last">&#8212;</span></div>
   <div class="sb-div"></div>
-  <div class="sb-item">&#127942; Round <span class="sb-val">#14</span> &middot; Draw Friday</div>
+  <div class="sb-item">&#127942; Round <span class="sb-val" id="sp-round">&#8212;</span> &middot; Draw Friday</div>
 </div>
 
 <!-- STATS GRID -->
 <div class="stats-grid">
-  <div class="sc jp"><div class="sc-lbl">Jackpot Pool</div><div class="sc-val">1,284.7</div><div class="sc-unit">zkLTC</div></div>
-  <div class="sc"><div class="sc-lbl">Round</div><div class="sc-val" style="font-size:27px">#14</div><div class="sc-unit">current</div></div>
-  <div class="sc"><div class="sc-lbl">Tickets Sold</div><div class="sc-val" id="tix" style="font-size:27px">1,026</div><div class="sc-unit">this round</div></div>
-  <div class="sc"><div class="sc-lbl">Players</div><div class="sc-val" style="font-size:27px">342</div><div class="sc-unit">unique wallets</div></div>
+  <div class="sc jp"><div class="sc-lbl">Jackpot Pool</div><div class="sc-val" id="stat-jackpot">&#8212;</div><div class="sc-unit">zkLTC</div></div>
+  <div class="sc"><div class="sc-lbl">Round</div><div class="sc-val" id="stat-round" style="font-size:27px">#&#8212;</div><div class="sc-unit">current</div></div>
+  <div class="sc"><div class="sc-lbl">Tickets Sold</div><div class="sc-val" id="stat-tickets" style="font-size:27px">&#8212;</div><div class="sc-unit">this round</div></div>
+  <div class="sc"><div class="sc-lbl">Players</div><div class="sc-val" id="stat-players" style="font-size:27px">&#8212;</div><div class="sc-unit">unique wallets</div></div>
 </div>
 
 <!-- COUNTDOWN -->
@@ -310,7 +359,7 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
       <div class="cd-unit"><span class="cd-num" id="cd-s">--</span><div class="cd-sub">Secs</div></div>
     </div>
   </div>
-  <div class="prog"><div class="progf" id="progf" style="width:55%"></div></div>
+  <div class="prog"><div class="progf" id="progress-bar" style="width:0%"></div></div>
 </div>
 
 <!-- MAIN GRID -->
@@ -328,25 +377,28 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
 <!-- BUY TICKET PANEL -->
 <div class="panel">
   <div class="ph"><div class="phico">&#127903;</div><div class="phtitle">Buy Your Ticket</div></div>
+
+  <!-- Fair Play Rules -->
   <div class="fairplay">
     <div class="fp-head"><div class="fp-ico">&#9878;</div><div class="fp-title">Fair Play Rules</div></div>
     <div class="fp-rules">
-      <div class="fp-rule"><div class="fp-num">1</div><div class="fp-text"><b>3 tickets max per wallet per round</b> <s2>&#8212; limits reset when a new round begins</s2></div></div>
-      <div class="fp-rule"><div class="fp-num">2</div><div class="fp-text"><b>60-second cooldown between purchases</b> <s2>&#8212; prevents bot spam, keeps draws fair</s2></div></div>
-      <div class="fp-rule"><div class="fp-num">3</div><div class="fp-text"><b>Fully on-chain verified randomness</b> <s2>&#8212; no admin can alter outcomes</s2></div></div>
+      <div class="fp-rule"><div class="fp-num">1</div><div class="fp-text"><b>3 tickets max per wallet per round</b> <span class="fp-sub">&#8212; limits reset when a new round begins</span></div></div>
+      <div class="fp-rule"><div class="fp-num">2</div><div class="fp-text"><b>60-second cooldown between purchases</b> <span class="fp-sub">&#8212; prevents bot spam, keeps draws fair</span></div></div>
+      <div class="fp-rule"><div class="fp-num">3</div><div class="fp-text"><b>Fully on-chain verified randomness</b> <span class="fp-sub">&#8212; no admin can alter outcomes</span></div></div>
     </div>
   </div>
+
   <div class="tabs">
-    <button class="tab on" onclick="switchTab('pick',this)">Pick Numbers</button>
-    <button class="tab" onclick="switchTab('rand',this)">Quick Pick</button>
+    <button class="tab on" id="tab-pick" onclick="switchTab('pick',this)">Pick Numbers</button>
+    <button class="tab" id="tab-rand" onclick="switchTab('rand',this)">Quick Pick</button>
   </div>
   <div id="panel-pick">
     <div class="balls">
-      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="7"/></div></div>
-      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="14"/></div></div>
-      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="21"/></div></div>
-      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="28"/></div></div>
-      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="35"/></div></div>
+      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3"/></div></div>
+      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11"/></div></div>
+      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18"/></div></div>
+      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27"/></div></div>
+      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34"/></div></div>
       <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42"/></div></div>
     </div>
   </div>
@@ -361,28 +413,25 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
     </div>
     <div class="rtip">Tap any ball to re-roll your lucky numbers</div>
   </div>
+
   <div class="tmeta">
-    <span class="tbadge neutral" id="tbadge">Connect wallet to buy</span>
+    <span class="tbadge neutral" id="ticket-badge">Connect wallet to buy</span>
     <span class="tprice">Ticket: <span>0.001 zkLTC</span> each</span>
   </div>
-  <button class="btn-buy" id="btn-buy" disabled>Buy Ticket</button>
+
+  <div class="tx-status" id="tx-status">
+    <div class="tx-spinner" id="tx-spinner"></div>
+    <span id="tx-msg">Processing...</span>
+  </div>
+
+  <button class="btn-buy" id="btn-buy" onclick="buyTicket()" disabled>Buy Ticket</button>
+  <button class="btn-draw" id="btn-draw" onclick="drawNumbers()">Trigger Weekly Draw</button>
 </div>
 
-<!-- MY TICKET HISTORY - bên trái, dưới buy ticket -->
+<!-- MY TICKET HISTORY -->
 <div class="panel">
   <div class="ph"><div class="phico">&#128203;</div><div class="phtitle">My Ticket History</div></div>
-  <div class="hist-item">
-    <div class="hist-l"><span class="hist-round">Round #13</span><div class="mballs"><div class="mball">5</div><div class="mball">12</div><div class="mball">23</div><div class="mball">31</div><div class="mball">38</div><div class="mball">41</div></div></div>
-    <div style="display:flex;align-items:center;gap:6px"><span class="badge b4">4th Prize</span><button class="btn-claim">Claim</button></div>
-  </div>
-  <div class="hist-item">
-    <div class="hist-l"><span class="hist-round">Round #13</span><div class="mballs"><div class="mball">7</div><div class="mball">15</div><div class="mball">20</div><div class="mball">28</div><div class="mball">36</div><div class="mball">44</div></div></div>
-    <span class="badge blose">No match</span>
-  </div>
-  <div class="hist-item">
-    <div class="hist-l"><span class="hist-round">Round #14</span><div class="mballs"><div class="mball">7</div><div class="mball">14</div><div class="mball">21</div><div class="mball">28</div><div class="mball">35</div><div class="mball">42</div></div></div>
-    <span class="badge bpend">Pending</span>
-  </div>
+  <div id="history-list"><div class="empty-hist">Connect wallet to view your ticket history</div></div>
 </div>
 
 </div><!-- /left col -->
@@ -391,240 +440,453 @@ footer a{color:#1E1400;text-decoration:none;font-weight:700}
 <div>
 
 <!-- LAST DRAW -->
-<div class="rpanel">
+<div class="rpanel" id="winning-panel" style="display:none">
   <div class="ph"><div class="phico">&#127942;</div><div class="phtitle">Last Draw Result</div></div>
-  <div style="text-align:center;font-size:11px;color:#4A3800;font-weight:700;letter-spacing:.5px">ROUND #13 WINNING NUMBERS</div>
+  <div style="text-align:center;font-size:11px;color:#4A3800;font-weight:700;letter-spacing:.5px">Round <span id="winning-round">&#8212;</span> winning numbers</div>
   <div class="wballs">
-    <div class="wball">5</div><div class="wball">12</div><div class="wball">23</div>
-    <div class="wball">31</div><div class="wball">38</div><div class="wball">44</div>
+    <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
+    <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
   </div>
 </div>
 
 <!-- ACTIVITY -->
 <div class="rpanel">
   <div class="ph"><div class="phico">&#9889;</div><div class="phtitle">Recent Activity</div></div>
-  <div id="act-list">
-    <div class="act-item"><div class="act-l"><div class="act-dot">&#127903;</div><div><div class="act-addr">0x4f2a...c89e</div><div class="act-nums">7 · 14 · 21 · 28 · 35 · 42</div></div></div><div class="act-time">2 min ago</div></div>
-    <div class="act-item"><div class="act-l"><div class="act-dot">&#127903;</div><div><div class="act-addr">0xa1b3...7f10</div><div class="act-nums">3 · 9 · 17 · 24 · 33 · 40</div></div></div><div class="act-time">7 min ago</div></div>
-    <div class="act-item"><div class="act-l"><div class="act-dot">&#127903;</div><div><div class="act-addr">0xd8c4...2a55</div><div class="act-nums">1 · 11 · 22 · 30 · 39 · 45</div></div></div><div class="act-time">15 min ago</div></div>
-    <div class="act-item"><div class="act-l"><div class="act-dot">&#127903;</div><div><div class="act-addr">0x7e09...bb34</div><div class="act-nums">4 · 8 · 16 · 27 · 36 · 41</div></div></div><div class="act-time">31 min ago</div></div>
-  </div>
+  <div id="activity-list"><div class="act-empty">Waiting for activity...</div></div>
 </div>
 
 </div><!-- /right col -->
 </div><!-- /main-grid -->
 
-<footer><p>LitBillionaire Lottery &middot; LiteForge Testnet &middot; <a href="#">Contract &#8599;</a> &middot; <a href="https://litvm.com">LitVM &#8599;</a></p></footer>
-</div>
+<footer><p>LitBillionaire Lottery &middot; LiteForge Testnet &middot; <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract &#8599;</a> &middot; <a href="https://litvm.com" target="_blank">LitVM &#8599;</a></p></footer>
+</div><!-- /wrap -->
 
-<!-- WALLET MODAL - mobile-friendly, no position:fixed -->
-<div id="modal-bg" style="display:none;position:fixed;inset:0;background:rgba(10,8,0,.55);backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;padding:20px">
-  <div style="background:#FFFEFB;border:1.5px solid #C8A820;border-radius:18px;padding:24px;width:100%;max-width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25)">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-      <div style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:#0A0800">Connect Wallet</div>
-      <button onclick="closeModal()" style="background:none;border:none;font-size:20px;color:#7A5830;cursor:pointer;padding:2px 6px;border-radius:6px">&#10005;</button>
+<!-- WALLET MODAL -->
+<div class="modal-overlay" id="wallet-modal" onclick="handleModalClick(event)">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title">Connect Wallet</div>
+      <button class="modal-close" onclick="closeWalletModal()">&#10005;</button>
     </div>
-    <div style="font-size:11px;color:#5A3E00;margin-bottom:16px;line-height:1.6;font-weight:500">Choose your wallet. Make sure you are on the <b style="color:#0A0800">LiteForge Testnet</b>.<br><span style="color:#9A6800">Mobile users: open in MetaMask / OKX in-app browser.</span></div>
-    <div id="wallet-opts"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin:12px 0 4px">
-      <div style="flex:1;height:1px;background:#E8D080"></div>
-      <span style="font-size:10px;color:#7A5830;font-weight:600;letter-spacing:1px;text-transform:uppercase">or</span>
-      <div style="flex:1;height:1px;background:#E8D080"></div>
-    </div>
-    <div onclick="closeModal()" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;cursor:pointer;border:1.5px solid #D4B840;background:#F2EDE3;margin-top:8px">
-      <div style="width:36px;height:36px;border-radius:8px;background:#E8F0FF;border:1px solid #D4B840;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">&#128279;</div>
-      <div>
-        <div style="font-size:13px;font-weight:700;color:#0A0800;margin-bottom:2px">WalletConnect</div>
-        <div style="font-size:10px;color:#5A3E00;font-weight:500">QR code &middot; 300+ wallets</div>
-      </div>
-      <span style="font-size:9px;padding:3px 8px;border-radius:5px;font-weight:700;background:#F2EDE3;color:#7A5830;border:1px solid #D4B840;letter-spacing:.5px;text-transform:uppercase;margin-left:auto">SCAN QR</span>
+    <div class="modal-sub">Choose your wallet. Make sure you are on the <b style="color:#0A0800">LiteForge Testnet</b>.<br><span style="color:#9A6800">Mobile users: open in MetaMask / OKX in-app browser.</span></div>
+    <div id="wallet-options"></div>
+    <div class="modal-divider"><span>or</span></div>
+    <div class="wallet-opt" onclick="connectWithProvider('walletconnect')" style="margin-bottom:0">
+      <div class="wo-icon" style="background:#E8F0FF">&#128279;</div>
+      <div class="wo-info"><div class="wo-name">WalletConnect</div><div class="wo-desc">QR code &middot; 300+ wallets</div></div>
+      <span class="wo-badge notfound">SCAN QR</span>
     </div>
   </div>
 </div>
 
+<div id="toast"></div>
+
 <script>
-(function(){
-/* ── LOGO INJECT ── */
-
-/* ── COUNTDOWN ── */
-function pad(n){return String(n).padStart(2,'0')}
-function getNextFriday(){
-  const now=new Date();
-  const d=now.getUTCDay();
-  let diff=(5-d+7)%7;
-  if(diff===0&&(now.getUTCHours()>13||(now.getUTCHours()===13&&now.getUTCMinutes()>0)))diff=7;
-  const t=new Date(now);
-  t.setUTCDate(now.getUTCDate()+diff);
-  t.setUTCHours(13,0,0,0);
-  return t.getTime();
-}
-const DRAW=getNextFriday();
-const START=DRAW-7*24*3600*1000;
-setInterval(()=>{
-  const left=Math.max(0,Math.floor((DRAW-Date.now())/1000));
-  document.getElementById('cd-d').textContent=pad(Math.floor(left/86400));
-  document.getElementById('cd-h').textContent=pad(Math.floor((left%86400)/3600));
-  document.getElementById('cd-m').textContent=pad(Math.floor((left%3600)/60));
-  document.getElementById('cd-s').textContent=pad(left%60);
-  const pct=Math.min(100,Math.round((Date.now()-START)/(DRAW-START)*100));
-  document.getElementById('progf').style.width=pct+'%';
-},1000);
-
-/* ── TABS ── */
-let curTab='pick';
-window.switchTab=function(t,btn){
-  curTab=t;
-  document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
-  document.getElementById('panel-pick').style.display=t==='pick'?'':'none';
-  document.getElementById('panel-rand').style.display=t==='rand'?'':'none';
-  if(t==='rand')reroll();
+/* ─────────── CONTRACT CONFIG ─────────── */
+const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
+const CHAIN_ID = "0x1159";
+const NETWORK = {
+  chainId: CHAIN_ID,
+  chainName: "LiteForge Testnet",
+  nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
+  rpcUrls: ["https://rpc.liteforge.litvm.com"],
+  blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
 };
-
-/* ── REROLL ── */
-window.reroll=function(){
-  const p=[];
-  while(p.length<6){const n=Math.floor(Math.random()*45)+1;if(!p.includes(n))p.push(n);}
-  p.sort((a,b)=>a-b);
-  for(let i=0;i<6;i++){const el=document.getElementById('rb'+(i+1));el.textContent=p[i];el.className='brand set';}
-};
-
-/* ── WALLET DETECTION ── */
-const WALLETS=[
-  {id:'metamask',name:'MetaMask',desc:'Browser extension · Most popular',icon:'&#129418;',bg:'#FFF3E0',
-   detect:()=>!!window.ethereum?.isMetaMask&&!window.ethereum?.isBraveWallet,
-   get:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isMetaMask&&!p.isBraveWallet);return window.ethereum;}},
-  {id:'okx',name:'OKX Wallet',desc:'Mobile in-app · Browser extension',icon:'&#11035;',bg:'#F5F5F5',
-   detect:()=>!!window.okxwallet,get:()=>window.okxwallet},
-  {id:'trust',name:'Trust Wallet',desc:'Mobile in-app browser',icon:'&#128737;',bg:'#E8F4FF',
-   detect:()=>!!window.ethereum?.isTrust||!!window.trustwallet,get:()=>window.trustwallet||window.ethereum},
-  {id:'coinbase',name:'Coinbase Wallet',desc:'Browser extension',icon:'&#128309;',bg:'#EEF4FF',
-   detect:()=>!!window.ethereum?.isCoinbaseWallet||!!window.coinbaseWalletExtension,
-   get:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isCoinbaseWallet);return window.coinbaseWalletExtension||window.ethereum;}},
-  {id:'brave',name:'Brave Wallet',desc:'Built-in Brave browser',icon:'&#129409;',bg:'#FFF5E0',
-   detect:()=>!!window.ethereum?.isBraveWallet,
-   get:()=>{if(window.ethereum?.providers)return window.ethereum.providers.find(p=>p.isBraveWallet);return window.ethereum;}},
-  {id:'injected',name:'Browser Wallet',desc:'Other injected wallet',icon:'&#128142;',bg:'#F0FAF6',
-   detect:()=>!!window.ethereum&&!window.ethereum?.isMetaMask&&!window.ethereum?.isCoinbaseWallet&&!window.ethereum?.isBraveWallet,
-   get:()=>window.ethereum}
+const ABI = [
+  "function buyRandomTicket(uint256 quantity) external payable",
+  "function buyCustomTicket(uint256[6] calldata numbers, uint256 quantity) external payable",
+  "function performUpkeep(bytes calldata) external",
+  "function claimReward(uint256 roundId) external",
+  "function getCurrentRound() external view returns (tuple(uint256 roundId,uint256 startTime,uint256 endTime,uint256 jackpot,uint256[6] winningNumbers,bool drawn,bool active,uint256 totalTickets))",
+  "function getTickets(uint256 roundId) external view returns (tuple(address player,uint256[6] numbers,bool isCustom)[])",
+  "function ticketsRemaining(address wallet) external view returns (uint256)",
+  "function getWinningNumbers(uint256 roundId) external view returns (uint256[6])",
+  "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
+  "function currentRoundId() external view returns (uint256)"
 ];
 
-/* ── MODAL ── */
-window.openModal=function(){
-  buildOpts();
-  document.getElementById('modal-bg').style.display='flex';
-};
-window.closeModal=function(){
-  document.getElementById('modal-bg').style.display='none';
-};
-document.getElementById('modal-bg').addEventListener('click',function(e){
-  if(e.target===this)closeModal();
-});
+/* ─────────── STATE ─────────── */
+let provider, signer, contract, wallet = null;
+let roundEndTime = 0, roundDuration = 604800;
+let cdTimer = null, autoRefreshTimer = null, currentTab = "pick", activeWalletType = null;
 
-function buildOpts(){
-  const container=document.getElementById('wallet-opts');
-  const detected=WALLETS.filter(w=>w.detect());
-  const notDet=WALLETS.filter(w=>!w.detect());
-  let html='';
+/* ─────────── WALLET DEFINITIONS ─────────── */
+const WALLETS = [
+  { id:"metamask", name:"MetaMask", desc:"Browser extension · Most popular", icon:"&#129418;", iconBg:"#FFF3E0",
+    detect: ()=>!!window.ethereum?.isMetaMask && !window.ethereum?.isBraveWallet,
+    getProvider: ()=>{ if(window.ethereum?.providers) return window.ethereum.providers.find(p=>p.isMetaMask&&!p.isBraveWallet); return window.ethereum; } },
+  { id:"okx", name:"OKX Wallet", desc:"Mobile in-app · Browser extension", icon:"&#11035;", iconBg:"#F5F5F5",
+    detect: ()=>!!window.okxwallet, getProvider: ()=>window.okxwallet },
+  { id:"trust", name:"Trust Wallet", desc:"Mobile in-app browser", icon:"&#128737;", iconBg:"#E8F4FF",
+    detect: ()=>!!window.ethereum?.isTrust||!!window.trustwallet, getProvider: ()=>window.trustwallet||window.ethereum },
+  { id:"coinbase", name:"Coinbase Wallet", desc:"Browser extension", icon:"&#128309;", iconBg:"#EEF4FF",
+    detect: ()=>!!window.ethereum?.isCoinbaseWallet||!!window.coinbaseWalletExtension,
+    getProvider: ()=>{ if(window.ethereum?.providers) return window.ethereum.providers.find(p=>p.isCoinbaseWallet); return window.coinbaseWalletExtension||window.ethereum; } },
+  { id:"brave", name:"Brave Wallet", desc:"Built-in Brave browser", icon:"&#129409;", iconBg:"#FFF5E0",
+    detect: ()=>!!window.ethereum?.isBraveWallet,
+    getProvider: ()=>{ if(window.ethereum?.providers) return window.ethereum.providers.find(p=>p.isBraveWallet); return window.ethereum; } },
+  { id:"rabby", name:"Rabby Wallet", desc:"Browser extension · DeBank", icon:"&#128048;", iconBg:"#F0F0FF",
+    detect: ()=>!!window.ethereum?.isRabby, getProvider: ()=>window.ethereum },
+  { id:"injected", name:"Browser Wallet", desc:"Other injected wallet", icon:"&#128142;", iconBg:"#F0FAF6",
+    detect: ()=>!!window.ethereum&&!window.ethereum?.isMetaMask&&!window.ethereum?.isCoinbaseWallet&&!window.ethereum?.isBraveWallet&&!window.ethereum?.isRabby,
+    getProvider: ()=>window.ethereum }
+];
+
+/* ─────────── MODAL ─────────── */
+function openWalletModal(){ buildWalletOptions(); document.getElementById("wallet-modal").classList.add("open"); }
+function closeWalletModal(){ document.getElementById("wallet-modal").classList.remove("open"); }
+function handleModalClick(e){ if(e.target===document.getElementById("wallet-modal")) closeWalletModal(); }
+document.addEventListener("keydown", e=>{ if(e.key==="Escape") closeWalletModal(); });
+
+function buildWalletOptions(){
+  const container = document.getElementById("wallet-options");
+  const detected = WALLETS.filter(w=>w.detect());
+  const notDetected = WALLETS.filter(w=>!w.detect());
+  let html = "";
   detected.forEach(w=>{
-    html+=`<div onclick="connectWallet('${w.id}')" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:11px;cursor:pointer;border:1.5px solid #D4B840;background:#FFFEFB;margin-bottom:8px;transition:background .18s" onmouseenter="this.style.background='#FDF8EC'" onmouseleave="this.style.background='#FFFEFB'">
-      <div style="width:36px;height:36px;border-radius:8px;background:${w.bg};border:1px solid #D4B840;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">${w.icon}</div>
-      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#0A0800;margin-bottom:2px">${w.name}</div><div style="font-size:10px;color:#5A3E00;font-weight:500">${w.desc}</div></div>
-      <span style="font-size:9px;padding:3px 8px;border-radius:5px;font-weight:700;background:#EAF8F2;color:#044030;border:1px solid #40B888;letter-spacing:.5px;text-transform:uppercase">DETECTED</span>
-    </div>`;
+    html += `<div class="wallet-opt" onclick="connectWithWallet('${w.id}')">
+      <div class="wo-icon" style="background:${w.iconBg}">${w.icon}</div>
+      <div class="wo-info"><div class="wo-name">${w.name}</div><div class="wo-desc">${w.desc}</div></div>
+      <span class="wo-badge detected">DETECTED</span></div>`;
   });
-  if(notDet.length&&detected.length){
-    html+=`<div style="font-size:10px;color:#7A5830;letter-spacing:1px;text-transform:uppercase;font-weight:600;margin:8px 0 6px;text-align:center">Not installed</div>`;
-  }
-  notDet.forEach(w=>{
-    html+=`<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-radius:11px;border:1.5px solid #E8D080;background:#F2EDE3;margin-bottom:7px;opacity:.5">
-      <div style="width:34px;height:34px;border-radius:8px;background:${w.bg};border:1px solid #D4B840;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0">${w.icon}</div>
-      <div style="flex:1"><div style="font-size:13px;font-weight:700;color:#5A3E00;margin-bottom:2px">${w.name}</div><div style="font-size:10px;color:#7A5830;font-weight:500">${w.desc}</div></div>
-      <span style="font-size:9px;padding:3px 8px;border-radius:5px;font-weight:700;background:#F2EDE3;color:#7A5830;border:1px solid #D4B840;letter-spacing:.5px;text-transform:uppercase">NOT FOUND</span>
-    </div>`;
+  if(notDetected.length && detected.length)
+    html += `<div class="modal-divider"><span>not installed</span></div>`;
+  notDetected.forEach(w=>{
+    html += `<div class="wallet-opt disabled">
+      <div class="wo-icon" style="background:${w.iconBg};opacity:.5">${w.icon}</div>
+      <div class="wo-info"><div class="wo-name" style="color:#7A5830">${w.name}</div><div class="wo-desc">${w.desc}</div></div>
+      <span class="wo-badge notfound">NOT FOUND</span></div>`;
   });
-  if(!detected.length&&!notDet.length){
-    html=`<div style="text-align:center;padding:20px;color:#5A3E00;font-size:13px;font-style:italic">No wallets detected.<br><span style="color:#9A6800;font-weight:600">Open in MetaMask or OKX browser on mobile.</span></div>`;
-  }
-  container.innerHTML=html;
+  if(!detected.length && !notDetected.length)
+    html = `<div class="empty-hist">No wallets detected.</div>`;
+  container.innerHTML = html;
 }
 
-/* ── CONNECT ── */
-window.connectWallet=async function(id){
-  const w=WALLETS.find(x=>x.id===id);
-  if(!w){showToast('Wallet not found','err');return;}
-  const raw=w.get();
-  if(!raw){showToast(`${w.name} not available`,'err');return;}
-  closeModal();
-  showToast(`Connecting ${w.name}...`);
+/* ─────────── CONNECT ─────────── */
+async function connectWithWallet(walletId){
+  const wDef = WALLETS.find(w=>w.id===walletId);
+  if(!wDef){ toast("Wallet not found","error"); return; }
+  const rawProvider = wDef.getProvider();
+  if(!rawProvider){ toast(`${wDef.name} not found.`,"error"); return; }
+  closeWalletModal();
+  toast(`Connecting ${wDef.name}...`);
   try{
-    const CHAIN_ID='0x1159';
-    const NET={chainId:CHAIN_ID,chainName:'LiteForge Testnet',nativeCurrency:{name:'zkLTC',symbol:'zkLTC',decimals:18},rpcUrls:['https://rpc.liteforge.litvm.com'],blockExplorerUrls:['https://liteforge.explorer.caldera.xyz']};
-    try{await raw.request({method:'wallet_switchEthereumChain',params:[{chainId:CHAIN_ID}]});}
-    catch(e){if(e.code===4902)await raw.request({method:'wallet_addEthereumChain',params:[NET]});else throw e;}
-    await raw.request({method:'eth_requestAccounts'});
-    const accounts=await raw.request({method:'eth_accounts'});
-    const addr=accounts[0];
-    const short=addr.slice(0,6)+'...'+addr.slice(-4);
-    document.getElementById('waddr').innerHTML=`<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${w.name}</span>`;
-    document.getElementById('wav').innerHTML=w.icon;
-    document.getElementById('btn-enter').classList.add('connected');
-    document.getElementById('btn-enter').textContent='Connected';
-    document.getElementById('btn-conn').style.display='none';
-    document.getElementById('btn-disc').style.display='block';
-    document.getElementById('btn-buy').disabled=false;
-    const badge=document.getElementById('tbadge');
-    badge.textContent='3 tickets available';badge.className='tbadge open';
-    showToast(`${w.name} connected!`,'ok');
-  }catch(e){
-    showToast((e.message||'Connection failed').slice(0,80),'err');
-  }
-};
+    try{ await rawProvider.request({method:"wallet_switchEthereumChain",params:[{chainId:CHAIN_ID}]}); }
+    catch(e){ if(e.code===4902) await rawProvider.request({method:"wallet_addEthereumChain",params:[NETWORK]}); else throw e; }
+    provider = new ethers.BrowserProvider(rawProvider);
+    await provider.send("eth_requestAccounts",[]);
+    signer = await provider.getSigner();
+    wallet = await signer.getAddress();
+    contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, signer);
+    activeWalletType = walletId;
 
-window.doDisconnect=function(){
-  document.getElementById('waddr').textContent='Not connected';
-  document.getElementById('wbal').textContent='— zkLTC';
-  document.getElementById('wav').innerHTML='&#9672;';
-  const be=document.getElementById('btn-enter');
-  be.classList.remove('connected');be.textContent='Enter Lottery';
-  document.getElementById('btn-conn').style.display='block';
-  document.getElementById('btn-disc').style.display='none';
-  document.getElementById('btn-buy').disabled=true;
-  const badge=document.getElementById('tbadge');
-  badge.textContent='Connect wallet to buy';badge.className='tbadge neutral';
-  showToast('Disconnected');
-};
+    const short = wallet.slice(0,6)+"..."+wallet.slice(-4);
+    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${wDef.name}</span>`;
+    document.getElementById("wav").innerHTML = wDef.icon;
+    const bal = await provider.getBalance(wallet);
+    document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
 
-/* ── TOAST ── */
-let _toast=null;
-function showToast(msg,type=''){
-  if(_toast)clearTimeout(_toast);
-  let t=document.getElementById('_toast');
-  if(!t){t=document.createElement('div');t.id='_toast';t.style.cssText='position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(80px);background:#1A0E00;color:#FDF8DC;padding:11px 22px;border-radius:10px;font-size:12px;font-weight:600;transition:transform .28s;z-index:99999;white-space:nowrap;max-width:90vw;text-align:center';document.body.appendChild(t);}
-  t.textContent=msg;
-  t.style.background=type==='ok'?'#0A7A60':type==='err'?'#8A2010':'#1A0E00';
-  t.style.transform='translateX(-50%) translateY(0)';
-  _toast=setTimeout(()=>{t.style.transform='translateX(-50%) translateY(80px)';},3500);
+    // Update buttons
+    const be = document.getElementById("btn-enter");
+    be.classList.add("connected"); be.textContent = "Connected";
+    document.getElementById("btn-connect").style.display = "none";
+    document.getElementById("btn-disconnect").style.display = "block";
+    document.getElementById("btn-buy").disabled = false;
+
+    rawProvider.on?.("accountsChanged", handleAccountsChanged);
+    rawProvider.on?.("chainChanged", handleChainChanged);
+
+    await refresh(); startCountdown(); startAutoRefresh();
+    toast(`${wDef.name} connected!`,"success");
+  } catch(e){ toast((e.message||"Connection failed").slice(0,80),"error"); }
 }
 
-/* ── LIVE ACTIVITY ── */
-const ADDRS=['0x4f2a...c89e','0xa1b3...7f10','0xd8c4...2a55','0x7e09...bb34','0x3c5f...9120','0xb92e...a3f6'];
-let min=2;
-setInterval(()=>{
-  if(Math.random()<0.35){
-    const addr=ADDRS[Math.floor(Math.random()*ADDRS.length)];
-    const nums=[];while(nums.length<6){const n=Math.floor(Math.random()*45)+1;if(!nums.includes(n))nums.push(n);}
-    nums.sort((a,b)=>a-b);
-    const list=document.getElementById('act-list');
-    const item=document.createElement('div');item.className='act-item';
-    item.innerHTML=`<div class="act-l"><div class="act-dot">&#127903;</div><div><div class="act-addr">${addr}</div><div class="act-nums">${nums.join(' · ')}</div></div></div><div class="act-time">just now</div>`;
-    list.insertBefore(item,list.firstChild);
-    if(list.children.length>5)list.removeChild(list.lastChild);
-    const s=document.getElementById('tix');s.textContent=(parseInt(s.textContent.replace(/,/g,''))+1).toLocaleString();
-    min=0;
+async function connectWithProvider(type){
+  if(type==="walletconnect") toast("WalletConnect: Integrate @walletconnect/web3-provider SDK for QR","error");
+}
+
+function handleAccountsChanged(accounts){
+  if(!accounts||accounts.length===0) disconnectWallet();
+  else {
+    wallet = accounts[0];
+    const short = wallet.slice(0,6)+"..."+wallet.slice(-4);
+    const wDef = WALLETS.find(w=>w.id===activeWalletType);
+    document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${wDef?.name||""}</span>`;
+    refresh(); toast("Account switched","success");
   }
-  min++;
-  document.getElementById('sp-last').textContent=min<=1?'just now':min+' min ago';
-},9000);
-})();
+}
+
+function handleChainChanged(chainId){
+  if(chainId!==CHAIN_ID) toast("Wrong network! Switch to LiteForge Testnet","error");
+  else { toast("Network switched to LiteForge","success"); refresh(); }
+}
+
+function disconnectWallet(){
+  const wDef = WALLETS.find(w=>w.id===activeWalletType);
+  if(wDef){ const rp=wDef.getProvider(); rp?.removeListener?.("accountsChanged",handleAccountsChanged); rp?.removeListener?.("chainChanged",handleChainChanged); }
+  provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
+  if(cdTimer) clearInterval(cdTimer);
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+
+  document.getElementById("wallet-addr").textContent = "Not connected";
+  document.getElementById("wallet-bal").textContent = "— zkLTC";
+  document.getElementById("wav").innerHTML = "&#9672;";
+
+  const be = document.getElementById("btn-enter");
+  be.classList.remove("connected"); be.textContent = "Enter Lottery";
+  document.getElementById("btn-connect").style.display = "block";
+  document.getElementById("btn-disconnect").style.display = "none";
+
+  ["stat-jackpot","stat-round","stat-tickets","stat-players","banner-jackpot","cd-d","cd-h","cd-m","cd-s","sp-players","sp-last","sp-round"]
+    .forEach(id=>{ try{ document.getElementById(id).textContent="—"; }catch(_){} });
+  document.getElementById("progress-bar").style.width = "0%";
+
+  const badge = document.getElementById("ticket-badge");
+  badge.textContent = "Connect wallet to buy"; badge.className = "tbadge neutral";
+  document.getElementById("btn-buy").disabled = true; document.getElementById("btn-buy").textContent = "Buy Ticket";
+  hideTxStatus();
+  document.getElementById("activity-list").innerHTML = '<div class="act-empty">Waiting for activity...</div>';
+  document.getElementById("history-list").innerHTML = '<div class="empty-hist">Connect wallet to view your ticket history</div>';
+  document.getElementById("winning-panel").style.display = "none";
+  document.getElementById("btn-draw").style.display = "none";
+  toast("Wallet disconnected");
+}
+
+/* ─────────── DATA REFRESH ─────────── */
+async function refresh(){
+  if(!contract) return;
+  try{
+    const r = await contract.getCurrentRound();
+    const rid = Number(r.roundId);
+    const jpVal = parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
+
+    document.getElementById("stat-jackpot").textContent = jpVal;
+    try{ document.getElementById("banner-jackpot").textContent = jpVal; }catch(_){}
+    document.getElementById("stat-round").textContent = "#"+rid;
+    document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
+    document.getElementById("sp-round").textContent = "#"+rid;
+    roundEndTime = Number(r.endTime);
+
+    if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn)
+      document.getElementById("btn-draw").style.display = "block";
+
+    // Last draw winning numbers
+    if(rid > 1){
+      try{
+        const w = await contract.getWinningNumbers(rid-1);
+        for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
+        document.getElementById("winning-round").textContent = "#"+(rid-1);
+        document.getElementById("winning-panel").style.display = "block";
+      }catch(_){}
+    }
+
+    try{
+      const tickets = await contract.getTickets(rid);
+      updateActivityFeed(tickets, rid);
+      updateSocialProof(tickets, rid);
+    }catch(_){}
+
+    await refreshLimit();
+    await refreshHistory();
+  } catch(e){ console.error(e); }
+}
+
+async function refreshLimit(){
+  if(!contract||!wallet) return;
+  try{
+    const rem = Number(await contract.ticketsRemaining(wallet));
+    const used = 3 - rem;
+    const badge = document.getElementById("ticket-badge");
+    const btn = document.getElementById("btn-buy");
+    if(rem===0){
+      badge.textContent = "3/3 tickets used this round"; badge.className = "tbadge full";
+      btn.disabled = true; btn.textContent = "Limit reached — come back next round";
+    } else if(used>0){
+      badge.textContent = used+"/3 used · "+rem+" remaining"; badge.className = "tbadge partial";
+      btn.disabled = false; btn.textContent = "Buy Ticket";
+    } else {
+      badge.textContent = "3 tickets available this round"; badge.className = "tbadge open";
+      btn.disabled = false; btn.textContent = "Buy Ticket";
+    }
+  } catch(e){ console.error("refreshLimit:",e); }
+}
+
+async function refreshHistory(){
+  if(!contract||!wallet) return;
+  const rid = Number(await contract.currentRoundId());
+  const list = document.getElementById("history-list");
+  const items = [];
+  for(let r=Math.max(1,rid-5);r<=rid;r++){
+    try{
+      const tickets = await contract.getTickets(r);
+      const mine = tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
+      if(!mine.length) continue;
+      let drawn=false, winNums=null;
+      if(r<rid){ try{ winNums=await contract.getWinningNumbers(r); drawn=true; }catch(_){} }
+      for(const t of mine){
+        const nums = t.numbers.map(n=>Number(n));
+        let badge='<span class="badge bpend">Pending</span>', claimBtn="";
+        if(drawn&&winNums){
+          const wn = winNums.map(n=>Number(n));
+          const m = nums.filter(n=>wn.includes(n)).length;
+          if(m>=6) badge='<span class="badge b1">Jackpot!</span>';
+          else if(m===5) badge='<span class="badge b2">2nd Prize</span>';
+          else if(m===4) badge='<span class="badge b3">3rd Prize</span>';
+          else if(m===3) badge='<span class="badge b4">4th Prize</span>';
+          else badge='<span class="badge blose">No match</span>';
+          if(m>=3){
+            const claimed = await contract.hasClaimedReward(r,wallet);
+            claimBtn = claimed
+              ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
+              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
+          }
+        }
+        const mb = nums.map(n=>`<div class="mball">${n}</div>`).join("");
+        items.push(`<div class="hist-item">
+          <div class="hist-l"><span class="hist-round">Round #${r}</span><div class="mballs">${mb}</div></div>
+          <div style="display:flex;align-items:center;gap:6px">${badge}${claimBtn}</div>
+        </div>`);
+      }
+    }catch(_){}
+  }
+  list.innerHTML = items.length ? items.join("") : '<div class="empty-hist">No tickets found for this wallet</div>';
+}
+
+/* ─────────── BUY / DRAW / CLAIM ─────────── */
+async function buyTicket(){
+  if(!contract){ toast("Connect wallet first","error"); return; }
+  let numbers;
+  if(currentTab==="pick"){
+    const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
+    if(v.some(n=>isNaN(n)||n<1||n>45)){ toast("Numbers must be between 1 and 45","error"); return; }
+    if(new Set(v).size<6){ toast("All numbers must be unique!","error"); return; }
+    numbers = v;
+  } else {
+    const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
+    if(v.some(isNaN)){ toast("Please roll your numbers first","error"); return; }
+    numbers = v;
+  }
+  try{
+    document.getElementById("btn-buy").disabled = true;
+    document.getElementById("btn-buy").textContent = "Processing...";
+    showTxStatus("processing","Waiting for wallet confirmation...");
+    const price = ethers.parseEther("0.001");
+    let tx;
+    if(currentTab==="pick") tx = await contract.buyCustomTicket(numbers,1,{value:price});
+    else tx = await contract.buyRandomTicket(1,{value:price});
+    showTxStatus("processing","Transaction submitted, confirming on-chain...");
+    await tx.wait();
+    showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
+    setTimeout(()=>hideTxStatus(),4000);
+    await refresh();
+  } catch(e){
+    showTxStatus("error",(e?.reason||e?.message||"Transaction failed").slice(0,80));
+    setTimeout(()=>hideTxStatus(),5000);
+    await refreshLimit();
+  }
+}
+
+async function drawNumbers(){
+  if(!contract) return;
+  try{
+    toast("Triggering weekly draw...");
+    const tx = await contract.performUpkeep("0x");
+    await tx.wait();
+    toast("Draw complete!","success");
+    document.getElementById("btn-draw").style.display = "none";
+    await refresh();
+  } catch(e){ toast(e?.reason||"Draw failed","error"); }
+}
+
+async function claimReward(rid){
+  if(!contract) return;
+  try{
+    toast("Claiming reward...");
+    const tx = await contract.claimReward(rid);
+    await tx.wait();
+    toast("Reward claimed!","success");
+    await refresh();
+  } catch(e){ toast(e?.reason||"Claim failed","error"); }
+}
+
+/* ─────────── UI HELPERS ─────────── */
+function switchTab(tab, btn){
+  currentTab = tab;
+  document.querySelectorAll(".tab").forEach(b=>b.classList.remove("on"));
+  btn.classList.add("on");
+  document.getElementById("panel-pick").style.display = tab==="pick" ? "" : "none";
+  document.getElementById("panel-rand").style.display = tab==="rand" ? "" : "none";
+  if(tab==="rand") reroll();
+}
+
+function reroll(){
+  const p=[];
+  while(p.length<6){ const n=Math.floor(Math.random()*45)+1; if(!p.includes(n))p.push(n); }
+  p.sort((a,b)=>a-b);
+  for(let i=0;i<6;i++){ const el=document.getElementById("rb"+(i+1)); el.textContent=p[i]; el.className="brand set"; }
+}
+
+function startAutoRefresh(){
+  if(autoRefreshTimer) clearInterval(autoRefreshTimer);
+  // Refresh stats every 30 seconds to keep counts accurate
+  autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
+}
+
+function startCountdown(){
+  if(cdTimer) clearInterval(cdTimer);
+  cdTimer = setInterval(()=>{
+    const left = Math.max(0, roundEndTime - Math.floor(Date.now()/1000));
+    document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
+    document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
+    document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
+    document.getElementById("cd-s").textContent = pad(left%60);
+    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.round(left/roundDuration*100) : 0)+"%";
+    if(left===0) document.getElementById("btn-draw").style.display = "block";
+  },1000);
+}
+
+function updateActivityFeed(tickets, roundId){
+  const list = document.getElementById("activity-list");
+  if(!tickets||tickets.length===0){ list.innerHTML='<div class="act-empty">No activity yet — be the first!</div>'; return; }
+  const recent = [...tickets].reverse().slice(0,5);
+  list.innerHTML = recent.map(t=>{
+    const nums = t.numbers.map(n=>Number(n));
+    const addr = t.player.slice(0,6)+"..."+t.player.slice(-4);
+    return `<div class="act-item">
+      <div class="act-l"><div class="act-dot">&#127903;</div>
+      <div><div class="act-addr">${addr}</div><div class="act-nums">${nums.join(" · ")}</div></div></div>
+      <div class="act-time">Round #${roundId}</div></div>`;
+  }).join("");
+}
+
+function updateSocialProof(tickets, roundId){
+  const unique = new Set(tickets.map(t=>t.player)).size;
+  const total  = tickets.length;
+
+  // Social bar
+  document.getElementById("sp-players").textContent = unique || "0";
+  document.getElementById("sp-round").textContent   = "#" + roundId;
+  document.getElementById("sp-last").textContent    = total > 0 ? "just now" : "—";
+
+  // Stats grid — players = unique wallets, tickets = totalTickets (already set from contract)
+  document.getElementById("stat-players").textContent = unique || "0";
+}
+
+function showTxStatus(type, msg){
+  const el = document.getElementById("tx-status");
+  el.className = "tx-status show "+type;
+  document.getElementById("tx-msg").textContent = msg;
+  document.getElementById("tx-spinner").style.display = type==="processing" ? "block" : "none";
+}
+function hideTxStatus(){ document.getElementById("tx-status").className = "tx-status"; }
+
+function pad(n){ return String(n).padStart(2,"0"); }
+
+function toast(msg, type=""){
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.className = "show"+(type?" "+type:"");
+  clearTimeout(el._t); el._t = setTimeout(()=>el.className="",3500);
+}
 </script>
+</body>
+</html>
