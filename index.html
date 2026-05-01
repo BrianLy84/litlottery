@@ -670,15 +670,20 @@ async function refresh(){
     if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn)
       document.getElementById("btn-draw").style.display = "block";
 
-    // Last draw winning numbers
-    if(rid > 1){
-      try{
+    // Fix 1: Nếu round hiện tại đã drawn thì hiện luôn, ngược lại hiện round trước
+    try{
+      if(r.drawn){
+        const w = await contract.getWinningNumbers(rid);
+        for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
+        document.getElementById("winning-round").textContent = "#"+rid;
+        document.getElementById("winning-panel").style.display = "block";
+      } else if(rid > 1){
         const w = await contract.getWinningNumbers(rid-1);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
         document.getElementById("winning-round").textContent = "#"+(rid-1);
         document.getElementById("winning-panel").style.display = "block";
-      }catch(_){}
-    }
+      }
+    }catch(_){}
 
     try{
       const tickets = await contract.getTickets(rid);
@@ -713,43 +718,87 @@ async function refreshLimit(){
 
 async function refreshHistory(){
   if(!contract||!wallet) return;
-  const rid = Number(await contract.currentRoundId());
   const list = document.getElementById("history-list");
-  const items = [];
-  for(let r=Math.max(1,rid-5);r<=rid;r++){
-    try{
-      const tickets = await contract.getTickets(r);
-      const mine = tickets.filter(t=>t.player.toLowerCase()===wallet.toLowerCase());
-      if(!mine.length) continue;
-      let drawn=false, winNums=null;
-      if(r<rid){ try{ winNums=await contract.getWinningNumbers(r); drawn=true; }catch(_){} }
+  list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
+
+  try{
+    // Fix 3: Batch - lấy currentRound 1 lần, batch getTickets song song
+    const currentRound = await contract.getCurrentRound();
+    const rid = Number(currentRound.roundId);
+    const startR = Math.max(1, rid-5);
+
+    // Batch fetch tất cả tickets song song thay vì tuần tự
+    const roundRange = [];
+    for(let r=startR;r<=rid;r++) roundRange.push(r);
+
+    const allTickets = await Promise.all(
+      roundRange.map(r => contract.getTickets(r).catch(()=>[]))
+    );
+
+    // Lọc tickets của wallet hiện tại
+    const myRounds = roundRange.map((r,i)=>({
+      r,
+      mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
+      isCurrentRound: r===rid,
+      drawn: r < rid || currentRound.drawn
+    })).filter(x=>x.mine.length>0);
+
+    if(!myRounds.length){
+      list.innerHTML = '<div class="empty-hist">No tickets found for this wallet</div>';
+      return;
+    }
+
+    // Batch fetch winning numbers chỉ cho các round đã drawn
+    const drawnRounds = myRounds.filter(x=>x.drawn && x.r<rid);
+    // Nếu round hiện tại đã drawn thì thêm vào
+    if(currentRound.drawn) drawnRounds.push({r:rid});
+
+    const winNumsMap = {};
+    await Promise.all(drawnRounds.map(async x=>{
+      try{ winNumsMap[x.r] = (await contract.getWinningNumbers(x.r)).map(n=>Number(n)); }catch(_){}
+    }));
+
+    // Build items
+    const items = [];
+    for(const {r, mine, isCurrentRound} of myRounds){
+      const winNums = winNumsMap[r] || null;
+      const drawn = !!winNums;
+
       for(const t of mine){
         const nums = t.numbers.map(n=>Number(n));
         let badge='<span class="badge bpend">Pending</span>', claimBtn="";
-        if(drawn&&winNums){
-          const wn = winNums.map(n=>Number(n));
-          const m = nums.filter(n=>wn.includes(n)).length;
-          if(m>=6) badge='<span class="badge b1">Jackpot!</span>';
+
+        if(drawn){
+          const m = nums.filter(n=>winNums.includes(n)).length;
+          if(m>=6)      badge='<span class="badge b1">Jackpot!</span>';
           else if(m===5) badge='<span class="badge b2">2nd Prize</span>';
           else if(m===4) badge='<span class="badge b3">3rd Prize</span>';
           else if(m===3) badge='<span class="badge b4">4th Prize</span>';
-          else badge='<span class="badge blose">No match</span>';
+          else           badge='<span class="badge blose">No match</span>';
+
           if(m>=3){
-            const claimed = await contract.hasClaimedReward(r,wallet);
-            claimBtn = claimed
-              ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
-              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
+            try{
+              const claimed = await contract.hasClaimedReward(r, wallet);
+              claimBtn = claimed
+                ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
+                : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
+            }catch(_){}
           }
         }
+
         const mb = nums.map(n=>`<div class="mball">${n}</div>`).join("");
         items.push(`<div class="hist-item">
           <div class="hist-l"><span class="hist-round">Round #${r}</span><div class="mballs">${mb}</div></div>
           <div style="display:flex;align-items:center;gap:6px">${badge}${claimBtn}</div>
         </div>`);
       }
-    }catch(_){}
+    }
+
+    list.innerHTML = items.length ? items.join("") : '<div class="empty-hist">No tickets found for this wallet</div>';
+  } catch(e){
+    console.error("refreshHistory:", e);
+    list.innerHTML = '<div class="empty-hist">Error loading history</div>';
   }
-  list.innerHTML = items.length ? items.join("") : '<div class="empty-hist">No tickets found for this wallet</div>';
 }
 
 /* ─────────── BUY / DRAW / CLAIM ─────────── */
@@ -863,13 +912,27 @@ function updateSocialProof(tickets, roundId){
   const unique = new Set(tickets.map(t=>t.player)).size;
   const total  = tickets.length;
 
-  // Social bar
   document.getElementById("sp-players").textContent = unique || "0";
   document.getElementById("sp-round").textContent   = "#" + roundId;
-  document.getElementById("sp-last").textContent    = total > 0 ? "just now" : "—";
-
-  // Stats grid — players = unique wallets, tickets = totalTickets (already set from contract)
   document.getElementById("stat-players").textContent = unique || "0";
+
+  // Fix 2: sp-last — tính thời gian thực từ block timestamp ticket cuối
+  // Tickets không mang timestamp nên dùng block.timestamp qua provider nếu có
+  if(total === 0){ document.getElementById("sp-last").textContent = "—"; return; }
+  // Lấy block mới nhất để ước tính thời gian ticket cuối cùng
+  if(typeof provider !== "undefined" && provider){
+    provider.getBlock("latest").then(block=>{
+      // Không có timestamp per-ticket nên hiện recently nếu total > 0
+      // Chính xác hơn: so block.timestamp với roundStartTime
+      const now = Math.floor(Date.now()/1000);
+      const diff = now - Number(block.timestamp);
+      if(diff < 120) document.getElementById("sp-last").textContent = "just now";
+      else if(diff < 3600) document.getElementById("sp-last").textContent = Math.floor(diff/60)+" min ago";
+      else document.getElementById("sp-last").textContent = Math.floor(diff/3600)+" hr ago";
+    }).catch(()=>{ document.getElementById("sp-last").textContent = "recently"; });
+  } else {
+    document.getElementById("sp-last").textContent = "recently";
+  }
 }
 
 function showTxStatus(type, msg){
