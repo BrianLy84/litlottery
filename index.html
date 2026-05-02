@@ -21,9 +21,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .eyebrow{font-size:10px;letter-spacing:3px;font-weight:700;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:7px;
   background:linear-gradient(90deg,#7A5008 0%,#C9A020 25%,#F0CC60 45%,#FFF5A0 50%,#F0CC60 55%,#C9A020 75%,#7A5008 100%);
   background-size:200% auto;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;animation:goldflow 4s linear infinite}
-.eline{width:18px;height:1px;background:#C8A030;flex-shrink:0;-webkit-text-fill-color:unset;background-clip:unset;
-  /* reset gold on line */}
-/* override eline inside eyebrow to not inherit gradient clip */
+.eline{width:18px;height:1px;background:#C8A030;flex-shrink:0;-webkit-text-fill-color:unset;background-clip:unset;}
 .eyebrow .eline{background:#C8A030;-webkit-background-clip:unset;background-clip:unset;-webkit-text-fill-color:unset}
 .hero-title{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:700;line-height:1;letter-spacing:.5px;margin-bottom:3px;
   background:linear-gradient(90deg,#5A3000 0%,#C9A020 20%,#F0CC60 40%,#FFF8C0 50%,#F0CC60 60%,#C9A020 80%,#5A3000 100%);
@@ -158,6 +156,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .tbadge.partial{background:#FDF8EC;border-color:#C8A820;color:#7A5000}
 .tbadge.full{background:#FEF3F2;border-color:#FCA5A5;color:#DC2626}
 .tbadge.neutral{background:#F2EDE3;border-color:#C8A820;color:#5A3E00}
+.tbadge.dup{background:#FFF3CD;border-color:#FFC107;color:#856404}
 .tprice{font-size:11px;color:#1E1400;font-weight:700}
 .tprice span{color:#9A6800;font-weight:700}
 
@@ -228,6 +227,7 @@ footer a:hover{color:#0A7A60}
 #toast.show{transform:translateX(-50%) translateY(0)}
 #toast.success{background:#0A7A60;color:#fff}
 #toast.error{background:#8A3020;color:#fff}
+#toast.warn{background:#8A6000;color:#fff}
 
 /* WALLET MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(10,8,0,.55);backdrop-filter:blur(4px);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s}
@@ -389,7 +389,6 @@ footer a:hover{color:#0A7A60}
 <div class="panel">
   <div class="ph"><div class="phico">&#127903;</div><div class="phtitle">Buy Your Ticket</div></div>
 
-  <!-- Fair Play Rules -->
   <div class="fairplay">
     <div class="fp-head"><div class="fp-ico">&#9878;</div><div class="fp-title">Fair Play Rules</div></div>
     <div class="fp-rules">
@@ -405,12 +404,12 @@ footer a:hover{color:#0A7A60}
   </div>
   <div id="panel-pick">
     <div class="balls">
-      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3"/></div></div>
-      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11"/></div></div>
-      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18"/></div></div>
-      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27"/></div></div>
-      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34"/></div></div>
-      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42"/></div></div>
+      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42" oninput="onNumberInput()"/></div></div>
     </div>
   </div>
   <div id="panel-rand" style="display:none">
@@ -445,12 +444,11 @@ footer a:hover{color:#0A7A60}
   <div id="history-list"><div class="empty-hist">Connect wallet to view your ticket history</div></div>
 </div>
 
-</div><!-- /left col -->
+</div>
 
 <!-- RIGHT COL -->
 <div>
 
-<!-- LAST DRAW -->
 <div class="rpanel" id="winning-panel">
   <div class="ph"><div class="phico">&#127942;</div><div class="phtitle">Last Draw Result</div></div>
   <div id="winning-content" style="text-align:center;padding:16px 0;color:#7A5830;font-size:12px;font-style:italic">Connect wallet to view last draw</div>
@@ -460,17 +458,16 @@ footer a:hover{color:#0A7A60}
   </div>
 </div>
 
-<!-- ACTIVITY -->
 <div class="rpanel">
   <div class="ph"><div class="phico">&#9889;</div><div class="phtitle">Recent Activity</div></div>
   <div id="activity-list"><div class="act-empty">Waiting for activity...</div></div>
 </div>
 
-</div><!-- /right col -->
-</div><!-- /main-grid -->
+</div>
+</div>
 
 <footer><p>LitBillionaire Lottery &middot; LiteForge Testnet &middot; <a href="https://liteforge.explorer.caldera.xyz/address/0x48e0B006BFebDC5109b1967c71581DE7fc93244A" target="_blank">Contract &#8599;</a> &middot; <a href="https://litvm.com" target="_blank">LitVM &#8599;</a></p></footer>
-</div><!-- /wrap -->
+</div>
 
 <!-- WALLET MODAL -->
 <div class="modal-overlay" id="wallet-modal" onclick="handleModalClick(event)">
@@ -521,6 +518,10 @@ const ABI = [
 let provider, signer, contract, wallet = null;
 let roundEndTime = 0, roundDuration = 604800;
 let cdTimer = null, autoRefreshTimer = null, currentTab = "pick", activeWalletType = null;
+
+// ── FIX: Cache vé đã mua của wallet trong round hiện tại ──
+// Key: roundId, Value: mảng số[][] (mỗi phần tử là 1 bộ 6 số)
+let myTicketsCache = { roundId: null, tickets: [] };
 
 /* ─────────── WALLET DEFINITIONS ─────────── */
 const WALLETS = [
@@ -598,14 +599,11 @@ async function connectWithWallet(walletId){
     const bal = await provider.getBalance(wallet);
     document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
 
-    // Update buttons - ẩn cả btn-enter pulse khi connected, chỉ giữ 1 nút connected + disconnect
     const be = document.getElementById("btn-enter");
     be.classList.add("connected"); be.textContent = "Connected";
     document.getElementById("btn-connect").style.display = "none";
     document.getElementById("btn-disconnect").style.display = "block";
     document.getElementById("w-hint").style.display = "block";
-    // Fix 1: giữ disabled, để refreshLimit() bên trong refresh() quyết định enable/disable
-    // tránh flash enable trước khi biết wallet còn lượt không
     document.getElementById("btn-buy").disabled = true;
     document.getElementById("btn-buy").textContent = "Checking limit...";
 
@@ -625,6 +623,7 @@ function handleAccountsChanged(accounts){
   if(!accounts||accounts.length===0) disconnectWallet();
   else {
     wallet = accounts[0];
+    myTicketsCache = { roundId: null, tickets: [] }; // reset cache khi đổi account
     const short = wallet.slice(0,6)+"..."+wallet.slice(-4);
     const wDef = WALLETS.find(w=>w.id===activeWalletType);
     document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${wDef?.name||""}</span>`;
@@ -641,6 +640,7 @@ function disconnectWallet(){
   const wDef = WALLETS.find(w=>w.id===activeWalletType);
   if(wDef){ const rp=wDef.getProvider(); rp?.removeListener?.("accountsChanged",handleAccountsChanged); rp?.removeListener?.("chainChanged",handleChainChanged); }
   provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
+  myTicketsCache = { roundId: null, tickets: [] }; // reset cache
   if(cdTimer) clearInterval(cdTimer);
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
 
@@ -667,7 +667,6 @@ function disconnectWallet(){
   document.getElementById("winning-content").textContent = "Connect wallet to view last draw";
   document.getElementById("winning-balls").style.display = "none";
   document.getElementById("btn-draw").style.display = "none";
-  // Bug 4 Fix: reset rollover note khi disconnect
   const rollEl = document.getElementById("rollover-note");
   if(rollEl) rollEl.style.display = "none";
   toast("Wallet disconnected");
@@ -688,8 +687,6 @@ async function refresh(){
     document.getElementById("sp-round").textContent = "#"+rid;
     roundEndTime = Number(r.endTime);
 
-    // Bug 1 Fix: Rollover — so sánh jackpot hiện tại vs revenue round này
-    // Nếu jackpot > (totalTickets * 0.001 * 0.60) => có rollover từ round trước
     try{
       const rollEl = document.getElementById("rollover-note");
       if(rollEl && rid > 1){
@@ -708,21 +705,16 @@ async function refresh(){
       }
     }catch(_){}
 
-    // Fix 2c: chỉ hiện btn-draw nếu round đã hết giờ VÀ wallet là owner
     if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn){
       checkIsOwner().then(isOwner=>{
         document.getElementById("btn-draw").style.display = isOwner ? "block" : "none";
-      }).catch(()=>{
-        document.getElementById("btn-draw").style.display = "none";
-      });
+      }).catch(()=>{ document.getElementById("btn-draw").style.display = "none"; });
     }
 
-    // Fix 1: Nếu round hiện tại đã drawn thì hiện luôn, ngược lại hiện round trước
     try{
       if(r.drawn){
         const w = await contract.getWinningNumbers(rid);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
-        document.getElementById("winning-round").textContent = "#"+rid;
         document.getElementById("winning-content").innerHTML = "Round <span id=\"winning-round\">#"+rid+"</span> winning numbers";
         document.getElementById("winning-balls").style.display = "flex";
       } else if(rid > 1){
@@ -735,6 +727,15 @@ async function refresh(){
 
     try{
       const tickets = await contract.getTickets(rid);
+
+      // ── FIX: Cập nhật cache vé của wallet hiện tại ──
+      if(wallet){
+        myTicketsCache.roundId = rid;
+        myTicketsCache.tickets = tickets
+          .filter(t => t.player.toLowerCase() === wallet.toLowerCase())
+          .map(t => t.numbers.map(n => Number(n)));
+      }
+
       updateActivityFeed(tickets, rid);
       updateSocialProof(tickets, rid);
     }catch(_){}
@@ -770,12 +771,10 @@ async function refreshHistory(){
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    // Fix 3: Batch - lấy currentRound 1 lần, batch getTickets song song
     const currentRound = await contract.getCurrentRound();
     const rid = Number(currentRound.roundId);
     const startR = Math.max(1, rid-5);
 
-    // Batch fetch tất cả tickets song song thay vì tuần tự
     const roundRange = [];
     for(let r=startR;r<=rid;r++) roundRange.push(r);
 
@@ -783,7 +782,6 @@ async function refreshHistory(){
       roundRange.map(r => contract.getTickets(r).catch(()=>[]))
     );
 
-    // Lọc tickets của wallet hiện tại
     const myRounds = roundRange.map((r,i)=>({
       r,
       mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
@@ -796,9 +794,7 @@ async function refreshHistory(){
       return;
     }
 
-    // Batch fetch winning numbers chỉ cho các round đã drawn
     const drawnRounds = myRounds.filter(x=>x.drawn && x.r<rid);
-    // Nếu round hiện tại đã drawn thì thêm vào
     if(currentRound.drawn) drawnRounds.push({r:rid});
 
     const winNumsMap = {};
@@ -806,7 +802,6 @@ async function refreshHistory(){
       try{ winNumsMap[x.r] = (await contract.getWinningNumbers(x.r)).map(n=>Number(n)); }catch(_){}
     }));
 
-    // Build items
     const items = [];
     for(const {r, mine, isCurrentRound} of myRounds){
       const winNums = winNumsMap[r] || null;
@@ -849,20 +844,87 @@ async function refreshHistory(){
   }
 }
 
+/* ─────────────────────────────────────────────────
+   FIX CHÍNH: Kiểm tra bộ số có bị trùng không
+   So sánh với tất cả vé đã mua trong round hiện tại
+   ───────────────────────────────────────────────── */
+function isDuplicateTicket(numbers){
+  if(!myTicketsCache.tickets || myTicketsCache.tickets.length === 0) return false;
+  const sorted = [...numbers].sort((a,b)=>a-b).join(",");
+  return myTicketsCache.tickets.some(existing => {
+    const existingSorted = [...existing].sort((a,b)=>a-b).join(",");
+    return existingSorted === sorted;
+  });
+}
+
+/* Gọi khi user thay đổi số ở tab Pick Numbers — cảnh báo realtime */
+function onNumberInput(){
+  if(!wallet || myTicketsCache.roundId === null) return;
+  const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
+  if(v.some(n=>isNaN(n)||n<1||n>45)) return;
+  if(new Set(v).size < 6) return;
+  const badge = document.getElementById("ticket-badge");
+  if(isDuplicateTicket(v)){
+    badge.textContent = "⚠️ You already own this combination!";
+    badge.className = "tbadge dup";
+  } else {
+    // restore normal badge nếu không trùng
+    const rem = 3 - myTicketsCache.tickets.length;
+    if(rem <= 0){
+      badge.textContent = "3/3 tickets used this round"; badge.className = "tbadge full";
+    } else if(myTicketsCache.tickets.length > 0){
+      badge.textContent = myTicketsCache.tickets.length+"/3 used · "+rem+" remaining"; badge.className = "tbadge partial";
+    } else {
+      badge.textContent = "3 tickets available this round"; badge.className = "tbadge open";
+    }
+  }
+}
+
 /* ─────────── BUY / DRAW / CLAIM ─────────── */
 async function buyTicket(){
   if(!contract){ toast("Connect wallet first","error"); return; }
   let numbers;
+
   if(currentTab==="pick"){
     const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
     if(v.some(n=>isNaN(n)||n<1||n>45)){ toast("Numbers must be between 1 and 45","error"); return; }
-    if(new Set(v).size<6){ toast("All numbers must be unique!","error"); return; }
+    if(new Set(v).size < 6){ toast("All numbers must be unique!","error"); return; }
     numbers = v;
   } else {
     const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
     if(v.some(isNaN)){ toast("Please roll your numbers first","error"); return; }
     numbers = v;
   }
+
+  /* ── FIX: Chặn mua trùng phía Frontend ──
+     1. Kiểm tra cache trước (nhanh, không cần RPC call)
+     2. Nếu cache chưa load hoặc round khớp → fetch mới từ chain để chắc chắn
+  */
+  try{
+    const currentRound = await contract.getCurrentRound();
+    const rid = Number(currentRound.roundId);
+
+    // Nếu cache lỗi thời (round mới) thì reset
+    if(myTicketsCache.roundId !== rid){
+      const allTickets = await contract.getTickets(rid);
+      myTicketsCache.roundId = rid;
+      myTicketsCache.tickets = allTickets
+        .filter(t => t.player.toLowerCase() === wallet.toLowerCase())
+        .map(t => t.numbers.map(n => Number(n)));
+    }
+
+    if(isDuplicateTicket(numbers)){
+      toast("⚠️ You already own this combination this round!", "warn");
+      const badge = document.getElementById("ticket-badge");
+      badge.textContent = "⚠️ You already own this combination!";
+      badge.className = "tbadge dup";
+      return; // ← CHẶN, không gửi tx
+    }
+  } catch(e){
+    console.warn("Duplicate check failed, proceeding:", e);
+    // Nếu check lỗi thì vẫn cho mua (không block oan)
+  }
+
   try{
     document.getElementById("btn-buy").disabled = true;
     document.getElementById("btn-buy").textContent = "Processing...";
@@ -874,18 +936,20 @@ async function buyTicket(){
     showTxStatus("processing","Transaction submitted, confirming on-chain...");
     await tx.wait();
     showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
+
+    // Thêm vé vừa mua vào cache ngay lập tức
+    myTicketsCache.tickets.push([...numbers]);
+
     setTimeout(()=>hideTxStatus(),4000);
     await refresh();
   } catch(e){
     const errMsg = e?.reason || e?.message || "Transaction failed";
-    // User rejected
     if(errMsg.includes("user rejected") || errMsg.includes("User denied")){
       showTxStatus("error","Transaction cancelled by user");
     } else {
       showTxStatus("error", errMsg.slice(0,80));
     }
     setTimeout(()=>hideTxStatus(), 5000);
-    // Bug 3 Fix: luôn restore btn-buy state dù refreshLimit có lỗi không
     try{ await refreshLimit(); } catch(_){
       const btn = document.getElementById("btn-buy");
       btn.disabled = false;
@@ -895,8 +959,6 @@ async function buyTicket(){
 }
 
 async function checkIsOwner(){
-  // Kiểm tra wallet hiện tại có phải owner không
-  // Nếu contract không có owner() thì trả về false để an toàn
   try{
     const ownerAddr = await contract.owner();
     return wallet && ownerAddr.toLowerCase() === wallet.toLowerCase();
@@ -905,7 +967,6 @@ async function checkIsOwner(){
 
 async function drawNumbers(){
   if(!contract) return;
-  // Fix 2: kiểm tra quyền trước khi gọi performUpkeep
   const isOwner = await checkIsOwner();
   if(!isOwner){
     toast("Only the contract owner can trigger the draw","error");
@@ -930,7 +991,6 @@ async function drawNumbers(){
 
 async function claimReward(rid){
   if(!contract){ toast("Connect wallet first","error"); return; }
-  // Disable tất cả btn-claim để tránh double click
   document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=true; b.textContent="Claiming..."; });
   try{
     toast("Claiming reward for Round #"+rid+"...");
@@ -939,23 +999,20 @@ async function claimReward(rid){
     const receipt = await tx.wait();
     if(receipt.status === 1){
       toast("🎉 Reward claimed successfully!","success");
-      // Cập nhật balance sau claim
       if(wallet){
         const bal = await provider.getBalance(wallet);
         document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
       }
-      await refreshHistory(); // chỉ reload history, không cần full refresh
+      await refreshHistory();
     } else {
       toast("Transaction failed on-chain","error");
     }
   } catch(e){
     const msg = e?.reason || e?.message || "Claim failed";
-    // Contract revert messages
     if(msg.includes("already claimed")) toast("Already claimed this reward","error");
     else if(msg.includes("no reward")) toast("No reward to claim for this round","error");
     else if(msg.includes("not drawn")) toast("Round not drawn yet","error");
     else toast(msg.slice(0,80),"error");
-    // Re-enable buttons nếu thất bại
     await refreshHistory();
   }
 }
@@ -975,11 +1032,19 @@ function reroll(){
   while(p.length<6){ const n=Math.floor(Math.random()*45)+1; if(!p.includes(n))p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++){ const el=document.getElementById("rb"+(i+1)); el.textContent=p[i]; el.className="brand set"; }
+
+  // Kiểm tra trùng ngay sau khi reroll
+  if(wallet && myTicketsCache.roundId !== null){
+    const nums = p;
+    if(isDuplicateTicket(nums)){
+      toast("⚠️ Rolled a duplicate — re-rolling...","warn");
+      setTimeout(reroll, 300); // tự động reroll lại nếu trùng
+    }
+  }
 }
 
 function startAutoRefresh(){
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
-  // Refresh stats every 30 seconds to keep counts accurate
   autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
 }
 
@@ -992,7 +1057,6 @@ function startCountdown(){
     document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
     document.getElementById("cd-s").textContent = pad(left%60);
     document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.round(left/roundDuration*100) : 0)+"%";
-    // Fix 2d: countdown - chỉ trigger show cho owner
     if(left===0){
       if(typeof checkIsOwner === "function"){
         checkIsOwner().then(isOwner=>{
@@ -1020,13 +1084,9 @@ function updateActivityFeed(tickets, roundId){
 function updateSocialProof(tickets, roundId){
   const unique = new Set(tickets.map(t=>t.player)).size;
   const total  = tickets.length;
-
   document.getElementById("sp-players").textContent = unique || "0";
   document.getElementById("sp-round").textContent   = "#" + roundId;
   document.getElementById("stat-players").textContent = unique || "0";
-
-  // Bug 2 Fix: sp-last — tickets không có timestamp per-ticket trong ABI
-  // Dùng startTime của round để ước tính: nếu round mới bắt đầu thì "recently"
   if(total === 0){ document.getElementById("sp-last").textContent = "—"; return; }
   document.getElementById("sp-last").textContent = total > 0 ? "this round" : "—";
 }
