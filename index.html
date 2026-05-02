@@ -213,6 +213,9 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .bpend{background:#FFFBEE;color:#6A4800;border:1.5px solid #C8A020;font-weight:800}
 .btn-claim{font-size:10px;padding:4px 10px;background:linear-gradient(135deg,#C48A10,#D4A820);color:#FFF8DC;border:none;border-radius:6px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif}
 .btn-claim:hover{background:#C8A010}
+.btn-claim:disabled{background:#C8B060;color:#6A5020;cursor:not-allowed}
+#rollover-note{animation:fadeInNote .4s ease}
+@keyframes fadeInNote{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
 .empty-hist{text-align:center;padding:20px;color:#5A3E00;font-size:12px;font-style:italic}
 
 footer{text-align:center;padding:14px 0 6px;border-top:1.5px solid #E0CC80;margin-top:6px}
@@ -342,7 +345,12 @@ footer a:hover{color:#0A7A60}
 
 <!-- STATS GRID -->
 <div class="stats-grid">
-  <div class="sc jp"><div class="sc-lbl">Jackpot Pool</div><div class="sc-val" id="stat-jackpot">&#8212;</div><div class="sc-unit">zkLTC</div></div>
+  <div class="sc jp">
+    <div class="sc-lbl">Jackpot Pool</div>
+    <div class="sc-val" id="stat-jackpot">&#8212;</div>
+    <div class="sc-unit">zkLTC</div>
+    <div id="rollover-note" style="display:none;margin-top:6px;font-size:9px;color:#7A5000;font-weight:600;letter-spacing:.3px;line-height:1.4;background:#FFF8DC;border:1px solid #D4A820;border-radius:6px;padding:4px 8px">&#128260; ...</div>
+  </div>
   <div class="sc"><div class="sc-lbl">Round</div><div class="sc-val" id="stat-round" style="font-size:27px">#&#8212;</div><div class="sc-unit">current</div></div>
   <div class="sc"><div class="sc-lbl">Tickets Sold</div><div class="sc-val" id="stat-tickets" style="font-size:27px">&#8212;</div><div class="sc-unit">this round</div></div>
   <div class="sc"><div class="sc-lbl">Players</div><div class="sc-val" id="stat-players" style="font-size:27px">&#8212;</div><div class="sc-unit">unique wallets</div></div>
@@ -502,7 +510,8 @@ const ABI = [
   "function ticketsRemaining(address wallet) external view returns (uint256)",
   "function getWinningNumbers(uint256 roundId) external view returns (uint256[6])",
   "function hasClaimedReward(uint256 roundId, address wallet) external view returns (bool)",
-  "function currentRoundId() external view returns (uint256)"
+  "function currentRoundId() external view returns (uint256)",
+  "function owner() external view returns (address)"
 ];
 
 /* ─────────── STATE ─────────── */
@@ -591,7 +600,10 @@ async function connectWithWallet(walletId){
     be.classList.add("connected"); be.textContent = "Connected";
     document.getElementById("btn-connect").style.display = "none";
     document.getElementById("btn-disconnect").style.display = "block";
-    document.getElementById("btn-buy").disabled = false;
+    // Fix 1: giữ disabled, để refreshLimit() bên trong refresh() quyết định enable/disable
+    // tránh flash enable trước khi biết wallet còn lượt không
+    document.getElementById("btn-buy").disabled = true;
+    document.getElementById("btn-buy").textContent = "Checking limit...";
 
     rawProvider.on?.("accountsChanged", handleAccountsChanged);
     rawProvider.on?.("chainChanged", handleChainChanged);
@@ -649,6 +661,9 @@ function disconnectWallet(){
   document.getElementById("history-list").innerHTML = '<div class="empty-hist">Connect wallet to view your ticket history</div>';
   document.getElementById("winning-panel").style.display = "none";
   document.getElementById("btn-draw").style.display = "none";
+  // Bug 4 Fix: reset rollover note khi disconnect
+  const rollEl = document.getElementById("rollover-note");
+  if(rollEl) rollEl.style.display = "none";
   toast("Wallet disconnected");
 }
 
@@ -667,8 +682,34 @@ async function refresh(){
     document.getElementById("sp-round").textContent = "#"+rid;
     roundEndTime = Number(r.endTime);
 
-    if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn)
-      document.getElementById("btn-draw").style.display = "block";
+    // Bug 1 Fix: Rollover — so sánh jackpot hiện tại vs revenue round này
+    // Nếu jackpot > (totalTickets * 0.001 * 0.60) => có rollover từ round trước
+    try{
+      const rollEl = document.getElementById("rollover-note");
+      if(rollEl && rid > 1){
+        const ticketPrice = 0.001;
+        const currentRevenue60pct = Number(r.totalTickets) * ticketPrice * 0.60;
+        const actualJp = parseFloat(ethers.formatEther(r.jackpot));
+        const rollover = actualJp - currentRevenue60pct;
+        if(rollover > 0.0005){
+          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from Round #" + (rid-1);
+          rollEl.style.display = "block";
+        } else {
+          rollEl.style.display = "none";
+        }
+      } else if(rollEl){
+        rollEl.style.display = "none";
+      }
+    }catch(_){}
+
+    // Fix 2c: chỉ hiện btn-draw nếu round đã hết giờ VÀ wallet là owner
+    if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn){
+      checkIsOwner().then(isOwner=>{
+        document.getElementById("btn-draw").style.display = isOwner ? "block" : "none";
+      }).catch(()=>{
+        document.getElementById("btn-draw").style.display = "none";
+      });
+    }
 
     // Fix 1: Nếu round hiện tại đã drawn thì hiện luôn, ngược lại hiện round trước
     try{
@@ -829,33 +870,87 @@ async function buyTicket(){
     setTimeout(()=>hideTxStatus(),4000);
     await refresh();
   } catch(e){
-    showTxStatus("error",(e?.reason||e?.message||"Transaction failed").slice(0,80));
-    setTimeout(()=>hideTxStatus(),5000);
-    await refreshLimit();
+    const errMsg = e?.reason || e?.message || "Transaction failed";
+    // User rejected
+    if(errMsg.includes("user rejected") || errMsg.includes("User denied")){
+      showTxStatus("error","Transaction cancelled by user");
+    } else {
+      showTxStatus("error", errMsg.slice(0,80));
+    }
+    setTimeout(()=>hideTxStatus(), 5000);
+    // Bug 3 Fix: luôn restore btn-buy state dù refreshLimit có lỗi không
+    try{ await refreshLimit(); } catch(_){
+      const btn = document.getElementById("btn-buy");
+      btn.disabled = false;
+      btn.textContent = "Buy Ticket";
+    }
   }
+}
+
+async function checkIsOwner(){
+  // Kiểm tra wallet hiện tại có phải owner không
+  // Nếu contract không có owner() thì trả về false để an toàn
+  try{
+    const ownerAddr = await contract.owner();
+    return wallet && ownerAddr.toLowerCase() === wallet.toLowerCase();
+  }catch(_){ return false; }
 }
 
 async function drawNumbers(){
   if(!contract) return;
+  // Fix 2: kiểm tra quyền trước khi gọi performUpkeep
+  const isOwner = await checkIsOwner();
+  if(!isOwner){
+    toast("Only the contract owner can trigger the draw","error");
+    document.getElementById("btn-draw").style.display = "none";
+    return;
+  }
+  const btnDraw = document.getElementById("btn-draw");
+  btnDraw.disabled = true; btnDraw.textContent = "Drawing...";
   try{
     toast("Triggering weekly draw...");
     const tx = await contract.performUpkeep("0x");
     await tx.wait();
     toast("Draw complete!","success");
-    document.getElementById("btn-draw").style.display = "none";
+    btnDraw.style.display = "none";
     await refresh();
-  } catch(e){ toast(e?.reason||"Draw failed","error"); }
+  } catch(e){
+    const msg = e?.reason || e?.message || "Draw failed";
+    toast(msg.slice(0,80),"error");
+    btnDraw.disabled = false; btnDraw.textContent = "Trigger Weekly Draw";
+  }
 }
 
 async function claimReward(rid){
-  if(!contract) return;
+  if(!contract){ toast("Connect wallet first","error"); return; }
+  // Disable tất cả btn-claim để tránh double click
+  document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=true; b.textContent="Claiming..."; });
   try{
-    toast("Claiming reward...");
+    toast("Claiming reward for Round #"+rid+"...");
     const tx = await contract.claimReward(rid);
-    await tx.wait();
-    toast("Reward claimed!","success");
-    await refresh();
-  } catch(e){ toast(e?.reason||"Claim failed","error"); }
+    toast("Transaction submitted, waiting confirmation...");
+    const receipt = await tx.wait();
+    if(receipt.status === 1){
+      toast("🎉 Reward claimed successfully!","success");
+      // Cập nhật balance sau claim
+      if(wallet){
+        const bal = await provider.getBalance(wallet);
+        document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
+      }
+      await refreshHistory(); // chỉ reload history, không cần full refresh
+    } else {
+      toast("Transaction failed on-chain","error");
+    }
+  } catch(e){
+    const msg = e?.reason || e?.message || "Claim failed";
+    // Contract revert messages
+    if(msg.includes("already claimed")) toast("Already claimed this reward","error");
+    else if(msg.includes("no reward")) toast("No reward to claim for this round","error");
+    else if(msg.includes("not drawn")) toast("Round not drawn yet","error");
+    else toast(msg.slice(0,80),"error");
+    // Re-enable buttons nếu thất bại
+    await refreshHistory();
+  }
 }
 
 /* ─────────── UI HELPERS ─────────── */
@@ -890,7 +985,14 @@ function startCountdown(){
     document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
     document.getElementById("cd-s").textContent = pad(left%60);
     document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.round(left/roundDuration*100) : 0)+"%";
-    if(left===0) document.getElementById("btn-draw").style.display = "block";
+    // Fix 2d: countdown - chỉ trigger show cho owner
+    if(left===0){
+      if(typeof checkIsOwner === "function"){
+        checkIsOwner().then(isOwner=>{
+          if(isOwner) document.getElementById("btn-draw").style.display = "block";
+        }).catch(()=>{});
+      }
+    }
   },1000);
 }
 
@@ -916,23 +1018,10 @@ function updateSocialProof(tickets, roundId){
   document.getElementById("sp-round").textContent   = "#" + roundId;
   document.getElementById("stat-players").textContent = unique || "0";
 
-  // Fix 2: sp-last — tính thời gian thực từ block timestamp ticket cuối
-  // Tickets không mang timestamp nên dùng block.timestamp qua provider nếu có
+  // Bug 2 Fix: sp-last — tickets không có timestamp per-ticket trong ABI
+  // Dùng startTime của round để ước tính: nếu round mới bắt đầu thì "recently"
   if(total === 0){ document.getElementById("sp-last").textContent = "—"; return; }
-  // Lấy block mới nhất để ước tính thời gian ticket cuối cùng
-  if(typeof provider !== "undefined" && provider){
-    provider.getBlock("latest").then(block=>{
-      // Không có timestamp per-ticket nên hiện recently nếu total > 0
-      // Chính xác hơn: so block.timestamp với roundStartTime
-      const now = Math.floor(Date.now()/1000);
-      const diff = now - Number(block.timestamp);
-      if(diff < 120) document.getElementById("sp-last").textContent = "just now";
-      else if(diff < 3600) document.getElementById("sp-last").textContent = Math.floor(diff/60)+" min ago";
-      else document.getElementById("sp-last").textContent = Math.floor(diff/3600)+" hr ago";
-    }).catch(()=>{ document.getElementById("sp-last").textContent = "recently"; });
-  } else {
-    document.getElementById("sp-last").textContent = "recently";
-  }
+  document.getElementById("sp-last").textContent = total > 0 ? "this round" : "—";
 }
 
 function showTxStatus(type, msg){
