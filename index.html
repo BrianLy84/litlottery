@@ -519,9 +519,14 @@ let provider, signer, contract, wallet = null;
 let roundEndTime = 0, roundDuration = 604800;
 let cdTimer = null, autoRefreshTimer = null, currentTab = "pick", activeWalletType = null;
 
-// ── FIX: Cache vé đã mua của wallet trong round hiện tại ──
+// Cache vé đã mua của wallet trong round hiện tại
 // Key: roundId, Value: mảng số[][] (mỗi phần tử là 1 bộ 6 số)
 let myTicketsCache = { roundId: null, tickets: [] };
+let lastKnownRem = 3; // lưu rem mới nhất từ refreshLimit() để onNumberInput() dùng
+
+/* ─────────── FIX #7: Lưu reference event listener để remove đúng ─────────── */
+function _onAccountsChanged(accounts){ handleAccountsChanged(accounts); }
+function _onChainChanged(chainId){ handleChainChanged(chainId); }
 
 /* ─────────── WALLET DEFINITIONS ─────────── */
 const WALLETS = [
@@ -607,8 +612,9 @@ async function connectWithWallet(walletId){
     document.getElementById("btn-buy").disabled = true;
     document.getElementById("btn-buy").textContent = "Checking limit...";
 
-    rawProvider.on?.("accountsChanged", handleAccountsChanged);
-    rawProvider.on?.("chainChanged", handleChainChanged);
+    // FIX #7: Dùng named function reference để removeListener hoạt động đúng
+    rawProvider.on?.("accountsChanged", _onAccountsChanged);
+    rawProvider.on?.("chainChanged", _onChainChanged);
 
     await refresh(); startCountdown(); startAutoRefresh();
     toast(`${wDef.name} connected!`,"success");
@@ -624,6 +630,7 @@ function handleAccountsChanged(accounts){
   else {
     wallet = accounts[0];
     myTicketsCache = { roundId: null, tickets: [] }; // reset cache khi đổi account
+    lastKnownRem = 3;
     const short = wallet.slice(0,6)+"..."+wallet.slice(-4);
     const wDef = WALLETS.find(w=>w.id===activeWalletType);
     document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${wDef?.name||""}</span>`;
@@ -637,11 +644,16 @@ function handleChainChanged(chainId){
 }
 
 function disconnectWallet(){
+  // FIX #7: Remove đúng reference — không còn bị memory leak
   const wDef = WALLETS.find(w=>w.id===activeWalletType);
-  if(wDef){ const rp=wDef.getProvider(); rp?.removeListener?.("accountsChanged",handleAccountsChanged); rp?.removeListener?.("chainChanged",handleChainChanged); }
+  if(wDef){
+    const rp = wDef.getProvider();
+    rp?.removeListener?.("accountsChanged", _onAccountsChanged);
+    rp?.removeListener?.("chainChanged", _onChainChanged);
+  }
   provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
-  myTicketsCache = { roundId: null, tickets: [] }; // reset cache
-  lastKnownRem = 3; // reset rem state
+  myTicketsCache = { roundId: null, tickets: [] };
+  lastKnownRem = 3;
   if(cdTimer) clearInterval(cdTimer);
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
 
@@ -687,7 +699,8 @@ async function refresh(){
     document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
     document.getElementById("sp-round").textContent = "#"+rid;
     roundEndTime = Number(r.endTime);
-    // Bug 1 Fix: cập nhật roundDuration từ dữ liệu thực của contract
+
+    // FIX #1 (bonus): Tính roundDuration từ dữ liệu thực của contract
     const startTime = Number(r.startTime);
     if(startTime > 0 && roundEndTime > startTime) roundDuration = roundEndTime - startTime;
 
@@ -737,7 +750,7 @@ async function refresh(){
     try{
       const tickets = await contract.getTickets(rid);
 
-      // ── FIX: Cập nhật cache vé của wallet hiện tại ──
+      // Cập nhật cache vé của wallet hiện tại
       if(wallet){
         myTicketsCache.roundId = rid;
         myTicketsCache.tickets = tickets
@@ -754,13 +767,11 @@ async function refresh(){
   } catch(e){ console.error(e); }
 }
 
-let lastKnownRem = 3; // Bug 5 Fix: lưu rem mới nhất từ refreshLimit() để onNumberInput() dùng
-
 async function refreshLimit(){
   if(!contract||!wallet) return;
   try{
     const rem = Number(await contract.ticketsRemaining(wallet));
-    lastKnownRem = rem; // cập nhật state
+    lastKnownRem = rem;
     const used = 3 - rem;
     const badge = document.getElementById("ticket-badge");
     const btn = document.getElementById("btn-buy");
@@ -777,24 +788,19 @@ async function refreshLimit(){
   } catch(e){ console.error("refreshLimit:",e); }
 }
 
+/* ─────────── FIX #1 & #2: refreshHistory luôn fetch getCurrentRound() đầy đủ ─────────── */
 async function refreshHistory(knownRid){
   if(!contract||!wallet) return;
   const list = document.getElementById("history-list");
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    // Bug 3 Fix: dùng roundId đã biết nếu có, tránh gọi RPC thừa
-    let rid = knownRid;
-    let currentRound;
-    if(!rid){
-      currentRound = await contract.getCurrentRound();
-      rid = Number(currentRound.roundId);
-    } else {
-      currentRound = { roundId: rid, drawn: false }; // drawn sẽ được suy ra bên dưới
-      try{ currentRound = await contract.getCurrentRound(); rid = Number(currentRound.roundId); }catch(_){}
-    }
-    const startR = Math.max(1, rid-5);
+    // FIX #2: Luôn fetch currentRound đầy đủ để có drawn chính xác
+    // không dùng mock object { drawn: false } nữa
+    const currentRound = await contract.getCurrentRound();
+    const rid = Number(currentRound.roundId);
 
+    const startR = Math.max(1, rid-5);
     const roundRange = [];
     for(let r=startR;r<=rid;r++) roundRange.push(r);
 
@@ -806,7 +812,8 @@ async function refreshHistory(knownRid){
       r,
       mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
       isCurrentRound: r===rid,
-      drawn: r < rid || currentRound.drawn
+      // FIX #2: drawn = round đã qua, HOẶC round hiện tại đã drawn từ contract thực
+      drawn: r < rid || (r === rid && currentRound.drawn)
     })).filter(x=>x.mine.length>0);
 
     if(!myRounds.length){
@@ -814,16 +821,14 @@ async function refreshHistory(knownRid){
       return;
     }
 
-    const drawnRounds = myRounds.filter(x=>x.drawn && x.r<rid);
-    if(currentRound.drawn) drawnRounds.push({r:rid});
-
+    const drawnRounds = myRounds.filter(x=>x.drawn);
     const winNumsMap = {};
     await Promise.all(drawnRounds.map(async x=>{
       try{ winNumsMap[x.r] = (await contract.getWinningNumbers(x.r)).map(n=>Number(n)); }catch(_){}
     }));
 
     const items = [];
-    for(const {r, mine, isCurrentRound} of myRounds){
+    for(const {r, mine} of myRounds){
       const winNums = winNumsMap[r] || null;
       const drawn = !!winNums;
 
@@ -864,10 +869,7 @@ async function refreshHistory(knownRid){
   }
 }
 
-/* ─────────────────────────────────────────────────
-   FIX CHÍNH: Kiểm tra bộ số có bị trùng không
-   So sánh với tất cả vé đã mua trong round hiện tại
-   ───────────────────────────────────────────────── */
+/* ─────────── Kiểm tra bộ số có bị trùng không ─────────── */
 function isDuplicateTicket(numbers){
   if(!myTicketsCache.tickets || myTicketsCache.tickets.length === 0) return false;
   const sorted = [...numbers].sort((a,b)=>a-b).join(",");
@@ -877,17 +879,19 @@ function isDuplicateTicket(numbers){
   });
 }
 
+/* ─────────── FIX #4: onNumberInput không bị skip sau khi connect ─────────── */
 function onNumberInput(){
-  if(!wallet || myTicketsCache.roundId === null) return;
+  if(!wallet) return;
   const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
   if(v.some(n=>isNaN(n)||n<1||n>45)) return;
   if(new Set(v).size < 6) return;
   const badge = document.getElementById("ticket-badge");
-  if(isDuplicateTicket(v)){
+  // FIX #4: Vẫn check duplicate kể cả khi cache chưa load (roundId === null)
+  // nếu cache chưa có thì bỏ qua check trùng, hiển thị trạng thái bình thường
+  if(myTicketsCache.roundId !== null && isDuplicateTicket(v)){
     badge.textContent = "⚠️ You already own this combination!";
     badge.className = "tbadge dup";
   } else {
-    // Bug 5 Fix: dùng lastKnownRem thay vì tính thủ công từ cache
     const rem = lastKnownRem;
     const used = 3 - rem;
     if(rem <= 0){
@@ -916,10 +920,7 @@ async function buyTicket(){
     numbers = v;
   }
 
-  /* ── FIX: Chặn mua trùng phía Frontend ──
-     1. Kiểm tra cache trước (nhanh, không cần RPC call)
-     2. Nếu cache chưa load hoặc round khớp → fetch mới từ chain để chắc chắn
-  */
+  // Chặn mua trùng phía Frontend
   try{
     const currentRound = await contract.getCurrentRound();
     const rid = Number(currentRound.roundId);
@@ -938,11 +939,10 @@ async function buyTicket(){
       const badge = document.getElementById("ticket-badge");
       badge.textContent = "⚠️ You already own this combination!";
       badge.className = "tbadge dup";
-      return; // ← CHẶN, không gửi tx
+      return;
     }
   } catch(e){
     console.warn("Duplicate check failed, proceeding:", e);
-    // Nếu check lỗi thì vẫn cho mua (không block oan)
   }
 
   try{
@@ -1009,6 +1009,7 @@ async function drawNumbers(){
   }
 }
 
+/* ─────────── FIX #1: claimReward truyền roundId vào refreshHistory ─────────── */
 async function claimReward(rid){
   if(!contract){ toast("Connect wallet first","error"); return; }
   document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=true; b.textContent="Claiming..."; });
@@ -1023,7 +1024,13 @@ async function claimReward(rid){
         const bal = await provider.getBalance(wallet);
         document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
       }
-      await refreshHistory();
+      // FIX #1: Fetch currentRoundId để truyền đúng vào refreshHistory
+      try{
+        const cr = await contract.getCurrentRound();
+        await refreshHistory(Number(cr.roundId));
+      } catch(_){
+        await refreshHistory();
+      }
     } else {
       toast("Transaction failed on-chain","error");
     }
@@ -1033,7 +1040,12 @@ async function claimReward(rid){
     else if(msg.includes("no reward")) toast("No reward to claim for this round","error");
     else if(msg.includes("not drawn")) toast("Round not drawn yet","error");
     else toast(msg.slice(0,80),"error");
-    await refreshHistory();
+    try{
+      const cr = await contract.getCurrentRound();
+      await refreshHistory(Number(cr.roundId));
+    } catch(_){
+      await refreshHistory();
+    }
   }
 }
 
@@ -1047,19 +1059,21 @@ function switchTab(tab, btn){
   if(tab==="rand") reroll();
 }
 
+/* ─────────── FIX #3 & #6: reroll với guard maxRetry và tránh loop vô hạn ─────────── */
 function reroll(retryCount = 0){
   const p=[];
   while(p.length<6){ const n=Math.floor(Math.random()*45)+1; if(!p.includes(n))p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++){ const el=document.getElementById("rb"+(i+1)); el.textContent=p[i]; el.className="brand set"; }
 
-  // Bug 6 Fix: guard maxRetry tránh loop vô hạn
+  // FIX #3: Chỉ check duplicate nếu wallet đã connect VÀ cache đã load
   if(wallet && myTicketsCache.roundId !== null && retryCount < 10){
     if(isDuplicateTicket(p)){
       toast("⚠️ Rolled a duplicate — re-rolling...","warn");
       setTimeout(()=>reroll(retryCount + 1), 300);
     }
   }
+  // Nếu cache chưa load (roundId === null), vẫn hiển thị số — không block user
 }
 
 function startAutoRefresh(){
@@ -1067,25 +1081,28 @@ function startAutoRefresh(){
   autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
 }
 
+/* ─────────── FIX #5: Progress bar hiển thị % thời gian ĐÃ TRÔI QUA ─────────── */
 function startCountdown(){
   if(cdTimer) clearInterval(cdTimer);
   cdTimer = setInterval(()=>{
-    const left = Math.max(0, roundEndTime - Math.floor(Date.now()/1000));
+    const now = Math.floor(Date.now()/1000);
+    const left = Math.max(0, roundEndTime - now);
     document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
     document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
     document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
     document.getElementById("cd-s").textContent = pad(left%60);
-    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.round(left/roundDuration*100) : 0)+"%";
+    // FIX #5: Bar = thời gian đã trôi qua (100% = hết giờ)
+    const elapsed = roundDuration - left;
+    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.min(100,Math.round(elapsed/roundDuration*100)) : 0)+"%";
     if(left===0){
-      if(typeof checkIsOwner === "function"){
-        checkIsOwner().then(isOwner=>{
-          if(isOwner) document.getElementById("btn-draw").style.display = "block";
-        }).catch(()=>{});
-      }
+      checkIsOwner().then(isOwner=>{
+        if(isOwner) document.getElementById("btn-draw").style.display = "block";
+      }).catch(()=>{});
     }
   },1000);
 }
 
+/* ─────────── FIX #6: updateSocialProof hiển thị địa chỉ người mua cuối ─────────── */
 function updateActivityFeed(tickets, roundId){
   const list = document.getElementById("activity-list");
   if(!tickets||tickets.length===0){ list.innerHTML='<div class="act-empty">No activity yet — be the first!</div>'; return; }
@@ -1106,8 +1123,14 @@ function updateSocialProof(tickets, roundId){
   document.getElementById("sp-players").textContent = unique || "0";
   document.getElementById("sp-round").textContent   = "#" + roundId;
   document.getElementById("stat-players").textContent = unique || "0";
-  if(total === 0){ document.getElementById("sp-last").textContent = "—"; return; }
-  document.getElementById("sp-last").textContent = total > 0 ? "this round" : "—";
+  // FIX #6: Hiển thị địa chỉ ví rút gọn của người mua cuối thay vì "this round"
+  if(total === 0){
+    document.getElementById("sp-last").textContent = "—";
+  } else {
+    const lastTicket = tickets[tickets.length - 1];
+    const lastAddr = lastTicket.player.slice(0,6)+"..."+lastTicket.player.slice(-4);
+    document.getElementById("sp-last").textContent = lastAddr;
+  }
 }
 
 function showTxStatus(type, msg){
