@@ -670,6 +670,7 @@ function disconnectWallet(){
   provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
   myTicketsCache = { roundId: null, tickets: [] };
   lastKnownRem = 3;
+  _drawTriggered = false; // reset guard khi disconnect
   if(cdTimer) clearInterval(cdTimer);
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
 
@@ -722,22 +723,19 @@ async function refresh(){
 
     try{
       const rollEl = document.getElementById("rollover-note");
-      if(rollEl && rid > 1){
+      if(rollEl){
         const ticketPrice = 0.001;
-        const totalRevenue   = Number(r.totalTickets) * ticketPrice;
-        const prizePool      = totalRevenue * 0.90;          // 90% → Prize Pool
-        // Jackpot từ round này = 60% của prizePool + 5% reserve
-        const jackpotThisRound = prizePool * 0.60 + prizePool * 0.05;
-        const actualJp = parseFloat(ethers.formatEther(r.jackpot));
-        const rollover = actualJp - jackpotThisRound;
+        const totalRevenue     = Number(r.totalTickets) * ticketPrice;
+        const prizePool        = totalRevenue * 0.90;       // 90% → Prize Pool
+        const jackpotThisRound = prizePool * 0.65;          // 60% prizes + 5% reserve
+        const actualJp         = parseFloat(ethers.formatEther(r.jackpot));
+        const rollover         = actualJp - jackpotThisRound;
         if(rollover > 0.0005){
           rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds";
           rollEl.style.display = "block";
         } else {
           rollEl.style.display = "none";
         }
-      } else if(rollEl){
-        rollEl.style.display = "none";
       }
     }catch(_){}
 
@@ -840,7 +838,8 @@ async function refreshHistory(knownRound){
     const myRounds = roundRange.map((r,i)=>({
       r,
       mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
-      drawn: r < rid || (r === rid && !!currentRound.drawn)
+      // drawn: round đã qua (r < rid) HOẶC round hiện tại đã drawn
+      drawn: r < rid || (r === rid && Boolean(currentRound.drawn))
     })).filter(x=>x.mine.length>0);
 
     if(!myRounds.length){
@@ -1055,7 +1054,6 @@ async function drawNumbers(){
   }
 }
 
-/* ─────────── FIX #1: claimReward truyền roundId vào refreshHistory ─────────── */
 async function claimReward(rid){
   if(!contract){ toast("Connect wallet first","error"); return; }
   document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=true; b.textContent="Claiming..."; });
@@ -1070,10 +1068,10 @@ async function claimReward(rid){
         const bal = await provider.getBalance(wallet);
         document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
       }
-      // Truyền undefined → refreshHistory tự fetch getCurrentRound()
-      await refreshHistory();
+      await refreshHistory(); // chỉ cần update history, không cần full refresh
     } else {
       toast("Transaction failed on-chain","error");
+      await refreshHistory();
     }
   } catch(e){
     const msg = e?.reason || e?.message || "Claim failed";
@@ -1081,6 +1079,8 @@ async function claimReward(rid){
     else if(msg.includes("no reward")) toast("No reward to claim for this round","error");
     else if(msg.includes("not drawn")) toast("Round not drawn yet","error");
     else toast(msg.slice(0,80),"error");
+    // Re-enable buttons nếu fail
+    document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=false; b.textContent="Claim"; });
     await refreshHistory();
   }
 }
@@ -1185,19 +1185,17 @@ function showTxStatus(type, msg){
 }
 function hideTxStatus(){ document.getElementById("tx-status").className = "tx-status"; }
 
+function pad(n){ return String(n).padStart(2,"0"); }
+
 /* ─────────── PICK TAB: auto-fill random khi load ─────────── */
 function randomizePick(){
   const p = [];
   while(p.length < 6){ const n = Math.floor(Math.random()*45)+1; if(!p.includes(n)) p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++) document.getElementById("n"+(i+1)).value = p[i];
-  // Chỉ gọi onNumberInput nếu wallet đã connect, tránh silent return vô ích
   if(wallet) onNumberInput();
 }
-// Tự động fill random ngay khi trang load
 randomizePick();
-
-function pad(n){ return String(n).padStart(2,"0"); }
 
 function toast(msg, type=""){
   const el = document.getElementById("toast");
