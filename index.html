@@ -145,6 +145,9 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .ball{width:50px;height:50px;border-radius:50%;background:linear-gradient(145deg,#FDF8EC,#F0E8B0);border:2px solid #C8A820;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .18s;box-shadow:0 2px 6px rgba(180,130,20,.16)}
 .ball:hover{border-color:#40B888;background:linear-gradient(145deg,#EAF8F2,#C0F0E0)}
 .ball input{width:100%;height:100%;background:transparent;border:none;text-align:center;font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#1E1400;outline:none;cursor:pointer}
+.ball input::placeholder{color:#C8A820;opacity:.7;font-size:22px}
+.ball input::-webkit-inner-spin-button,.ball input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.ball input[type=number]{-moz-appearance:textfield}
 .brand{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:700;color:#C8A020}
 .brand.set{color:#1E1400}
 .rtip{text-align:center;font-size:11px;color:#5A3E00;margin-bottom:14px;font-style:italic;font-weight:500}
@@ -257,7 +260,6 @@ footer a:hover{color:#0A7A60}
 @media(max-width:700px){
   .main-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:1fr 1fr}
-  .prizes{grid-template-columns:repeat(3,1fr) !important}
   .sc.jp{grid-column:span 2}
   .prizes{grid-template-columns:repeat(2,1fr)}
   .hero-top{flex-direction:column}
@@ -272,7 +274,6 @@ footer a:hover{color:#0A7A60}
 @media(max-width:480px){
   .hero-title{font-size:36px}
   .stats-grid{grid-template-columns:1fr 1fr}
-  .prizes{grid-template-columns:repeat(2,1fr) !important}
   .balls{gap:7px}
   .ball{width:44px;height:44px}
   .ball input{font-size:17px}
@@ -319,10 +320,6 @@ footer a:hover{color:#0A7A60}
     <div class="pb-item"><div class="pb-medal m3">3</div><span class="pb-txt">Match 4 &#8594; <b>10%</b></span></div>
     <div class="pb-div"></div>
     <div class="pb-item"><div class="pb-medal m4">4</div><span class="pb-txt">Match 3 &#8594; <b>5%</b></span></div>
-    <div class="pb-div"></div>
-    <div class="pb-item"><div class="pb-medal" style="background:#2A6040;color:#C0F0D8">R</div><span class="pb-txt">Reserve &#8594; <b>5%</b></span></div>
-    <div class="pb-div"></div>
-    <div class="pb-item"><div class="pb-medal" style="background:#303030;color:#D0D0D0">T</div><span class="pb-txt">Treasury &#8594; <b>10%</b></span></div>
   </div>
 </div>
 
@@ -358,7 +355,7 @@ footer a:hover{color:#0A7A60}
     <div class="sc-lbl">Jackpot Pool</div>
     <div class="sc-val" id="stat-jackpot">&#8212;</div>
     <div class="sc-unit">zkLTC</div>
-    <div id="rollover-note" style="display:none;margin-top:6px;font-size:9px;color:#7A5000;font-weight:600;letter-spacing:.3px;line-height:1.4;background:#FFF8DC;border:1px solid #D4A820;border-radius:6px;padding:4px 8px">&#128260; Includes rollover from previous rounds</div>
+    <div id="rollover-note" style="display:none;margin-top:6px;font-size:9px;color:#7A5000;font-weight:600;letter-spacing:.3px;line-height:1.4;background:#FFF8DC;border:1px solid #D4A820;border-radius:6px;padding:4px 8px">&#128260; ...</div>
   </div>
   <div class="sc"><div class="sc-lbl">Round</div><div class="sc-val" id="stat-round" style="font-size:27px">#&#8212;</div><div class="sc-unit">current</div></div>
   <div class="sc"><div class="sc-lbl">Tickets Sold</div><div class="sc-val" id="stat-tickets" style="font-size:27px">&#8212;</div><div class="sc-unit">this round</div></div>
@@ -384,12 +381,11 @@ footer a:hover{color:#0A7A60}
 <div>
 
 <!-- PRIZES -->
-<div class="prizes" style="grid-template-columns:repeat(5,1fr)">
+<div class="prizes">
   <div class="pc p1"><div class="pc-ico">&#127945;</div><div class="pc-name">Jackpot</div><div class="pc-match">Match all 6</div><div class="pc-pct">60%</div></div>
   <div class="pc p2"><div class="pc-ico">&#127946;</div><div class="pc-name">2nd Prize</div><div class="pc-match">Match 5 of 6</div><div class="pc-pct">20%</div></div>
   <div class="pc p3"><div class="pc-ico">&#127947;</div><div class="pc-name">3rd Prize</div><div class="pc-match">Match 4 of 6</div><div class="pc-pct">10%</div></div>
   <div class="pc p4"><div class="pc-ico">&#127894;</div><div class="pc-name">4th Prize</div><div class="pc-match">Match 3 of 6</div><div class="pc-pct">5%</div></div>
-  <div class="pc" style="background:#F0FAF5;border-color:#40B080"><div class="pc-ico">&#128260;</div><div class="pc-name" style="color:#085A40">Reserve</div><div class="pc-match">Jackpot rollover base</div><div class="pc-pct" style="color:#085A40">5%</div></div>
 </div>
 
 <!-- BUY TICKET PANEL -->
@@ -411,12 +407,16 @@ footer a:hover{color:#0A7A60}
   </div>
   <div id="panel-pick">
     <div class="balls">
-      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" value="3" oninput="onNumberInput()"/></div></div>
-      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" value="11" oninput="onNumberInput()"/></div></div>
-      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" value="18" oninput="onNumberInput()"/></div></div>
-      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" value="27" oninput="onNumberInput()"/></div></div>
-      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" value="34" oninput="onNumberInput()"/></div></div>
-      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" value="42" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.1</div><div class="ball"><input type="number" id="n1" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.2</div><div class="ball"><input type="number" id="n2" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.3</div><div class="ball"><input type="number" id="n3" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.4</div><div class="ball"><input type="number" id="n4" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.5</div><div class="ball"><input type="number" id="n5" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+      <div class="bitem"><div class="blbl">No.6</div><div class="ball"><input type="number" id="n6" min="1" max="45" placeholder="?" oninput="onNumberInput()"/></div></div>
+    </div>
+    <div style="text-align:center;margin-bottom:12px;display:flex;align-items:center;justify-content:center;gap:10px">
+      <span style="font-size:10px;color:#7A5830;font-style:italic">Enter 6 unique numbers (1–45)</span>
+      <button onclick="randomizePick()" style="font-size:10px;padding:4px 10px;background:#FDF8EC;border:1.5px solid #C8A820;border-radius:7px;color:#5A3E00;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif">🎲 Randomize</button>
     </div>
   </div>
   <div id="panel-rand" style="display:none">
@@ -526,11 +526,14 @@ let provider, signer, contract, wallet = null;
 let roundEndTime = 0, roundDuration = 604800;
 let cdTimer = null, autoRefreshTimer = null, currentTab = "pick", activeWalletType = null;
 
-// ── FIX: Cache vé đã mua của wallet trong round hiện tại ──
+// Cache vé đã mua của wallet trong round hiện tại
 // Key: roundId, Value: mảng số[][] (mỗi phần tử là 1 bộ 6 số)
 let myTicketsCache = { roundId: null, tickets: [] };
-let lastKnownRem = 3;
-let _drawCheckDone = false;
+let lastKnownRem = 3; // lưu rem mới nhất từ refreshLimit() để onNumberInput() dùng
+
+/* ─────────── FIX #7: Lưu reference event listener để remove đúng ─────────── */
+function _onAccountsChanged(accounts){ handleAccountsChanged(accounts); }
+function _onChainChanged(chainId){ handleChainChanged(chainId); }
 
 /* ─────────── WALLET DEFINITIONS ─────────── */
 const WALLETS = [
@@ -616,8 +619,9 @@ async function connectWithWallet(walletId){
     document.getElementById("btn-buy").disabled = true;
     document.getElementById("btn-buy").textContent = "Checking limit...";
 
-    rawProvider.on?.("accountsChanged", handleAccountsChanged);
-    rawProvider.on?.("chainChanged", handleChainChanged);
+    // FIX #7: Dùng named function reference để removeListener hoạt động đúng
+    rawProvider.on?.("accountsChanged", _onAccountsChanged);
+    rawProvider.on?.("chainChanged", _onChainChanged);
 
     await refresh(); startCountdown(); startAutoRefresh();
     toast(`${wDef.name} connected!`,"success");
@@ -634,7 +638,6 @@ function handleAccountsChanged(accounts){
     wallet = accounts[0];
     myTicketsCache = { roundId: null, tickets: [] }; // reset cache khi đổi account
     lastKnownRem = 3;
-    _drawCheckDone = false;
     const short = wallet.slice(0,6)+"..."+wallet.slice(-4);
     const wDef = WALLETS.find(w=>w.id===activeWalletType);
     document.getElementById("wallet-addr").innerHTML = `<b>${short}</b> <span style="font-size:10px;color:#7A5830;font-weight:400">${wDef?.name||""}</span>`;
@@ -643,20 +646,25 @@ function handleAccountsChanged(accounts){
 }
 
 function handleChainChanged(chainId){
-  if(chainId!==CHAIN_ID) toast("Wrong network! Switch to LiteForge Testnet","error");
+  // Chuẩn hóa về lowercase hex để so sánh chính xác
+  const normalize = c => { c = String(c); return c.startsWith("0x") ? c.toLowerCase() : "0x"+parseInt(c,10).toString(16); };
+  if(normalize(chainId) !== normalize(CHAIN_ID)) toast("Wrong network! Switch to LiteForge Testnet","error");
   else { toast("Network switched to LiteForge","success"); refresh(); }
 }
 
 function disconnectWallet(){
+  // FIX #7: Remove đúng reference — không còn bị memory leak
   const wDef = WALLETS.find(w=>w.id===activeWalletType);
-  if(wDef){ const rp=wDef.getProvider(); rp?.removeListener?.("accountsChanged",handleAccountsChanged); rp?.removeListener?.("chainChanged",handleChainChanged); }
+  if(wDef){
+    const rp = wDef.getProvider();
+    rp?.removeListener?.("accountsChanged", _onAccountsChanged);
+    rp?.removeListener?.("chainChanged", _onChainChanged);
+  }
   provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
-  myTicketsCache = { roundId: null, tickets: [] }; // reset cache
-  lastKnownRem = 3; // reset rem state
-  _drawCheckDone = false; // reset draw check flag
+  myTicketsCache = { roundId: null, tickets: [] };
+  lastKnownRem = 3;
   if(cdTimer) clearInterval(cdTimer);
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
-  if(_cooldownTimer){ clearInterval(_cooldownTimer); _cooldownTimer = null; }
 
   document.getElementById("wallet-addr").textContent = "Not connected";
   document.getElementById("wallet-bal").textContent = "— zkLTC";
@@ -700,7 +708,8 @@ async function refresh(){
     document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
     document.getElementById("sp-round").textContent = "#"+rid;
     roundEndTime = Number(r.endTime);
-    // Bug 1 Fix: cập nhật roundDuration từ dữ liệu thực của contract
+
+    // FIX #1 (bonus): Tính roundDuration từ dữ liệu thực của contract
     const startTime = Number(r.startTime);
     if(startTime > 0 && roundEndTime > startTime) roundDuration = roundEndTime - startTime;
 
@@ -708,14 +717,11 @@ async function refresh(){
       const rollEl = document.getElementById("rollover-note");
       if(rollEl && rid > 1){
         const ticketPrice = 0.001;
-        const totalRevenue = Number(r.totalTickets) * ticketPrice;
-        // Quy trình: 10% Treasury, 90% Prize Pool
-        // Trong 90%: 60% jackpot tier + 5% reserve = 65% của tổng về jackpot tích lũy
-        const expectedJackpotBase = totalRevenue * 0.90 * 0.65; // 58.5% tổng
+        const currentRevenue60pct = Number(r.totalTickets) * ticketPrice * 0.60;
         const actualJp = parseFloat(ethers.formatEther(r.jackpot));
-        const rollover = actualJp - expectedJackpotBase;
+        const rollover = actualJp - currentRevenue60pct;
         if(rollover > 0.0005){
-          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds (unclaimed rewards + reserve)";
+          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from Round #" + (rid-1);
           rollEl.style.display = "block";
         } else {
           rollEl.style.display = "none";
@@ -740,12 +746,12 @@ async function refresh(){
       if(r.drawn){
         const w = await contract.getWinningNumbers(rid);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
-        document.getElementById("winning-content").textContent = "Round #"+rid+" winning numbers";
+        document.getElementById("winning-content").innerHTML = "Round <span id=\"winning-round\">#"+rid+"</span> winning numbers";
         document.getElementById("winning-balls").style.display = "flex";
       } else if(rid > 1){
         const w = await contract.getWinningNumbers(rid-1);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
-        document.getElementById("winning-content").textContent = "Round #"+(rid-1)+" winning numbers";
+        document.getElementById("winning-content").innerHTML = "Round <span id=\"winning-round\">#"+(rid-1)+"</span> winning numbers";
         document.getElementById("winning-balls").style.display = "flex";
       }
     }catch(_){}
@@ -753,7 +759,7 @@ async function refresh(){
     try{
       const tickets = await contract.getTickets(rid);
 
-      // ── FIX: Cập nhật cache vé của wallet hiện tại ──
+      // Cập nhật cache vé của wallet hiện tại
       if(wallet){
         myTicketsCache.roundId = rid;
         myTicketsCache.tickets = tickets
@@ -766,7 +772,8 @@ async function refresh(){
     }catch(_){}
 
     await refreshLimit();
-    await refreshHistory(rid);
+    // Truyền object r đầy đủ (có .drawn) để refreshHistory không cần gọi RPC thêm
+    await refreshHistory(r);
   } catch(e){ console.error(e); }
 }
 
@@ -774,7 +781,7 @@ async function refreshLimit(){
   if(!contract||!wallet) return;
   try{
     const rem = Number(await contract.ticketsRemaining(wallet));
-    lastKnownRem = rem; // cập nhật state
+    lastKnownRem = rem;
     const used = 3 - rem;
     const badge = document.getElementById("ticket-badge");
     const btn = document.getElementById("btn-buy");
@@ -791,17 +798,24 @@ async function refreshLimit(){
   } catch(e){ console.error("refreshLimit:",e); }
 }
 
-async function refreshHistory(knownRid){
+/* ─────────── refreshHistory: luôn fetch getCurrentRound() để có drawn chính xác ─────────── */
+async function refreshHistory(knownRound){
+  // knownRound có thể là object {roundId, drawn, ...} hoặc undefined
   if(!contract||!wallet) return;
   const list = document.getElementById("history-list");
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    // Bug A Fix: luôn lấy currentRound 1 lần để có drawn status chính xác
-    const currentRound = await contract.getCurrentRound();
+    // Nếu caller đã có round object đầy đủ thì dùng lại, không cần gọi RPC thêm
+    let currentRound;
+    if(knownRound && typeof knownRound === "object" && knownRound.roundId !== undefined){
+      currentRound = knownRound;
+    } else {
+      currentRound = await contract.getCurrentRound();
+    }
     const rid = Number(currentRound.roundId);
-    const startR = Math.max(1, rid-5);
 
+    const startR = Math.max(1, rid-5);
     const roundRange = [];
     for(let r=startR;r<=rid;r++) roundRange.push(r);
 
@@ -812,8 +826,7 @@ async function refreshHistory(knownRid){
     const myRounds = roundRange.map((r,i)=>({
       r,
       mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
-      isCurrentRound: r===rid,
-      drawn: r < rid || currentRound.drawn
+      drawn: r < rid || (r === rid && !!currentRound.drawn)
     })).filter(x=>x.mine.length>0);
 
     if(!myRounds.length){
@@ -821,16 +834,33 @@ async function refreshHistory(knownRid){
       return;
     }
 
-    const drawnRounds = myRounds.filter(x=>x.drawn && x.r<rid);
-    if(currentRound.drawn) drawnRounds.push({r:rid});
-
+    const drawnRounds = myRounds.filter(x=>x.drawn);
     const winNumsMap = {};
     await Promise.all(drawnRounds.map(async x=>{
       try{ winNumsMap[x.r] = (await contract.getWinningNumbers(x.r)).map(n=>Number(n)); }catch(_){}
     }));
 
     const items = [];
-    for(const {r, mine, isCurrentRound} of myRounds){
+    // Fix I: 1 hasClaimedReward call per drawn round (không phải per ticket)
+    // tránh ghi đè key và tránh gọi RPC thừa
+    const claimChecks = {};
+    const roundsNeedingClaimCheck = myRounds
+      .filter(({r, mine}) => {
+        const winNums = winNumsMap[r];
+        if(!winNums) return false;
+        return mine.some(t => {
+          const nums = t.numbers.map(n=>Number(n));
+          return nums.filter(n=>winNums.includes(n)).length >= 3;
+        });
+      })
+      .map(x => x.r);
+    await Promise.all(
+      roundsNeedingClaimCheck.map(async r => {
+        try{ claimChecks[r] = await contract.hasClaimedReward(r, wallet); }catch(_){}
+      })
+    );
+
+    for(const {r, mine} of myRounds){
       const winNums = winNumsMap[r] || null;
       const drawn = !!winNums;
 
@@ -847,12 +877,10 @@ async function refreshHistory(knownRid){
           else           badge='<span class="badge blose">No match</span>';
 
           if(m>=3){
-            try{
-              const claimed = await contract.hasClaimedReward(r, wallet);
-              claimBtn = claimed
-                ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
-                : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
-            }catch(_){}
+            const claimed = claimChecks[r];
+            claimBtn = (claimed === true)
+              ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
+              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
           }
         }
 
@@ -871,10 +899,7 @@ async function refreshHistory(knownRid){
   }
 }
 
-/* ─────────────────────────────────────────────────
-   FIX CHÍNH: Kiểm tra bộ số có bị trùng không
-   So sánh với tất cả vé đã mua trong round hiện tại
-   ───────────────────────────────────────────────── */
+/* ─────────── Kiểm tra bộ số có bị trùng không ─────────── */
 function isDuplicateTicket(numbers){
   if(!myTicketsCache.tickets || myTicketsCache.tickets.length === 0) return false;
   const sorted = [...numbers].sort((a,b)=>a-b).join(",");
@@ -884,17 +909,19 @@ function isDuplicateTicket(numbers){
   });
 }
 
+/* ─────────── FIX #4: onNumberInput không bị skip sau khi connect ─────────── */
 function onNumberInput(){
-  if(!wallet || myTicketsCache.roundId === null) return;
+  if(!wallet) return;
   const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
   if(v.some(n=>isNaN(n)||n<1||n>45)) return;
   if(new Set(v).size < 6) return;
   const badge = document.getElementById("ticket-badge");
-  if(isDuplicateTicket(v)){
+  // FIX #4: Vẫn check duplicate kể cả khi cache chưa load (roundId === null)
+  // nếu cache chưa có thì bỏ qua check trùng, hiển thị trạng thái bình thường
+  if(myTicketsCache.roundId !== null && isDuplicateTicket(v)){
     badge.textContent = "⚠️ You already own this combination!";
     badge.className = "tbadge dup";
   } else {
-    // Bug 5 Fix: dùng lastKnownRem thay vì tính thủ công từ cache
     const rem = lastKnownRem;
     const used = 3 - rem;
     if(rem <= 0){
@@ -923,75 +950,46 @@ async function buyTicket(){
     numbers = v;
   }
 
-  // ── DUPLICATE CHECK: luôn fetch fresh từ chain, không dùng cache-only ──
-  // Lý do: cache có thể stale nếu user mở 2 tab, hoặc Quick Pick số on-chain khác UI
-  const btn = document.getElementById("btn-buy");
-  btn.disabled = true;
-  btn.textContent = "Checking...";
-  showTxStatus("processing","Verifying your numbers on-chain...");
-
-  let rid;
+  // Chặn mua trùng phía Frontend
   try{
     const currentRound = await contract.getCurrentRound();
-    rid = Number(currentRound.roundId);
+    const rid = Number(currentRound.roundId);
 
-    // Luôn fetch mới nhất từ chain
-    const allTickets = await contract.getTickets(rid);
-    const myTickets = allTickets
-      .filter(t => t.player.toLowerCase() === wallet.toLowerCase())
-      .map(t => t.numbers.map(n => Number(n)));
+    // Nếu cache lỗi thời (round mới) thì reset
+    if(myTicketsCache.roundId !== rid){
+      const allTickets = await contract.getTickets(rid);
+      myTicketsCache.roundId = rid;
+      myTicketsCache.tickets = allTickets
+        .filter(t => t.player.toLowerCase() === wallet.toLowerCase())
+        .map(t => t.numbers.map(n => Number(n)));
+    }
 
-    // Cập nhật cache luôn tiện
-    myTicketsCache.roundId = rid;
-    myTicketsCache.tickets = myTickets;
-
-    // Chỉ check trùng cho Pick Numbers (custom) — Quick Pick random nên không thể trùng chính xác
-    if(currentTab === "pick"){
-      const sorted = [...numbers].sort((a,b)=>a-b).join(",");
-      const dup = myTickets.some(t => [...t].sort((a,b)=>a-b).join(",") === sorted);
-      if(dup){
-        hideTxStatus();
-        btn.disabled = false; btn.textContent = "Buy Ticket";
-        toast("⚠️ You already own this combination this round!", "warn");
-        const badge = document.getElementById("ticket-badge");
-        badge.textContent = "⚠️ You already own this combination!";
-        badge.className = "tbadge dup";
-        return; // CHẶN hoàn toàn, không gửi tx
-      }
+    if(isDuplicateTicket(numbers)){
+      toast("⚠️ You already own this combination this round!", "warn");
+      const badge = document.getElementById("ticket-badge");
+      badge.textContent = "⚠️ You already own this combination!";
+      badge.className = "tbadge dup";
+      return;
     }
   } catch(e){
-    // Nếu RPC lỗi → CHẶN an toàn, không cho mua khi không verify được
-    hideTxStatus();
-    btn.disabled = false; btn.textContent = "Buy Ticket";
-    toast("Network error — please try again", "error");
-    console.error("Pre-buy check failed:", e);
-    return;
+    console.warn("Duplicate check failed, proceeding:", e);
   }
 
-  // ── GỬI TRANSACTION ──
   try{
-    btn.textContent = "Processing...";
+    document.getElementById("btn-buy").disabled = true;
+    document.getElementById("btn-buy").textContent = "Processing...";
     showTxStatus("processing","Waiting for wallet confirmation...");
     const price = ethers.parseEther("0.001");
     let tx;
     if(currentTab==="pick") tx = await contract.buyCustomTicket(numbers,1,{value:price});
     else tx = await contract.buyRandomTicket(1,{value:price});
     showTxStatus("processing","Transaction submitted, confirming on-chain...");
-    const receipt = await tx.wait();
-
-    // Lấy số thực tế từ chain (quan trọng cho Quick Pick)
-    if(rid != null){
-      try{
-        const fresh = await contract.getTickets(rid);
-        myTicketsCache.roundId = rid;
-        myTicketsCache.tickets = fresh
-          .filter(t => t.player.toLowerCase() === wallet.toLowerCase())
-          .map(t => t.numbers.map(n => Number(n)));
-      }catch(_){}
-    }
-
+    await tx.wait();
     showTxStatus("success","Ticket purchased! Numbers: "+numbers.join(" · "));
-    startCooldown(60);
+
+    // Thêm vé vừa mua vào cache ngay lập tức
+    myTicketsCache.tickets.push([...numbers]);
+
     setTimeout(()=>hideTxStatus(),4000);
     await refresh();
   } catch(e){
@@ -1002,10 +1000,11 @@ async function buyTicket(){
       showTxStatus("error", errMsg.slice(0,80));
     }
     setTimeout(()=>hideTxStatus(), 5000);
-    try{ await refreshLimit(); } catch(_){
-      btn.disabled = false;
-      btn.textContent = "Buy Ticket";
-    }
+    // Fix D: Luôn re-enable nút Buy, dù refreshLimit có lỗi hay không
+    const btn = document.getElementById("btn-buy");
+    btn.disabled = false;
+    btn.textContent = "Buy Ticket";
+    try{ await refreshLimit(); } catch(_){}
   }
 }
 
@@ -1040,6 +1039,7 @@ async function drawNumbers(){
   }
 }
 
+/* ─────────── FIX #1: claimReward truyền roundId vào refreshHistory ─────────── */
 async function claimReward(rid){
   if(!contract){ toast("Connect wallet first","error"); return; }
   document.querySelectorAll(".btn-claim").forEach(b=>{ b.disabled=true; b.textContent="Claiming..."; });
@@ -1054,7 +1054,8 @@ async function claimReward(rid){
         const bal = await provider.getBalance(wallet);
         document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
       }
-      await refreshHistory(); // knownRid không cần thiết vì claimReward không biết rid hiện tại
+      // Truyền undefined → refreshHistory tự fetch getCurrentRound()
+      await refreshHistory();
     } else {
       toast("Transaction failed on-chain","error");
     }
@@ -1078,19 +1079,21 @@ function switchTab(tab, btn){
   if(tab==="rand") reroll();
 }
 
+/* ─────────── FIX #3 & #6: reroll với guard maxRetry và tránh loop vô hạn ─────────── */
 function reroll(retryCount = 0){
   const p=[];
   while(p.length<6){ const n=Math.floor(Math.random()*45)+1; if(!p.includes(n))p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++){ const el=document.getElementById("rb"+(i+1)); el.textContent=p[i]; el.className="brand set"; }
 
-  // Bug 6 Fix: guard maxRetry tránh loop vô hạn
+  // FIX #3: Chỉ check duplicate nếu wallet đã connect VÀ cache đã load
   if(wallet && myTicketsCache.roundId !== null && retryCount < 10){
     if(isDuplicateTicket(p)){
       toast("⚠️ Rolled a duplicate — re-rolling...","warn");
       setTimeout(()=>reroll(retryCount + 1), 300);
     }
   }
+  // Nếu cache chưa load (roundId === null), vẫn hiển thị số — không block user
 }
 
 function startAutoRefresh(){
@@ -1098,37 +1101,28 @@ function startAutoRefresh(){
   autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
 }
 
-let _cooldownTimer = null;
-function startCooldown(seconds){
-  if(_cooldownTimer) clearInterval(_cooldownTimer);
-  const btn = document.getElementById("btn-buy");
-  let left = seconds;
-  btn.disabled = true;
-  btn.textContent = `Cooldown: ${left}s`;
-  _cooldownTimer = setInterval(()=>{
-    left--;
-    if(left <= 0){
-      clearInterval(_cooldownTimer);
-      _cooldownTimer = null;
-      refreshLimit(); // re-enable button via refreshLimit
-    } else {
-      btn.textContent = `Cooldown: ${left}s`;
-    }
-  }, 1000);
-}
-
+/* ─────────── startCountdown ─────────── */
+let _drawTriggered = false; // guard: chỉ check owner 1 lần khi hết giờ
 function startCountdown(){
   if(cdTimer) clearInterval(cdTimer);
-  _drawCheckDone = false;
+  _drawTriggered = false;
   cdTimer = setInterval(()=>{
-    const left = Math.max(0, roundEndTime - Math.floor(Date.now()/1000));
+    if(!roundEndTime){
+      ["cd-d","cd-h","cd-m","cd-s"].forEach(id=>{ document.getElementById(id).textContent="--"; });
+      document.getElementById("progress-bar").style.width = "0%";
+      return;
+    }
+    const now = Math.floor(Date.now()/1000);
+    const left = Math.max(0, roundEndTime - now);
     document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
     document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
     document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
     document.getElementById("cd-s").textContent = pad(left%60);
-    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.round(left/roundDuration*100) : 0)+"%";
-    if(left===0 && !_drawCheckDone){
-      _drawCheckDone = true;
+    const elapsed = roundDuration - left;
+    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.min(100,Math.round(elapsed/roundDuration*100)) : 0)+"%";
+    // Fix J: chỉ trigger 1 lần, không spam RPC mỗi giây
+    if(left===0 && !_drawTriggered){
+      _drawTriggered = true;
       checkIsOwner().then(isOwner=>{
         if(isOwner) document.getElementById("btn-draw").style.display = "block";
       }).catch(()=>{});
@@ -1136,6 +1130,7 @@ function startCountdown(){
   },1000);
 }
 
+/* ─────────── FIX #6: updateSocialProof hiển thị địa chỉ người mua cuối ─────────── */
 function updateActivityFeed(tickets, roundId){
   const list = document.getElementById("activity-list");
   if(!tickets||tickets.length===0){ list.innerHTML='<div class="act-empty">No activity yet — be the first!</div>'; return; }
@@ -1156,8 +1151,14 @@ function updateSocialProof(tickets, roundId){
   document.getElementById("sp-players").textContent = unique || "0";
   document.getElementById("sp-round").textContent   = "#" + roundId;
   document.getElementById("stat-players").textContent = unique || "0";
-  if(total === 0){ document.getElementById("sp-last").textContent = "—"; return; }
-  document.getElementById("sp-last").textContent = total > 0 ? "this round" : "—";
+  // FIX #6: Hiển thị địa chỉ ví rút gọn của người mua cuối thay vì "this round"
+  if(total === 0){
+    document.getElementById("sp-last").textContent = "—";
+  } else {
+    const lastTicket = tickets[tickets.length - 1];
+    const lastAddr = lastTicket.player.slice(0,6)+"..."+lastTicket.player.slice(-4);
+    document.getElementById("sp-last").textContent = lastAddr;
+  }
 }
 
 function showTxStatus(type, msg){
@@ -1167,6 +1168,17 @@ function showTxStatus(type, msg){
   document.getElementById("tx-spinner").style.display = type==="processing" ? "flex" : "none";
 }
 function hideTxStatus(){ document.getElementById("tx-status").className = "tx-status"; }
+
+/* ─────────── PICK TAB: auto-fill random khi load, tránh default numbers ─────────── */
+function randomizePick(){
+  const p = [];
+  while(p.length < 6){ const n = Math.floor(Math.random()*45)+1; if(!p.includes(n)) p.push(n); }
+  p.sort((a,b)=>a-b);
+  for(let i=0;i<6;i++) document.getElementById("n"+(i+1)).value = p[i];
+  onNumberInput();
+}
+// Tự động fill random ngay khi trang load — tránh người dùng mua bộ số mặc định
+randomizePick();
 
 function pad(n){ return String(n).padStart(2,"0"); }
 
