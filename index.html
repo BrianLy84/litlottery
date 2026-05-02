@@ -104,7 +104,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .main-grid{display:grid;grid-template-columns:1fr 300px;gap:13px;align-items:start}
 
 /* ── PRIZES ── */
-.prizes{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.prizes{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:12px}
 .pc{background:#FFFEFB;border:1.5px solid #D4B840;border-radius:12px;padding:13px 8px;text-align:center;box-shadow:0 2px 6px rgba(180,130,10,.06);transition:transform .18s}
 .pc:hover{transform:translateY(-2px)}
 .pc.p1{background:#FFFCF0;border-color:#C8A820}.pc.p2{background:#EEF8F4;border-color:#40B888}.pc.p3{background:#EEF3FF;border-color:#70A0E0}.pc.p4{background:#F5F0FF;border-color:#A870D8}
@@ -261,7 +261,7 @@ footer a:hover{color:#0A7A60}
   .main-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:1fr 1fr}
   .sc.jp{grid-column:span 2}
-  .prizes[style*="repeat(6"]{grid-template-columns:repeat(3,1fr)!important}
+  .prizes{grid-template-columns:repeat(3,1fr)}
   .hero-top{flex-direction:column}
   .hero-left{border-right:none;border-bottom:1.5px solid #D4B840}
   .hero-right{width:100%;padding:14px 16px}
@@ -274,7 +274,7 @@ footer a:hover{color:#0A7A60}
 @media(max-width:480px){
   .hero-title{font-size:36px}
   .stats-grid{grid-template-columns:1fr 1fr}
-  .prizes[style*="repeat(6"]{grid-template-columns:repeat(2,1fr)!important}
+  .prizes{grid-template-columns:repeat(2,1fr)}
   .balls{gap:7px}
   .ball{width:44px;height:44px}
   .ball input{font-size:17px}
@@ -386,7 +386,7 @@ footer a:hover{color:#0A7A60}
 <div>
 
 <!-- PRIZES -->
-<div class="prizes" style="grid-template-columns:repeat(6,1fr)">
+<div class="prizes">
   <div class="pc p1"><div class="pc-ico">&#127945;</div><div class="pc-name">Jackpot</div><div class="pc-match">Match all 6</div><div class="pc-pct">60%</div><div style="font-size:9px;color:#7A5000;margin-top:3px;font-weight:600">of prize pool</div></div>
   <div class="pc p2"><div class="pc-ico">&#127946;</div><div class="pc-name">2nd Prize</div><div class="pc-match">Match 5 of 6</div><div class="pc-pct">20%</div><div style="font-size:9px;color:#085A40;margin-top:3px;font-weight:600">of prize pool</div></div>
   <div class="pc p3"><div class="pc-ico">&#127947;</div><div class="pc-name">3rd Prize</div><div class="pc-match">Match 4 of 6</div><div class="pc-pct">10%</div><div style="font-size:9px;color:#1A3A7A;margin-top:3px;font-weight:600">of prize pool</div></div>
@@ -816,11 +816,15 @@ async function refreshHistory(knownRound){
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    // Nếu caller đã có round object đầy đủ thì dùng lại, không cần gọi RPC thêm
+    // Parse knownRound an toàn — ethers Proxy object không respond typeof/keys bình thường
     let currentRound;
-    if(knownRound && typeof knownRound === "object" && knownRound.roundId !== undefined){
-      currentRound = knownRound;
-    } else {
+    try{
+      if(knownRound && Number(knownRound.roundId) > 0){
+        currentRound = knownRound;
+      } else {
+        currentRound = await contract.getCurrentRound();
+      }
+    } catch(_){
       currentRound = await contract.getCurrentRound();
     }
     const rid = Number(currentRound.roundId);
@@ -955,7 +959,9 @@ async function buyTicket(){
     if(new Set(v).size < 6){ toast("All numbers must be unique!","error"); return; }
     numbers = v;
   } else {
-    const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
+    const rawVals = [1,2,3,4,5,6].map(i=>document.getElementById("rb"+i).textContent.trim());
+    if(rawVals.some(v=>v==="?"||v==="")){toast("Please roll your numbers first","error"); return;}
+    const v = rawVals.map(v=>parseInt(v));
     if(v.some(isNaN)){ toast("Please roll your numbers first","error"); return; }
     numbers = v;
   }
@@ -1179,15 +1185,16 @@ function showTxStatus(type, msg){
 }
 function hideTxStatus(){ document.getElementById("tx-status").className = "tx-status"; }
 
-/* ─────────── PICK TAB: auto-fill random khi load, tránh default numbers ─────────── */
+/* ─────────── PICK TAB: auto-fill random khi load ─────────── */
 function randomizePick(){
   const p = [];
   while(p.length < 6){ const n = Math.floor(Math.random()*45)+1; if(!p.includes(n)) p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++) document.getElementById("n"+(i+1)).value = p[i];
-  onNumberInput();
+  // Chỉ gọi onNumberInput nếu wallet đã connect, tránh silent return vô ích
+  if(wallet) onNumberInput();
 }
-// Tự động fill random ngay khi trang load — tránh người dùng mua bộ số mặc định
+// Tự động fill random ngay khi trang load
 randomizePick();
 
 function pad(n){ return String(n).padStart(2,"0"); }
