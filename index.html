@@ -257,6 +257,7 @@ footer a:hover{color:#0A7A60}
 @media(max-width:700px){
   .main-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:1fr 1fr}
+  .prizes{grid-template-columns:repeat(3,1fr) !important}
   .sc.jp{grid-column:span 2}
   .prizes{grid-template-columns:repeat(2,1fr)}
   .hero-top{flex-direction:column}
@@ -271,6 +272,7 @@ footer a:hover{color:#0A7A60}
 @media(max-width:480px){
   .hero-title{font-size:36px}
   .stats-grid{grid-template-columns:1fr 1fr}
+  .prizes{grid-template-columns:repeat(2,1fr) !important}
   .balls{gap:7px}
   .ball{width:44px;height:44px}
   .ball input{font-size:17px}
@@ -317,6 +319,10 @@ footer a:hover{color:#0A7A60}
     <div class="pb-item"><div class="pb-medal m3">3</div><span class="pb-txt">Match 4 &#8594; <b>10%</b></span></div>
     <div class="pb-div"></div>
     <div class="pb-item"><div class="pb-medal m4">4</div><span class="pb-txt">Match 3 &#8594; <b>5%</b></span></div>
+    <div class="pb-div"></div>
+    <div class="pb-item"><div class="pb-medal" style="background:#2A6040;color:#C0F0D8">R</div><span class="pb-txt">Reserve &#8594; <b>5%</b></span></div>
+    <div class="pb-div"></div>
+    <div class="pb-item"><div class="pb-medal" style="background:#303030;color:#D0D0D0">T</div><span class="pb-txt">Treasury &#8594; <b>10%</b></span></div>
   </div>
 </div>
 
@@ -352,7 +358,7 @@ footer a:hover{color:#0A7A60}
     <div class="sc-lbl">Jackpot Pool</div>
     <div class="sc-val" id="stat-jackpot">&#8212;</div>
     <div class="sc-unit">zkLTC</div>
-    <div id="rollover-note" style="display:none;margin-top:6px;font-size:9px;color:#7A5000;font-weight:600;letter-spacing:.3px;line-height:1.4;background:#FFF8DC;border:1px solid #D4A820;border-radius:6px;padding:4px 8px">&#128260; ...</div>
+    <div id="rollover-note" style="display:none;margin-top:6px;font-size:9px;color:#7A5000;font-weight:600;letter-spacing:.3px;line-height:1.4;background:#FFF8DC;border:1px solid #D4A820;border-radius:6px;padding:4px 8px">&#128260; Includes rollover from previous rounds</div>
   </div>
   <div class="sc"><div class="sc-lbl">Round</div><div class="sc-val" id="stat-round" style="font-size:27px">#&#8212;</div><div class="sc-unit">current</div></div>
   <div class="sc"><div class="sc-lbl">Tickets Sold</div><div class="sc-val" id="stat-tickets" style="font-size:27px">&#8212;</div><div class="sc-unit">this round</div></div>
@@ -378,11 +384,12 @@ footer a:hover{color:#0A7A60}
 <div>
 
 <!-- PRIZES -->
-<div class="prizes">
+<div class="prizes" style="grid-template-columns:repeat(5,1fr)">
   <div class="pc p1"><div class="pc-ico">&#127945;</div><div class="pc-name">Jackpot</div><div class="pc-match">Match all 6</div><div class="pc-pct">60%</div></div>
   <div class="pc p2"><div class="pc-ico">&#127946;</div><div class="pc-name">2nd Prize</div><div class="pc-match">Match 5 of 6</div><div class="pc-pct">20%</div></div>
   <div class="pc p3"><div class="pc-ico">&#127947;</div><div class="pc-name">3rd Prize</div><div class="pc-match">Match 4 of 6</div><div class="pc-pct">10%</div></div>
   <div class="pc p4"><div class="pc-ico">&#127894;</div><div class="pc-name">4th Prize</div><div class="pc-match">Match 3 of 6</div><div class="pc-pct">5%</div></div>
+  <div class="pc" style="background:#F0FAF5;border-color:#40B080"><div class="pc-ico">&#128260;</div><div class="pc-name" style="color:#085A40">Reserve</div><div class="pc-match">Jackpot rollover base</div><div class="pc-pct" style="color:#085A40">5%</div></div>
 </div>
 
 <!-- BUY TICKET PANEL -->
@@ -701,11 +708,14 @@ async function refresh(){
       const rollEl = document.getElementById("rollover-note");
       if(rollEl && rid > 1){
         const ticketPrice = 0.001;
-        const currentRevenue60pct = Number(r.totalTickets) * ticketPrice * 0.60;
+        const totalRevenue = Number(r.totalTickets) * ticketPrice;
+        // Quy trình: 10% Treasury, 90% Prize Pool
+        // Trong 90%: 60% jackpot tier + 5% reserve = 65% của tổng về jackpot tích lũy
+        const expectedJackpotBase = totalRevenue * 0.90 * 0.65; // 58.5% tổng
         const actualJp = parseFloat(ethers.formatEther(r.jackpot));
-        const rollover = actualJp - currentRevenue60pct;
+        const rollover = actualJp - expectedJackpotBase;
         if(rollover > 0.0005){
-          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from Round #" + (rid-1);
+          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds (unclaimed rewards + reserve)";
           rollEl.style.display = "block";
         } else {
           rollEl.style.display = "none";
