@@ -765,6 +765,8 @@ async function refresh(){
     await refreshLimit();
     // Truyền object r đầy đủ để refreshHistory không cần gọi RPC thêm
     await refreshHistory(r);
+    // Reset draw-trigger flag khi round mới load xong
+    _drawTriggered = false;
   } catch(e){ console.error(e); }
 }
 
@@ -852,13 +854,18 @@ async function refreshHistory(knownRound){
     await Promise.all(claimFetchTasks);
 
     const items = [];
-    for(const {r, mine} of myRounds){
+    for(const {r, mine, drawn: isDrawn} of myRounds){
       const winNums = winNumsMap[r] || null;
-      const drawn = !!winNums;
+      // FIX: drawn = round đã draw VÀ lấy được winning numbers thành công
+      const drawn = isDrawn && !!winNums;
 
       for(const t of mine){
         const nums = t.numbers.map(n=>Number(n));
-        let badge='<span class="badge bpend">Pending</span>', claimBtn="";
+        // Nếu round đã drawn nhưng winNums chưa fetch được → hiển thị "Drawn"
+        let badge = isDrawn && !winNums
+          ? '<span class="badge bpend" style="background:#F2EDE3;border-color:#C8A820;color:#5A3E00">Drawn</span>'
+          : '<span class="badge bpend">Pending</span>';
+        let claimBtn="";
 
         if(drawn){
           const m = nums.filter(n=>winNums.includes(n)).length;
@@ -936,8 +943,11 @@ async function buyTicket(){
     if(new Set(v).size < 6){ toast("All numbers must be unique!","error"); return; }
     numbers = v;
   } else {
-    const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("rb"+i).textContent));
-    if(v.some(isNaN)){ toast("Please roll your numbers first","error"); return; }
+    const v = [1,2,3,4,5,6].map(i=>{
+      const txt = document.getElementById("rb"+i).textContent.trim();
+      return txt === "?" ? NaN : parseInt(txt);
+    });
+    if(v.some(n=>isNaN(n))){ toast("Please roll your numbers first","error"); return; }
     numbers = v;
   }
 
@@ -1091,8 +1101,10 @@ function startAutoRefresh(){
   autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
 }
 
-/* ─────────── FIX #7: startCountdown — chỉ được gọi sau khi refresh() xong ─────────── */
+/* ─────────── startCountdown ─────────── */
+let _drawTriggered = false; // flag tránh spam checkIsOwner khi left=0
 function startCountdown(){
+  _drawTriggered = false;
   if(cdTimer) clearInterval(cdTimer);
   cdTimer = setInterval(()=>{
     if(!roundEndTime){
@@ -1108,7 +1120,9 @@ function startCountdown(){
     document.getElementById("cd-s").textContent = pad(left%60);
     const elapsed = roundDuration - left;
     document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.min(100,Math.round(elapsed/roundDuration*100)) : 0)+"%";
-    if(left===0){
+    // FIX: chỉ gọi checkIsOwner 1 lần khi đếm về 0, không spam mỗi giây
+    if(left===0 && !_drawTriggered){
+      _drawTriggered = true;
       checkIsOwner().then(isOwner=>{
         if(isOwner) document.getElementById("btn-draw").style.display = "block";
       }).catch(()=>{});
