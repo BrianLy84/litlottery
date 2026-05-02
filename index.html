@@ -167,7 +167,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .tx-status.processing{background:#FFF8E8;border:1px solid #E8D080;color:#9A6800}
 .tx-status.success{background:#EAF8F2;border:1px solid #40B888;color:#034030}
 .tx-status.error{background:#FEF2F2;border:1px solid #FCA5A5;color:#DC2626}
-.tx-spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0}
+.tx-spinner{width:14px;height:14px;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;flex-shrink:0;align-self:center}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 /* BUY BTN */
@@ -177,7 +177,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 @keyframes btnGold{0%{background-position:0% center}100%{background-position:200% center}}
 @keyframes btnPulse{0%,100%{box-shadow:0 4px 18px rgba(160,120,0,.45),0 0 0 0 rgba(212,168,32,.7)}50%{box-shadow:0 6px 28px rgba(160,120,0,.65),0 0 0 10px rgba(212,168,32,0)}}
 .btn-buy:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 8px 28px rgba(160,120,0,.6),0 0 0 3px rgba(212,168,32,.4)}
-.btn-buy:disabled{background:#E8D090;color:#6A5020;cursor:not-allowed;box-shadow:none;font-size:12px;letter-spacing:1px;animation:none}
+.btn-buy:disabled{background:#E8D090;color:#6A5020;cursor:not-allowed;box-shadow:none;animation:none}
 
 /* DRAW BTN */
 .btn-draw{width:100%;padding:12px;margin-top:10px;background:#EAF8F2;color:#034030;border:1.5px solid #40B888;border-radius:12px;font-family:'DM Sans',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:all .2s;text-transform:uppercase;display:none}
@@ -202,7 +202,7 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .hist-item:hover{border-color:#D4A820;background:#FDF8EC}
 .hist-l{display:flex;align-items:center;gap:8px}
 .hist-round{font-size:11px;color:#1E1000;min-width:62px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;font-family:'Cormorant Garamond',serif}
-.mballs{display:flex;gap:4px;align-items:center}
+.mballs{display:flex;gap:3px;align-items:center;flex-wrap:wrap}
 .mball{width:28px;height:28px;border-radius:50%;background:linear-gradient(145deg,#FDF8EC,#F0E098);border:1.5px solid #C8A820;display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:12px;color:#1E1000;font-weight:700;box-shadow:0 1px 4px rgba(180,130,10,.15)}
 .badge{font-size:10px;padding:4px 10px;border-radius:6px;font-weight:700;letter-spacing:.5px;text-transform:uppercase}
 .b1{background:#FFFCF0;color:#7A5000;border:1px solid #C8A820}
@@ -275,6 +275,9 @@ footer a:hover{color:#0A7A60}
   .ball{width:44px;height:44px}
   .ball input{font-size:17px}
   .cd-num{font-size:21px;min-width:37px;padding:3px 6px}
+  .mball{width:22px;height:22px;font-size:10px}
+  .hist-round{min-width:52px;font-size:10px}
+  .hist-item{padding:8px 10px}
 }
 </style>
 </head>
@@ -324,7 +327,7 @@ footer a:hover{color:#0A7A60}
     <div>
       <div class="w-addr" id="wallet-addr">Not connected</div>
       <div class="w-bal" id="wallet-bal">&#8212; zkLTC</div>
-      <div class="w-hint">Max 3 tickets &middot; resets each round</div>
+      <div class="w-hint" id="w-hint" style="display:none">Max 3 tickets &middot; resets each round</div>
     </div>
   </div>
   <div class="wallet-btns">
@@ -448,10 +451,10 @@ footer a:hover{color:#0A7A60}
 <div>
 
 <!-- LAST DRAW -->
-<div class="rpanel" id="winning-panel" style="display:none">
+<div class="rpanel" id="winning-panel">
   <div class="ph"><div class="phico">&#127942;</div><div class="phtitle">Last Draw Result</div></div>
-  <div style="text-align:center;font-size:11px;color:#4A3800;font-weight:700;letter-spacing:.5px">Round <span id="winning-round">&#8212;</span> winning numbers</div>
-  <div class="wballs">
+  <div id="winning-content" style="text-align:center;padding:16px 0;color:#7A5830;font-size:12px;font-style:italic">Connect wallet to view last draw</div>
+  <div class="wballs" id="winning-balls" style="display:none">
     <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
     <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
   </div>
@@ -595,11 +598,12 @@ async function connectWithWallet(walletId){
     const bal = await provider.getBalance(wallet);
     document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
 
-    // Update buttons
+    // Update buttons - ẩn cả btn-enter pulse khi connected, chỉ giữ 1 nút connected + disconnect
     const be = document.getElementById("btn-enter");
     be.classList.add("connected"); be.textContent = "Connected";
     document.getElementById("btn-connect").style.display = "none";
     document.getElementById("btn-disconnect").style.display = "block";
+    document.getElementById("w-hint").style.display = "block";
     // Fix 1: giữ disabled, để refreshLimit() bên trong refresh() quyết định enable/disable
     // tránh flash enable trước khi biết wallet còn lượt không
     document.getElementById("btn-buy").disabled = true;
@@ -656,10 +660,12 @@ function disconnectWallet(){
   const badge = document.getElementById("ticket-badge");
   badge.textContent = "Connect wallet to buy"; badge.className = "tbadge neutral";
   document.getElementById("btn-buy").disabled = true; document.getElementById("btn-buy").textContent = "Buy Ticket";
+  document.getElementById("w-hint").style.display = "none";
   hideTxStatus();
   document.getElementById("activity-list").innerHTML = '<div class="act-empty">Waiting for activity...</div>';
   document.getElementById("history-list").innerHTML = '<div class="empty-hist">Connect wallet to view your ticket history</div>';
-  document.getElementById("winning-panel").style.display = "none";
+  document.getElementById("winning-content").textContent = "Connect wallet to view last draw";
+  document.getElementById("winning-balls").style.display = "none";
   document.getElementById("btn-draw").style.display = "none";
   // Bug 4 Fix: reset rollover note khi disconnect
   const rollEl = document.getElementById("rollover-note");
@@ -717,12 +723,13 @@ async function refresh(){
         const w = await contract.getWinningNumbers(rid);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
         document.getElementById("winning-round").textContent = "#"+rid;
-        document.getElementById("winning-panel").style.display = "block";
+        document.getElementById("winning-content").innerHTML = "Round <span id=\"winning-round\">#"+rid+"</span> winning numbers";
+        document.getElementById("winning-balls").style.display = "flex";
       } else if(rid > 1){
         const w = await contract.getWinningNumbers(rid-1);
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = Number(w[i]);
-        document.getElementById("winning-round").textContent = "#"+(rid-1);
-        document.getElementById("winning-panel").style.display = "block";
+        document.getElementById("winning-content").innerHTML = "Round <span id=\"winning-round\">#"+(rid-1)+"</span> winning numbers";
+        document.getElementById("winning-balls").style.display = "flex";
       }
     }catch(_){}
 
@@ -1028,7 +1035,7 @@ function showTxStatus(type, msg){
   const el = document.getElementById("tx-status");
   el.className = "tx-status show "+type;
   document.getElementById("tx-msg").textContent = msg;
-  document.getElementById("tx-spinner").style.display = type==="processing" ? "block" : "none";
+  document.getElementById("tx-spinner").style.display = type==="processing" ? "flex" : "none";
 }
 function hideTxStatus(){ document.getElementById("tx-status").className = "tx-status"; }
 
