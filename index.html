@@ -261,7 +261,7 @@ footer a:hover{color:#0A7A60}
   .main-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:1fr 1fr}
   .sc.jp{grid-column:span 2}
-  .prizes{grid-template-columns:repeat(2,1fr)}
+  .prizes[style*="repeat(6"]{grid-template-columns:repeat(3,1fr)!important}
   .hero-top{flex-direction:column}
   .hero-left{border-right:none;border-bottom:1.5px solid #D4B840}
   .hero-right{width:100%;padding:14px 16px}
@@ -274,6 +274,7 @@ footer a:hover{color:#0A7A60}
 @media(max-width:480px){
   .hero-title{font-size:36px}
   .stats-grid{grid-template-columns:1fr 1fr}
+  .prizes[style*="repeat(6"]{grid-template-columns:repeat(2,1fr)!important}
   .balls{gap:7px}
   .ball{width:44px;height:44px}
   .ball input{font-size:17px}
@@ -313,13 +314,17 @@ footer a:hover{color:#0A7A60}
     </div>
   </div>
   <div class="prize-bar">
-    <div class="pb-item"><div class="pb-medal m1">1</div><span class="pb-txt">Match 6 &#8594; <b>60%</b></span></div>
+    <div class="pb-item"><div class="pb-medal m1">1</div><span class="pb-txt">Match 6 &#8594; <b>60%</b> of pool</span></div>
     <div class="pb-div"></div>
-    <div class="pb-item"><div class="pb-medal m2">2</div><span class="pb-txt">Match 5 &#8594; <b>20%</b></span></div>
+    <div class="pb-item"><div class="pb-medal m2">2</div><span class="pb-txt">Match 5 &#8594; <b>20%</b> of pool</span></div>
     <div class="pb-div"></div>
-    <div class="pb-item"><div class="pb-medal m3">3</div><span class="pb-txt">Match 4 &#8594; <b>10%</b></span></div>
+    <div class="pb-item"><div class="pb-medal m3">3</div><span class="pb-txt">Match 4 &#8594; <b>10%</b> of pool</span></div>
     <div class="pb-div"></div>
-    <div class="pb-item"><div class="pb-medal m4">4</div><span class="pb-txt">Match 3 &#8594; <b>5%</b></span></div>
+    <div class="pb-item"><div class="pb-medal m4">4</div><span class="pb-txt">Match 3 &#8594; <b>5%</b> of pool</span></div>
+    <div class="pb-div"></div>
+    <div class="pb-item"><div class="pb-medal" style="background:#2A6040;color:#C0FFD8">&#128260;</div><span class="pb-txt">Reserve &#8594; <b>5%</b> rollover</span></div>
+    <div class="pb-div"></div>
+    <div class="pb-item"><div class="pb-medal" style="background:#3A2060;color:#D0B8FF">&#127981;</div><span class="pb-txt">Treasury &#8594; <b>10%</b> of total</span></div>
   </div>
 </div>
 
@@ -381,11 +386,13 @@ footer a:hover{color:#0A7A60}
 <div>
 
 <!-- PRIZES -->
-<div class="prizes">
-  <div class="pc p1"><div class="pc-ico">&#127945;</div><div class="pc-name">Jackpot</div><div class="pc-match">Match all 6</div><div class="pc-pct">60%</div></div>
-  <div class="pc p2"><div class="pc-ico">&#127946;</div><div class="pc-name">2nd Prize</div><div class="pc-match">Match 5 of 6</div><div class="pc-pct">20%</div></div>
-  <div class="pc p3"><div class="pc-ico">&#127947;</div><div class="pc-name">3rd Prize</div><div class="pc-match">Match 4 of 6</div><div class="pc-pct">10%</div></div>
-  <div class="pc p4"><div class="pc-ico">&#127894;</div><div class="pc-name">4th Prize</div><div class="pc-match">Match 3 of 6</div><div class="pc-pct">5%</div></div>
+<div class="prizes" style="grid-template-columns:repeat(6,1fr)">
+  <div class="pc p1"><div class="pc-ico">&#127945;</div><div class="pc-name">Jackpot</div><div class="pc-match">Match all 6</div><div class="pc-pct">60%</div><div style="font-size:9px;color:#7A5000;margin-top:3px;font-weight:600">of prize pool</div></div>
+  <div class="pc p2"><div class="pc-ico">&#127946;</div><div class="pc-name">2nd Prize</div><div class="pc-match">Match 5 of 6</div><div class="pc-pct">20%</div><div style="font-size:9px;color:#085A40;margin-top:3px;font-weight:600">of prize pool</div></div>
+  <div class="pc p3"><div class="pc-ico">&#127947;</div><div class="pc-name">3rd Prize</div><div class="pc-match">Match 4 of 6</div><div class="pc-pct">10%</div><div style="font-size:9px;color:#1A3A7A;margin-top:3px;font-weight:600">of prize pool</div></div>
+  <div class="pc p4"><div class="pc-ico">&#127894;</div><div class="pc-name">4th Prize</div><div class="pc-match">Match 3 of 6</div><div class="pc-pct">5%</div><div style="font-size:9px;color:#4A2080;margin-top:3px;font-weight:600">of prize pool</div></div>
+  <div class="pc" style="background:#F0FFF8;border-color:#2A9060"><div class="pc-ico">&#128260;</div><div class="pc-name" style="color:#1A6040">Reserve</div><div class="pc-match">Auto rollover</div><div class="pc-pct" style="color:#1A6040">5%</div><div style="font-size:9px;color:#1A6040;margin-top:3px;font-weight:600">of prize pool</div></div>
+  <div class="pc" style="background:#F5F0FF;border-color:#7050C0"><div class="pc-ico">&#127981;</div><div class="pc-name" style="color:#3A1080">Treasury</div><div class="pc-match">Protocol ops</div><div class="pc-pct" style="color:#3A1080">10%</div><div style="font-size:9px;color:#3A1080;margin-top:3px;font-weight:600">of total pool</div></div>
 </div>
 
 <!-- BUY TICKET PANEL -->
@@ -717,11 +724,14 @@ async function refresh(){
       const rollEl = document.getElementById("rollover-note");
       if(rollEl && rid > 1){
         const ticketPrice = 0.001;
-        const currentRevenue60pct = Number(r.totalTickets) * ticketPrice * 0.60;
+        const totalRevenue   = Number(r.totalTickets) * ticketPrice;
+        const prizePool      = totalRevenue * 0.90;          // 90% → Prize Pool
+        // Jackpot từ round này = 60% của prizePool + 5% reserve
+        const jackpotThisRound = prizePool * 0.60 + prizePool * 0.05;
         const actualJp = parseFloat(ethers.formatEther(r.jackpot));
-        const rollover = actualJp - currentRevenue60pct;
+        const rollover = actualJp - jackpotThisRound;
         if(rollover > 0.0005){
-          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from Round #" + (rid-1);
+          rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds";
           rollEl.style.display = "block";
         } else {
           rollEl.style.display = "none";
