@@ -641,6 +641,7 @@ function disconnectWallet(){
   if(wDef){ const rp=wDef.getProvider(); rp?.removeListener?.("accountsChanged",handleAccountsChanged); rp?.removeListener?.("chainChanged",handleChainChanged); }
   provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
   myTicketsCache = { roundId: null, tickets: [] }; // reset cache
+  lastKnownRem = 3; // reset rem state
   if(cdTimer) clearInterval(cdTimer);
   if(autoRefreshTimer) clearInterval(autoRefreshTimer);
 
@@ -686,6 +687,9 @@ async function refresh(){
     document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
     document.getElementById("sp-round").textContent = "#"+rid;
     roundEndTime = Number(r.endTime);
+    // Bug 1 Fix: cập nhật roundDuration từ dữ liệu thực của contract
+    const startTime = Number(r.startTime);
+    if(startTime > 0 && roundEndTime > startTime) roundDuration = roundEndTime - startTime;
 
     try{
       const rollEl = document.getElementById("rollover-note");
@@ -707,8 +711,13 @@ async function refresh(){
 
     if(Math.floor(Date.now()/1000) >= roundEndTime && !r.drawn){
       checkIsOwner().then(isOwner=>{
-        document.getElementById("btn-draw").style.display = isOwner ? "block" : "none";
+        const btnDraw = document.getElementById("btn-draw");
+        btnDraw.disabled = false;
+        btnDraw.textContent = "Trigger Weekly Draw";
+        btnDraw.style.display = isOwner ? "block" : "none";
       }).catch(()=>{ document.getElementById("btn-draw").style.display = "none"; });
+    } else if(r.drawn || Math.floor(Date.now()/1000) < roundEndTime){
+      document.getElementById("btn-draw").style.display = "none";
     }
 
     try{
@@ -741,14 +750,17 @@ async function refresh(){
     }catch(_){}
 
     await refreshLimit();
-    await refreshHistory();
+    await refreshHistory(rid);
   } catch(e){ console.error(e); }
 }
+
+let lastKnownRem = 3; // Bug 5 Fix: lưu rem mới nhất từ refreshLimit() để onNumberInput() dùng
 
 async function refreshLimit(){
   if(!contract||!wallet) return;
   try{
     const rem = Number(await contract.ticketsRemaining(wallet));
+    lastKnownRem = rem; // cập nhật state
     const used = 3 - rem;
     const badge = document.getElementById("ticket-badge");
     const btn = document.getElementById("btn-buy");
@@ -765,14 +777,22 @@ async function refreshLimit(){
   } catch(e){ console.error("refreshLimit:",e); }
 }
 
-async function refreshHistory(){
+async function refreshHistory(knownRid){
   if(!contract||!wallet) return;
   const list = document.getElementById("history-list");
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    const currentRound = await contract.getCurrentRound();
-    const rid = Number(currentRound.roundId);
+    // Bug 3 Fix: dùng roundId đã biết nếu có, tránh gọi RPC thừa
+    let rid = knownRid;
+    let currentRound;
+    if(!rid){
+      currentRound = await contract.getCurrentRound();
+      rid = Number(currentRound.roundId);
+    } else {
+      currentRound = { roundId: rid, drawn: false }; // drawn sẽ được suy ra bên dưới
+      try{ currentRound = await contract.getCurrentRound(); rid = Number(currentRound.roundId); }catch(_){}
+    }
     const startR = Math.max(1, rid-5);
 
     const roundRange = [];
@@ -857,7 +877,6 @@ function isDuplicateTicket(numbers){
   });
 }
 
-/* Gọi khi user thay đổi số ở tab Pick Numbers — cảnh báo realtime */
 function onNumberInput(){
   if(!wallet || myTicketsCache.roundId === null) return;
   const v = [1,2,3,4,5,6].map(i=>parseInt(document.getElementById("n"+i).value));
@@ -868,12 +887,13 @@ function onNumberInput(){
     badge.textContent = "⚠️ You already own this combination!";
     badge.className = "tbadge dup";
   } else {
-    // restore normal badge nếu không trùng
-    const rem = 3 - myTicketsCache.tickets.length;
+    // Bug 5 Fix: dùng lastKnownRem thay vì tính thủ công từ cache
+    const rem = lastKnownRem;
+    const used = 3 - rem;
     if(rem <= 0){
       badge.textContent = "3/3 tickets used this round"; badge.className = "tbadge full";
-    } else if(myTicketsCache.tickets.length > 0){
-      badge.textContent = myTicketsCache.tickets.length+"/3 used · "+rem+" remaining"; badge.className = "tbadge partial";
+    } else if(used > 0){
+      badge.textContent = used+"/3 used · "+rem+" remaining"; badge.className = "tbadge partial";
     } else {
       badge.textContent = "3 tickets available this round"; badge.className = "tbadge open";
     }
@@ -1027,18 +1047,17 @@ function switchTab(tab, btn){
   if(tab==="rand") reroll();
 }
 
-function reroll(){
+function reroll(retryCount = 0){
   const p=[];
   while(p.length<6){ const n=Math.floor(Math.random()*45)+1; if(!p.includes(n))p.push(n); }
   p.sort((a,b)=>a-b);
   for(let i=0;i<6;i++){ const el=document.getElementById("rb"+(i+1)); el.textContent=p[i]; el.className="brand set"; }
 
-  // Kiểm tra trùng ngay sau khi reroll
-  if(wallet && myTicketsCache.roundId !== null){
-    const nums = p;
-    if(isDuplicateTicket(nums)){
+  // Bug 6 Fix: guard maxRetry tránh loop vô hạn
+  if(wallet && myTicketsCache.roundId !== null && retryCount < 10){
+    if(isDuplicateTicket(p)){
       toast("⚠️ Rolled a duplicate — re-rolling...","warn");
-      setTimeout(reroll, 300); // tự động reroll lại nếu trùng
+      setTimeout(()=>reroll(retryCount + 1), 300);
     }
   }
 }
