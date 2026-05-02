@@ -639,7 +639,9 @@ function handleAccountsChanged(accounts){
 }
 
 function handleChainChanged(chainId){
-  if(chainId!==CHAIN_ID) toast("Wrong network! Switch to LiteForge Testnet","error");
+  // Chuẩn hóa về lowercase hex để so sánh chính xác
+  const normalize = c => { c = String(c); return c.startsWith("0x") ? c.toLowerCase() : "0x"+parseInt(c,10).toString(16); };
+  if(normalize(chainId) !== normalize(CHAIN_ID)) toast("Wrong network! Switch to LiteForge Testnet","error");
   else { toast("Network switched to LiteForge","success"); refresh(); }
 }
 
@@ -763,7 +765,8 @@ async function refresh(){
     }catch(_){}
 
     await refreshLimit();
-    await refreshHistory(rid);
+    // Truyền object r đầy đủ (có .drawn) để refreshHistory không cần gọi RPC thêm
+    await refreshHistory(r);
   } catch(e){ console.error(e); }
 }
 
@@ -788,16 +791,21 @@ async function refreshLimit(){
   } catch(e){ console.error("refreshLimit:",e); }
 }
 
-/* ─────────── FIX #1 & #2: refreshHistory luôn fetch getCurrentRound() đầy đủ ─────────── */
-async function refreshHistory(knownRid){
+/* ─────────── refreshHistory: luôn fetch getCurrentRound() để có drawn chính xác ─────────── */
+async function refreshHistory(knownRound){
+  // knownRound có thể là object {roundId, drawn, ...} hoặc undefined
   if(!contract||!wallet) return;
   const list = document.getElementById("history-list");
   list.innerHTML = '<div class="empty-hist" style="color:#9A6800">Loading history...</div>';
 
   try{
-    // FIX #2: Luôn fetch currentRound đầy đủ để có drawn chính xác
-    // không dùng mock object { drawn: false } nữa
-    const currentRound = await contract.getCurrentRound();
+    // Nếu caller đã có round object đầy đủ thì dùng lại, không cần gọi RPC thêm
+    let currentRound;
+    if(knownRound && typeof knownRound === "object" && knownRound.roundId !== undefined){
+      currentRound = knownRound;
+    } else {
+      currentRound = await contract.getCurrentRound();
+    }
     const rid = Number(currentRound.roundId);
 
     const startR = Math.max(1, rid-5);
@@ -811,9 +819,7 @@ async function refreshHistory(knownRid){
     const myRounds = roundRange.map((r,i)=>({
       r,
       mine: allTickets[i].filter(t=>t.player.toLowerCase()===wallet.toLowerCase()),
-      isCurrentRound: r===rid,
-      // FIX #2: drawn = round đã qua, HOẶC round hiện tại đã drawn từ contract thực
-      drawn: r < rid || (r === rid && currentRound.drawn)
+      drawn: r < rid || (r === rid && !!currentRound.drawn)
     })).filter(x=>x.mine.length>0);
 
     if(!myRounds.length){
@@ -828,6 +834,26 @@ async function refreshHistory(knownRid){
     }));
 
     const items = [];
+    // Batch tất cả hasClaimedReward calls thay vì await từng cái trong vòng lặp
+    const claimChecks = {};
+    await Promise.all(
+      myRounds.flatMap(({r, mine}) => {
+        const winNums = winNumsMap[r];
+        if(!winNums) return [];
+        return mine
+          .filter(t => {
+            const nums = t.numbers.map(n=>Number(n));
+            return nums.filter(n=>winNums.includes(n)).length >= 3;
+          })
+          .map(async () => {
+            try{
+              const claimed = await contract.hasClaimedReward(r, wallet);
+              claimChecks[r] = claimed;
+            }catch(_){}
+          });
+      })
+    );
+
     for(const {r, mine} of myRounds){
       const winNums = winNumsMap[r] || null;
       const drawn = !!winNums;
@@ -845,12 +871,10 @@ async function refreshHistory(knownRid){
           else           badge='<span class="badge blose">No match</span>';
 
           if(m>=3){
-            try{
-              const claimed = await contract.hasClaimedReward(r, wallet);
-              claimBtn = claimed
-                ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
-                : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
-            }catch(_){}
+            const claimed = claimChecks[r];
+            claimBtn = (claimed === true)
+              ? '<span style="font-size:10px;color:#5A3E00">Claimed</span>'
+              : `<button class="btn-claim" onclick="claimReward(${r})">Claim</button>`;
           }
         }
 
@@ -970,11 +994,11 @@ async function buyTicket(){
       showTxStatus("error", errMsg.slice(0,80));
     }
     setTimeout(()=>hideTxStatus(), 5000);
-    try{ await refreshLimit(); } catch(_){
-      const btn = document.getElementById("btn-buy");
-      btn.disabled = false;
-      btn.textContent = "Buy Ticket";
-    }
+    // Fix D: Luôn re-enable nút Buy, dù refreshLimit có lỗi hay không
+    const btn = document.getElementById("btn-buy");
+    btn.disabled = false;
+    btn.textContent = "Buy Ticket";
+    try{ await refreshLimit(); } catch(_){}
   }
 }
 
@@ -1024,13 +1048,8 @@ async function claimReward(rid){
         const bal = await provider.getBalance(wallet);
         document.getElementById("wallet-bal").textContent = parseFloat(ethers.formatEther(bal)).toFixed(4)+" zkLTC";
       }
-      // FIX #1: Fetch currentRoundId để truyền đúng vào refreshHistory
-      try{
-        const cr = await contract.getCurrentRound();
-        await refreshHistory(Number(cr.roundId));
-      } catch(_){
-        await refreshHistory();
-      }
+      // Truyền undefined → refreshHistory tự fetch getCurrentRound()
+      await refreshHistory();
     } else {
       toast("Transaction failed on-chain","error");
     }
@@ -1040,12 +1059,7 @@ async function claimReward(rid){
     else if(msg.includes("no reward")) toast("No reward to claim for this round","error");
     else if(msg.includes("not drawn")) toast("Round not drawn yet","error");
     else toast(msg.slice(0,80),"error");
-    try{
-      const cr = await contract.getCurrentRound();
-      await refreshHistory(Number(cr.roundId));
-    } catch(_){
-      await refreshHistory();
-    }
+    await refreshHistory();
   }
 }
 
@@ -1081,17 +1095,23 @@ function startAutoRefresh(){
   autoRefreshTimer = setInterval(()=>{ if(contract) refresh(); }, 30000);
 }
 
-/* ─────────── FIX #5: Progress bar hiển thị % thời gian ĐÃ TRÔI QUA ─────────── */
+/* ─────────── startCountdown ─────────── */
 function startCountdown(){
   if(cdTimer) clearInterval(cdTimer);
   cdTimer = setInterval(()=>{
+    // Nếu chưa có endTime (chưa connect), giữ placeholder "--"
+    if(!roundEndTime){
+      ["cd-d","cd-h","cd-m","cd-s"].forEach(id=>{ document.getElementById(id).textContent="--"; });
+      document.getElementById("progress-bar").style.width = "0%";
+      return;
+    }
     const now = Math.floor(Date.now()/1000);
     const left = Math.max(0, roundEndTime - now);
     document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
     document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
     document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
     document.getElementById("cd-s").textContent = pad(left%60);
-    // FIX #5: Bar = thời gian đã trôi qua (100% = hết giờ)
+    // Progress bar = % thời gian đã trôi qua (100% = hết giờ)
     const elapsed = roundDuration - left;
     document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.min(100,Math.round(elapsed/roundDuration*100)) : 0)+"%";
     if(left===0){
