@@ -84,6 +84,14 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .sc.jp .sc-val{font-size:38px;color:#6A4000}
 .sc-unit{font-size:11px;color:#5A3E00;margin-top:3px;font-weight:600}
 
+/* Loading skeleton */
+.skeleton{background:linear-gradient(90deg,#EDE8DE 25%,#E4DDD0 50%,#EDE8DE 75%);background-size:200% 100%;animation:skel 1.4s ease-in-out infinite;border-radius:6px;display:inline-block}
+@keyframes skel{0%{background-position:200% 0}100%{background-position:-200% 0}}
+
+/* Chain data badge */
+.chain-badge{display:inline-flex;align-items:center;gap:5px;background:#EAF8F2;border:1.5px solid #40B888;color:#034030;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase}
+.chain-dot{width:5px;height:5px;border-radius:50%;background:#0A8060;animation:blink 1.5s infinite}
+
 .cdcard{background:#FFFEFB;border:1.5px solid #D4B840;border-radius:13px;padding:13px 16px;margin-bottom:13px;box-shadow:0 2px 6px rgba(180,130,10,.06)}
 .cd-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;flex-wrap:wrap;gap:8px}
 .cd-lbl{font-size:10px;color:#2A1E00;letter-spacing:1.5px;font-weight:700;text-transform:uppercase}
@@ -173,7 +181,6 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .wballs{display:flex;gap:6px;justify-content:center;margin:10px 0;flex-wrap:wrap}
 .wball{width:40px;height:40px;border-radius:50%;background:linear-gradient(145deg,#0A7A60,#C8A020);display:flex;align-items:center;justify-content:center;font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:700;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.13)}
 
-/* FIX 1: Winner info styles */
 .winner-info{margin-top:10px;padding:10px 12px;background:#FFFCF0;border:1.5px solid #C8A820;border-radius:10px}
 .winner-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;flex-wrap:wrap;gap:4px}
 .winner-row:last-child{margin-bottom:0}
@@ -190,7 +197,6 @@ body{background:#F2EDE3;font-family:'DM Sans',sans-serif;color:#1A1000;font-size
 .act-addr{font-size:11px;color:#1E1400;font-weight:600;font-family:monospace}
 .act-nums{font-size:10px;color:#4A3800;margin-top:1px;font-weight:600}
 .act-time{font-size:10px;color:#5A3E00;white-space:nowrap;font-weight:500}
-/* FIX 2: badge for duplicate count in activity */
 .act-count{font-size:9px;background:#FDF8EC;border:1px solid #C8A820;color:#7A5000;border-radius:5px;padding:2px 6px;font-weight:700;margin-left:4px}
 .act-empty{text-align:center;padding:16px;color:#5A3E00;font-size:12px;font-style:italic}
 
@@ -248,8 +254,9 @@ footer a:hover{color:#0A7A60}
 .modal-divider::before,.modal-divider::after{content:'';flex:1;height:1px;background:#E8D080}
 .modal-divider span{font-size:10px;color:#7A5830;font-weight:600;letter-spacing:1px;text-transform:uppercase;white-space:nowrap}
 
-/* FIX 3: Demo mode badge */
-.demo-badge{display:inline-flex;align-items:center;gap:5px;background:#FFF8DC;border:1.5px solid #C8A820;color:#7A5000;font-size:9px;font-weight:700;letter-spacing:1.5px;padding:3px 10px;border-radius:20px;text-transform:uppercase;margin-left:8px}
+/* Loading state for panels */
+.loading-ring{width:20px;height:20px;border:2px solid #D4B840;border-top-color:#7A5000;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 8px}
+.loading-text{font-size:11px;color:#7A5830;text-align:center;font-style:italic}
 
 @media(max-width:700px){
   .main-grid{grid-template-columns:1fr}
@@ -461,15 +468,16 @@ footer a:hover{color:#0A7A60}
   <div class="ph">
     <div class="phico">&#127942;</div>
     <div class="phtitle">Last Draw Result</div>
-    <span id="demo-badge-win" class="demo-badge" style="display:none">Demo</span>
+    <span id="chain-badge-win" class="chain-badge" style="display:none"><span class="chain-dot"></span>Live</span>
   </div>
-  <!-- FIX 1: winning content now has a proper structure for winner info -->
-  <div id="winning-content" style="text-align:center;padding:16px 0;color:#7A5830;font-size:12px;font-style:italic">Connect wallet to view last draw</div>
+  <div id="winning-content" style="text-align:center;padding:16px 0;color:#7A5830;font-size:12px;">
+    <div class="loading-ring"></div>
+    <div class="loading-text">Fetching on-chain data...</div>
+  </div>
   <div class="wballs" id="winning-balls" style="display:none">
     <div class="wball" id="wb1">?</div><div class="wball" id="wb2">?</div><div class="wball" id="wb3">?</div>
     <div class="wball" id="wb4">?</div><div class="wball" id="wb5">?</div><div class="wball" id="wb6">?</div>
   </div>
-  <!-- Winner info section (populated after draw data loads) -->
   <div id="winner-info-section" style="display:none"></div>
 </div>
 
@@ -477,9 +485,14 @@ footer a:hover{color:#0A7A60}
   <div class="ph">
     <div class="phico">&#9889;</div>
     <div class="phtitle">Recent Activity</div>
-    <span id="demo-badge-act" class="demo-badge" style="display:none">Demo</span>
+    <span id="chain-badge-act" class="chain-badge" style="display:none"><span class="chain-dot"></span>Live</span>
   </div>
-  <div id="activity-list"><div class="act-empty">Waiting for activity...</div></div>
+  <div id="activity-list">
+    <div class="act-empty">
+      <div class="loading-ring"></div>
+      <div class="loading-text">Fetching on-chain data...</div>
+    </div>
+  </div>
 </div>
 
 </div>
@@ -512,11 +525,12 @@ footer a:hover{color:#0A7A60}
 /* ─────────── CONTRACT CONFIG ─────────── */
 const CONTRACT_ADDRESS = "0x48e0B006BFebDC5109b1967c71581DE7fc93244A";
 const CHAIN_ID = "0x1159";
+const RPC_URL = "https://rpc.liteforge.litvm.com";
 const NETWORK = {
   chainId: CHAIN_ID,
   chainName: "LiteForge Testnet",
   nativeCurrency: { name: "zkLTC", symbol: "zkLTC", decimals: 18 },
-  rpcUrls: ["https://rpc.liteforge.litvm.com"],
+  rpcUrls: [RPC_URL],
   blockExplorerUrls: ["https://liteforge.explorer.caldera.xyz"]
 };
 const ABI = [
@@ -541,99 +555,150 @@ let myTicketsCache = { roundId: null, tickets: [] };
 let lastKnownRem = 3;
 
 /* ═══════════════════════════════════════════════════════
-   FIX 3 — DEMO DATA (hiển thị khi chưa connect ví)
+   READ-ONLY PROVIDER — fetch blockchain data tanpa connect ví
    ═══════════════════════════════════════════════════════ */
-const DEMO_TICKETS = [
-  { player: "0xA1db4F2E8c3D9a1E72B6F5C8D4E2A1B3C5D74356", numbers: [6,12,14,27,40,44] },
-  { player: "0x2Fe7C8A3B1D4E6F9A2B5C3D7E8F1A4B6C8D96700", numbers: [11,12,14,18,24,31] },
-  { player: "0x216EA5B2C4D8E1F3A6B9C2D5E7F0A3B5C7D8bDfd", numbers: [3,11,18,23,27,34] },
-  { player: "0x4EaFA2B3C5D7E9F1A4B6C8D0E2F5A7B9C1D35D6d", numbers: [5,9,15,22,33,41] },
-  { player: "0x7bACB1C2D4E6F8A0B3C5D7E9F2A4B6C8D0E2f7d3", numbers: [2,17,21,30,38,43] },
-];
-const DEMO_ROUND = 2;
-const DEMO_JACKPOT = "0.1250";
-const DEMO_WIN_NUMS = [3, 11, 18, 23, 27, 34];
-// Người thắng giải nhất demo (match 6): ticket index 2 của DEMO_TICKETS
-const DEMO_WINNER = {
-  addr: "0x216E...bDfd",
-  prize: "0.0750",
-  tier: "Jackpot",
-  match: 6
-};
+let roProvider = null;
+let roContract = null;
 
-function showDemoData() {
-  // Stats
-  document.getElementById("stat-jackpot").textContent = DEMO_JACKPOT;
-  document.getElementById("banner-jackpot").textContent = DEMO_JACKPOT;
-  document.getElementById("stat-round").textContent = "#" + DEMO_ROUND;
-  document.getElementById("stat-tickets").textContent = DEMO_TICKETS.length;
-  document.getElementById("stat-players").textContent = new Set(DEMO_TICKETS.map(t=>t.player)).size;
-  document.getElementById("sp-round").textContent = "#" + DEMO_ROUND;
-  document.getElementById("sp-players").textContent = new Set(DEMO_TICKETS.map(t=>t.player)).size;
-  const last = DEMO_TICKETS[DEMO_TICKETS.length - 1];
-  document.getElementById("sp-last").textContent = last.player.slice(0,6)+"..."+last.player.slice(-4);
-
-  // Countdown (next Friday 20:00 GMT+7)
-  startDemoCountdown();
-
-  // Last draw result — với thông tin người thắng (FIX 1)
-  document.getElementById("demo-badge-win").style.display = "inline-flex";
-  document.getElementById("winning-content").innerHTML =
-    'Round <b>#' + DEMO_ROUND + '</b> winning numbers';
-  document.getElementById("winning-balls").style.display = "flex";
-  DEMO_WIN_NUMS.forEach((n,i) => {
-    document.getElementById("wb"+(i+1)).textContent = n;
-  });
-  // Hiện winner info
-  renderWinnerInfo(DEMO_WIN_NUMS, DEMO_TICKETS, DEMO_ROUND, DEMO_JACKPOT, true);
-
-  // Recent Activity — FIX 2: deduplicate
-  document.getElementById("demo-badge-act").style.display = "inline-flex";
-  updateActivityFeed(DEMO_TICKETS, DEMO_ROUND);
+function getReadOnlyContract() {
+  if (!roContract) {
+    roProvider = new ethers.JsonRpcProvider(RPC_URL);
+    roContract = new ethers.Contract(CONTRACT_ADDRESS, ABI, roProvider);
+  }
+  return roContract;
 }
 
-function startDemoCountdown() {
-  if(cdTimer) clearInterval(cdTimer);
+/* Load dữ liệu thật khi trang load — không cần ví */
+async function loadPublicChainData() {
+  try {
+    const ro = getReadOnlyContract();
+    const r = await ro.getCurrentRound();
+    const rid = Number(r.roundId);
+    const jpVal = parseFloat(ethers.formatEther(r.jackpot)).toFixed(4);
+
+    // Stats
+    document.getElementById("stat-jackpot").textContent = jpVal;
+    document.getElementById("banner-jackpot").textContent = jpVal;
+    document.getElementById("stat-round").textContent = "#" + rid;
+    document.getElementById("stat-tickets").textContent = Number(r.totalTickets).toLocaleString();
+    document.getElementById("sp-round").textContent = "#" + rid;
+
+    // Countdown từ endTime thật
+    roundEndTime = Number(r.endTime);
+    const startTime = Number(r.startTime);
+    if (startTime > 0 && roundEndTime > startTime) roundDuration = roundEndTime - startTime;
+    startCountdownRO();
+
+    // Rollover note
+    try {
+      const rollEl = document.getElementById("rollover-note");
+      const ticketPrice = 0.001;
+      const totalRevenue = Number(r.totalTickets) * ticketPrice;
+      const prizePool = totalRevenue * 0.90;
+      const jackpotThisRound = prizePool * 0.65;
+      const actualJp = parseFloat(ethers.formatEther(r.jackpot));
+      const rollover = actualJp - jackpotThisRound;
+      if (rollover > 0.0005 && rollEl) {
+        rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds";
+        rollEl.style.display = "block";
+      }
+    } catch(_) {}
+
+    // Tickets của round hiện tại
+    let tickets = [];
+    try {
+      tickets = await ro.getTickets(rid);
+    } catch(_) {}
+
+    const uniquePlayers = new Set(tickets.map(t => t.player)).size;
+    document.getElementById("stat-players").textContent = uniquePlayers;
+    document.getElementById("sp-players").textContent = uniquePlayers;
+
+    if (tickets.length > 0) {
+      const last = tickets[tickets.length - 1];
+      document.getElementById("sp-last").textContent = last.player.slice(0,6) + "..." + last.player.slice(-4);
+    }
+
+    updateActivityFeed(tickets, rid);
+    document.getElementById("chain-badge-act").style.display = "inline-flex";
+
+    // Last draw result
+    let winNums = null, drawnRoundId = null, drawnTickets = [];
+    try {
+      if (r.drawn) {
+        winNums = (await ro.getWinningNumbers(rid)).map(n => Number(n));
+        drawnRoundId = rid;
+        drawnTickets = tickets;
+      } else if (rid > 1) {
+        winNums = (await ro.getWinningNumbers(rid - 1)).map(n => Number(n));
+        drawnRoundId = rid - 1;
+        try { drawnTickets = await ro.getTickets(rid - 1); } catch(_) {}
+      }
+    } catch(_) {}
+
+    if (winNums && winNums.some(n => n > 0)) {
+      for (let i = 0; i < 6; i++) document.getElementById("wb" + (i + 1)).textContent = winNums[i];
+      document.getElementById("winning-content").innerHTML = "Round <b>#" + drawnRoundId + "</b> winning numbers";
+      document.getElementById("winning-balls").style.display = "flex";
+      document.getElementById("chain-badge-win").style.display = "inline-flex";
+      renderWinnerInfo(winNums, drawnTickets, drawnRoundId, jpVal, false);
+    } else {
+      document.getElementById("winning-content").innerHTML =
+        '<span style="color:#7A5830;font-size:12px;font-style:italic">Round #' + rid + ' in progress — draw on Friday 20:00 GMT+7</span>';
+      document.getElementById("chain-badge-win").style.display = "inline-flex";
+    }
+
+  } catch (e) {
+    console.error("loadPublicChainData error:", e);
+    // Fallback: hiện thông báo lỗi nhẹ thay vì màn hình trắng
+    document.getElementById("winning-content").innerHTML =
+      '<span style="color:#9A6800;font-size:11px">Could not reach RPC — check connection</span>';
+    document.getElementById("activity-list").innerHTML =
+      '<div class="act-empty" style="color:#9A6800">Could not load on-chain data</div>';
+  }
+}
+
+/* Countdown chạy độc lập từ roundEndTime (dùng cho cả RO và connected) */
+function startCountdownRO() {
+  if (cdTimer) clearInterval(cdTimer);
   cdTimer = setInterval(() => {
-    const now = new Date();
-    // Next Friday 20:00 GMT+7 = 13:00 UTC
-    const target = new Date();
-    const day = target.getUTCDay(); // 0=Sun,5=Fri
-    const daysToFri = (5 - day + 7) % 7 || 7;
-    target.setUTCDate(target.getUTCDate() + daysToFri);
-    target.setUTCHours(13, 0, 0, 0);
-    const left = Math.max(0, Math.floor((target - now) / 1000));
-    document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
-    document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
-    document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
-    document.getElementById("cd-s").textContent = pad(left%60);
-    const weekSecs = 604800;
-    const elapsed = weekSecs - left;
-    document.getElementById("progress-bar").style.width = Math.min(100, Math.round(elapsed/weekSecs*100)) + "%";
+    if (!roundEndTime) return;
+    const now = Math.floor(Date.now() / 1000);
+    const left = Math.max(0, roundEndTime - now);
+    document.getElementById("cd-d").textContent = pad(Math.floor(left / 86400));
+    document.getElementById("cd-h").textContent = pad(Math.floor((left % 86400) / 3600));
+    document.getElementById("cd-m").textContent = pad(Math.floor((left % 3600) / 60));
+    document.getElementById("cd-s").textContent = pad(left % 60);
+    const elapsed = roundDuration - left;
+    document.getElementById("progress-bar").style.width =
+      (roundDuration > 0 ? Math.min(100, Math.round(elapsed / roundDuration * 100)) : 0) + "%";
   }, 1000);
 }
 
-/* ─────────── FIX 1: Render winner info dưới số trúng ─────────── */
+/* Tự động refresh data mỗi 60s kể cả khi chưa connect ví */
+function startPublicAutoRefresh() {
+  setInterval(() => {
+    if (!wallet) loadPublicChainData(); // chỉ refresh public nếu chưa connect
+  }, 60000);
+}
+
+/* ─────────── FIX 1: Render winner info ─────────── */
 function renderWinnerInfo(winNums, tickets, roundId, jackpotVal, isDemo) {
   const section = document.getElementById("winner-info-section");
-  if(!winNums || winNums.length === 0) { section.style.display="none"; return; }
+  if (!winNums || winNums.length === 0) { section.style.display = "none"; return; }
 
-  // Tính prize pool
-  const totalTickets = tickets.length;
-  const prizePool = parseFloat(jackpotVal) * 0.60 / 0.65; // ước tính ngược, hoặc dùng jackpot trực tiếp
-  const jp60 = parseFloat(jackpotVal);      // jackpot = 60% of prize pool (stored as-is)
-  const p2 = jp60 / 3;                       // 2nd = 20%, jackpot = 60% → ratio 1:3
+  const jp60 = parseFloat(jackpotVal);
+  const p2 = jp60 / 3;
   const p3 = jp60 / 6;
   const p4 = jp60 / 12;
 
-  // Group người thắng theo bậc
   const winners = { 6:[], 5:[], 4:[], 3:[] };
-  for(const t of tickets) {
-    const nums = t.numbers.map(n=>Number(n));
-    const m = nums.filter(n=>winNums.map(Number).includes(n)).length;
-    if(m >= 3 && winners[m]) {
-      const addr = t.player.slice(0,6)+"..."+t.player.slice(-4);
-      if(!winners[m].find(w=>w.addr===addr)) winners[m].push({ addr, player: t.player });
+  for (const t of tickets) {
+    const nums = t.numbers.map(n => Number(n));
+    const m = nums.filter(n => winNums.map(Number).includes(n)).length;
+    if (m >= 3 && winners[m]) {
+      const addr = t.player.slice(0,6) + "..." + t.player.slice(-4);
+      if (!winners[m].find(w => w.addr === addr)) winners[m].push({ addr, player: t.player });
     }
   }
 
@@ -644,15 +709,17 @@ function renderWinnerInfo(winNums, tickets, roundId, jackpotVal, isDemo) {
     { match:3, label:"🏅 4th Prize", prize: p4.toFixed(4), cls:"b4" },
   ];
 
-  let hasAny = false;
-  let html = '';
-  for(const tier of tiers) {
+  let hasAny = false, html = '';
+  for (const tier of tiers) {
     const ws = winners[tier.match];
-    if(!ws || ws.length === 0) continue;
+    if (!ws || ws.length === 0) continue;
     hasAny = true;
     html += `<div style="margin-bottom:8px">
-      <div style="font-size:9px;letter-spacing:1.5px;font-weight:700;color:#5A3E00;text-transform:uppercase;margin-bottom:5px">${tier.label} &mdash; ${ws.length} winner${ws.length>1?'s':''} &mdash; <span style="color:#7A5000">${tier.prize} zkLTC ${ws.length>1?'shared':''}</span></div>`;
-    for(const w of ws) {
+      <div style="font-size:9px;letter-spacing:1.5px;font-weight:700;color:#5A3E00;text-transform:uppercase;margin-bottom:5px">
+        ${tier.label} &mdash; ${ws.length} winner${ws.length>1?'s':''} &mdash;
+        <span style="color:#7A5000">${tier.prize} zkLTC ${ws.length>1?'shared':''}</span>
+      </div>`;
+    for (const w of ws) {
       html += `<div class="winner-row">
         <span class="winner-addr">${w.addr}</span>
         <span class="winner-prize">${(parseFloat(tier.prize)/ws.length).toFixed(4)} zkLTC</span>
@@ -661,49 +728,34 @@ function renderWinnerInfo(winNums, tickets, roundId, jackpotVal, isDemo) {
     html += '</div>';
   }
 
-  if(!hasAny) {
-    html = '<div class="no-winner">No winners this round — jackpot rolls over!</div>';
-  }
-
+  if (!hasAny) html = '<div class="no-winner">No winners this round — jackpot rolls over!</div>';
   section.innerHTML = '<div class="winner-info">' + html + '</div>';
   section.style.display = "block";
 }
 
-/* ═══════════════════════════════════════════════════════
-   FIX 2 — ACTIVITY FEED: loại bỏ vé trùng số, gom lại
-   ═══════════════════════════════════════════════════════ */
+/* ─────────── FIX 2: Activity feed, deduplicate ─────────── */
 function updateActivityFeed(tickets, roundId) {
   const list = document.getElementById("activity-list");
-  if(!tickets || tickets.length === 0) {
+  if (!tickets || tickets.length === 0) {
     list.innerHTML = '<div class="act-empty">No activity yet — be the first!</div>';
     return;
   }
 
-  // Gom vé theo bộ số (key = sorted numbers string)
-  const seen = new Map(); // key: "n1,n2,...n6" → { addr, nums, count }
-  // Duyệt từ mới nhất đến cũ nhất
+  const seen = new Map();
   const reversed = [...tickets].reverse();
-  for(const t of reversed) {
-    const nums = t.numbers.map(n=>Number(n));
-    const key = [...nums].sort((a,b)=>a-b).join(",");
-    if(!seen.has(key)) {
-      seen.set(key, {
-        addr: t.player.slice(0,6)+"..."+t.player.slice(-4),
-        nums,
-        count: 1
-      });
+  for (const t of reversed) {
+    const nums = t.numbers.map(n => Number(n));
+    const key = [...nums].sort((a,b) => a-b).join(",");
+    if (!seen.has(key)) {
+      seen.set(key, { addr: t.player.slice(0,6) + "..." + t.player.slice(-4), nums, count: 1 });
     } else {
       seen.get(key).count++;
     }
   }
 
-  // Lấy tối đa 5 nhóm unique
   const unique = [...seen.values()].slice(0, 5);
-
   list.innerHTML = unique.map(item => {
-    const countBadge = item.count > 1
-      ? `<span class="act-count">×${item.count}</span>`
-      : '';
+    const countBadge = item.count > 1 ? `<span class="act-count">×${item.count}</span>` : '';
     return `<div class="act-item">
       <div class="act-l">
         <div class="act-dot">&#127903;</div>
@@ -716,11 +768,6 @@ function updateActivityFeed(tickets, roundId) {
     </div>`;
   }).join("");
 }
-
-/* ─────────── Khởi động demo khi load trang ─────────── */
-window.addEventListener("DOMContentLoaded", () => {
-  if(!wallet) showDemoData();
-});
 
 /* ─────────── WALLET DEFINITIONS ─────────── */
 const WALLETS = [
@@ -809,14 +856,10 @@ async function connectWithWallet(walletId){
     document.getElementById("btn-buy").disabled = true;
     document.getElementById("btn-buy").textContent = "Checking limit...";
 
-    // Ẩn demo badges khi đã connect thật
-    document.getElementById("demo-badge-win").style.display = "none";
-    document.getElementById("demo-badge-act").style.display = "none";
-
     rawProvider.on?.("accountsChanged", _onAccountsChanged);
     rawProvider.on?.("chainChanged", _onChainChanged);
 
-    await refresh(); startCountdown(); startAutoRefresh();
+    await refresh(); startCountdownRO(); startAutoRefresh();
     toast(`${wDef.name} connected!`,"success");
   } catch(e){ toast((e.message||"Connection failed").slice(0,80),"error"); }
 }
@@ -851,7 +894,7 @@ function disconnectWallet(){
     rp?.removeListener?.("accountsChanged", _onAccountsChanged);
     rp?.removeListener?.("chainChanged", _onChainChanged);
   }
-  provider=null; signer=null; contract=null; wallet=null; activeWalletType=null; roundEndTime=0;
+  provider=null; signer=null; contract=null; wallet=null; activeWalletType=null;
   myTicketsCache = { roundId: null, tickets: [] };
   lastKnownRem = 3;
   _drawTriggered = false;
@@ -867,21 +910,21 @@ function disconnectWallet(){
 
   const badge = document.getElementById("ticket-badge");
   badge.textContent = "Connect wallet to buy"; badge.className = "tbadge neutral";
-  document.getElementById("btn-buy").disabled = true; document.getElementById("btn-buy").textContent = "Buy Ticket";
+  document.getElementById("btn-buy").disabled = true;
+  document.getElementById("btn-buy").textContent = "Buy Ticket";
   document.getElementById("w-hint").style.display = "none";
   hideTxStatus();
   document.getElementById("history-list").innerHTML = '<div class="empty-hist">Connect wallet to view your ticket history</div>';
-  document.getElementById("winner-info-section").style.display = "none";
   document.getElementById("btn-draw").style.display = "none";
   const rollEl = document.getElementById("rollover-note");
   if(rollEl) rollEl.style.display = "none";
   toast("Wallet disconnected");
 
-  // Hiển thị lại demo data sau khi disconnect
-  showDemoData();
+  // Reload public chain data sau khi disconnect
+  loadPublicChainData();
 }
 
-/* ─────────── DATA REFRESH ─────────── */
+/* ─────────── DATA REFRESH (khi đã connect ví) ─────────── */
 async function refresh(){
   if(!contract) return;
   try{
@@ -903,11 +946,11 @@ async function refresh(){
       const rollEl = document.getElementById("rollover-note");
       if(rollEl){
         const ticketPrice = 0.001;
-        const totalRevenue     = Number(r.totalTickets) * ticketPrice;
-        const prizePool        = totalRevenue * 0.90;
+        const totalRevenue = Number(r.totalTickets) * ticketPrice;
+        const prizePool = totalRevenue * 0.90;
         const jackpotThisRound = prizePool * 0.65;
-        const actualJp         = parseFloat(ethers.formatEther(r.jackpot));
-        const rollover         = actualJp - jackpotThisRound;
+        const actualJp = parseFloat(ethers.formatEther(r.jackpot));
+        const rollover = actualJp - jackpotThisRound;
         if(rollover > 0.0005){
           rollEl.innerHTML = "&#128260; Includes <b>" + rollover.toFixed(4) + " zkLTC</b> rolled over from previous rounds";
           rollEl.style.display = "block";
@@ -928,30 +971,22 @@ async function refresh(){
       document.getElementById("btn-draw").style.display = "none";
     }
 
-    /* FIX 1: Lấy winning numbers và tickets để render winner info */
-    let drawnRoundId = null;
-    let winNums = null;
-    let drawnTickets = [];
-    let drawnJp = jpVal;
+    let drawnRoundId = null, winNums = null, drawnTickets = [], drawnJp = jpVal;
     try{
       if(r.drawn){
         winNums = (await contract.getWinningNumbers(rid)).map(n=>Number(n));
         drawnRoundId = rid;
         drawnTickets = await contract.getTickets(rid);
-        drawnJp = jpVal;
       } else if(rid > 1){
         winNums = (await contract.getWinningNumbers(rid-1)).map(n=>Number(n));
         drawnRoundId = rid - 1;
         drawnTickets = await contract.getTickets(rid-1).catch(()=>[]);
-        // Jackpot của round trước — ước tính từ totalTickets của round trước
-        // (không có data chính xác nên dùng giá trị hiện tại làm fallback)
-        drawnJp = jpVal;
       }
-      if(winNums){
+      if(winNums && winNums.some(n=>n>0)){
         for(let i=0;i<6;i++) document.getElementById("wb"+(i+1)).textContent = winNums[i];
         document.getElementById("winning-content").innerHTML = "Round <b>#"+drawnRoundId+"</b> winning numbers";
         document.getElementById("winning-balls").style.display = "flex";
-        // Render winner info
+        document.getElementById("chain-badge-win").style.display = "inline-flex";
         renderWinnerInfo(winNums, drawnTickets, drawnRoundId, drawnJp, false);
       }
     }catch(_){}
@@ -1169,8 +1204,7 @@ async function buyTicket(){
     }
     setTimeout(()=>hideTxStatus(), 5000);
     const btn = document.getElementById("btn-buy");
-    btn.disabled = false;
-    btn.textContent = "Buy Ticket";
+    btn.disabled = false; btn.textContent = "Buy Ticket";
     try{ await refreshLimit(); } catch(_){}
   }
 }
@@ -1259,23 +1293,7 @@ function startAutoRefresh(){
 
 let _drawTriggered = false;
 function startCountdown(){
-  if(cdTimer) clearInterval(cdTimer);
-  _drawTriggered = false;
-  cdTimer = setInterval(()=>{
-    if(!roundEndTime){ ["cd-d","cd-h","cd-m","cd-s"].forEach(id=>{ document.getElementById(id).textContent="--"; }); document.getElementById("progress-bar").style.width="0%"; return; }
-    const now = Math.floor(Date.now()/1000);
-    const left = Math.max(0, roundEndTime - now);
-    document.getElementById("cd-d").textContent = pad(Math.floor(left/86400));
-    document.getElementById("cd-h").textContent = pad(Math.floor((left%86400)/3600));
-    document.getElementById("cd-m").textContent = pad(Math.floor((left%3600)/60));
-    document.getElementById("cd-s").textContent = pad(left%60);
-    const elapsed = roundDuration - left;
-    document.getElementById("progress-bar").style.width = (roundDuration>0 ? Math.min(100,Math.round(elapsed/roundDuration*100)) : 0)+"%";
-    if(left===0 && !_drawTriggered){
-      _drawTriggered = true;
-      checkIsOwner().then(isOwner=>{ if(isOwner) document.getElementById("btn-draw").style.display = "block"; }).catch(()=>{});
-    }
-  },1000);
+  startCountdownRO(); // reuse same function
 }
 
 function updateSocialProof(tickets, roundId){
@@ -1316,6 +1334,12 @@ function toast(msg, type=""){
   el.textContent = msg; el.className = "show"+(type?" "+type:"");
   clearTimeout(el._t); el._t = setTimeout(()=>el.className="",3500);
 }
+
+/* ─────────── KHỞI ĐỘNG: load chain data thật ngay khi trang load ─────────── */
+window.addEventListener("DOMContentLoaded", () => {
+  loadPublicChainData();
+  startPublicAutoRefresh();
+});
 </script>
 </body>
 </html>
